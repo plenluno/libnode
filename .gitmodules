@@ -1,0 +1,6 @@
+[submodule "deps/libuv"]
+	path = deps/libuv
+	url = https://github.com/joyent/libuv.git
+[submodule "deps/libj"]
+	path = deps/libj
+	url = git@github.com:plenluno/libj.git
