@@ -41,7 +41,7 @@ parse_url(const char *url)
     int bracket_flag;
 
     /* Allocate the parsed url storage */
-    purl = malloc(sizeof(struct http_parsed_url));
+    purl = malloc(sizeof(struct parsed_url));
     if ( NULL == purl ) {
         return NULL;
     }
