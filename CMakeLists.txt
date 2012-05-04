@@ -37,6 +37,8 @@ link_directories(
 )
 
 set(libnode-src
+    src/event_emitter.cpp
+    src/http_server.cpp
     src/url.cpp
 )
 
@@ -80,7 +82,10 @@ add_custom_command(
 # gtest
 add_executable(libnode-gtest
     gtest/gtest_main.cpp
+    gtest/gtest_event_emitter.cpp
+    gtest/gtest_http_server.cpp
     gtest/gtest_url_parser.cpp
+    ${libnode-src}
 )
 
 target_link_libraries(libnode-gtest
