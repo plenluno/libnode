@@ -65,7 +65,7 @@ parse_url(const char *url)
     tmpstr = strchr(curstr, ':');
     if ( NULL == tmpstr ) {
         /* Not found the character */
-        http_parsed_url_free(purl);
+        parsed_url_free(purl);
         return NULL;
     }
     /* Get the scheme length */
@@ -74,14 +74,14 @@ parse_url(const char *url)
     for ( i = 0; i < len; i++ ) {
         if ( !_is_scheme_char(curstr[i]) ) {
             /* Invalid format */
-            http_parsed_url_free(purl);
+            parsed_url_free(purl);
             return NULL;
         }
     }
     /* Copy the scheme to the storage */
     purl->scheme = malloc(sizeof(char) * (len + 1));
     if ( NULL == purl->scheme ) {
-        http_parsed_url_free(purl);
+        parsed_url_free(purl);
         return NULL;
     }
     (void)strncpy(purl->scheme, curstr, len);
@@ -101,7 +101,7 @@ parse_url(const char *url)
     /* Eat "//" */
     for ( i = 0; i < 2; i++ ) {
         if ( '/' != *curstr ) {
-            http_parsed_url_free(purl);
+            parsed_url_free(purl);
             return NULL;
         }
         curstr++;
@@ -133,7 +133,7 @@ parse_url(const char *url)
         len = tmpstr - curstr;
         purl->username = malloc(sizeof(char) * (len + 1));
         if ( NULL == purl->username ) {
-            http_parsed_url_free(purl);
+            parsed_url_free(purl);
             return NULL;
         }
         (void)strncpy(purl->username, curstr, len);
@@ -151,7 +151,7 @@ parse_url(const char *url)
             len = tmpstr - curstr;
             purl->password = malloc(sizeof(char) * (len + 1));
             if ( NULL == purl->password ) {
-                http_parsed_url_free(purl);
+                parsed_url_free(purl);
                 return NULL;
             }
             (void)strncpy(purl->password, curstr, len);
@@ -160,7 +160,7 @@ parse_url(const char *url)
         }
         /* Skip '@' */
         if ( '@' != *curstr ) {
-            http_parsed_url_free(purl);
+            parsed_url_free(purl);
             return NULL;
         }
         curstr++;
@@ -187,7 +187,7 @@ parse_url(const char *url)
     len = tmpstr - curstr;
     purl->host = malloc(sizeof(char) * (len + 1));
     if ( NULL == purl->host || len <= 0 ) {
-        http_parsed_url_free(purl);
+        parsed_url_free(purl);
         return NULL;
     }
     (void)strncpy(purl->host, curstr, len);
@@ -205,7 +205,7 @@ parse_url(const char *url)
         len = tmpstr - curstr;
         purl->port = malloc(sizeof(char) * (len + 1));
         if ( NULL == purl->port ) {
-            http_parsed_url_free(purl);
+            parsed_url_free(purl);
             return NULL;
         }
         (void)strncpy(purl->port, curstr, len);
@@ -220,7 +220,7 @@ parse_url(const char *url)
 
     /* Skip '/' */
     if ( '/' != *curstr ) {
-        http_parsed_url_free(purl);
+        parsed_url_free(purl);
         return NULL;
     }
     curstr++;
@@ -233,7 +233,7 @@ parse_url(const char *url)
     len = tmpstr - curstr;
     purl->path = malloc(sizeof(char) * (len + 1));
     if ( NULL == purl->path ) {
-        http_parsed_url_free(purl);
+        parsed_url_free(purl);
         return NULL;
     }
     (void)strncpy(purl->path, curstr, len);
@@ -252,7 +252,7 @@ parse_url(const char *url)
         len = tmpstr - curstr;
         purl->query = malloc(sizeof(char) * (len + 1));
         if ( NULL == purl->query ) {
-            http_parsed_url_free(purl);
+            parsed_url_free(purl);
             return NULL;
         }
         (void)strncpy(purl->query, curstr, len);
@@ -272,7 +272,7 @@ parse_url(const char *url)
         len = tmpstr - curstr;
         purl->fragment = malloc(sizeof(char) * (len + 1));
         if ( NULL == purl->fragment ) {
-            http_parsed_url_free(purl);
+            parsed_url_free(purl);
             return NULL;
         }
         (void)strncpy(purl->fragment, curstr, len);
