@@ -4,3 +4,6 @@
 [submodule "deps/libj"]
 	path = deps/libj
 	url = git@github.com:plenluno/libj.git
+[submodule "deps/http-parser"]
+	path = deps/http-parser
+	url = https://github.com/joyent/http-parser.git
