@@ -4,9 +4,8 @@
 int main() {
     using namespace libj;
     using namespace libj::node;
-    Type<Node>::Ptr node = Node::instance();
-    Type<HttpServer>::Ptr server = HttpServer::create();
+    Type<http::Server>::Ptr server = http::Server::create();
     server->listen(10000);
-    node->run();
+    run();
     return 0;
 }

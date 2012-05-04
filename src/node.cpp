@@ -6,7 +6,7 @@
 namespace libj {
 namespace node {
 
-void Node::run() {
+void run() {
     uv_run(uv_default_loop());
 }
 

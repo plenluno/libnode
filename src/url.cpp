@@ -4,16 +4,18 @@
 
 namespace libj {
 namespace node {
+namespace url {
 
-Type<JsObject>::Ptr Url::parse(Type<String>::Cptr urlStr) {
+Type<JsObject>::Ptr parse(Type<String>::Cptr urlStr) {
     // TODO: implement
     return JsObject::create();
 }
 
-Type<String>::Cptr Url::format(Type<JsObject>::Cptr urlObj) {
+Type<String>::Cptr format(Type<JsObject>::Cptr urlObj) {
     // TODO: implement
     return String::create();
 }
 
+}  // namespace url
 }  // namespace node
 }  // namespace libj

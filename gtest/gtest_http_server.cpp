@@ -7,7 +7,7 @@ namespace libj {
 namespace node {
 
 TEST(GTestHttpServer, TestCreate) {
-    Type<HttpServer>::Ptr srv = HttpServer::create();
+    Type<http::Server>::Ptr srv = http::Server::create();
     ASSERT_TRUE(srv ? true : false);
 }
 

@@ -5,16 +5,17 @@
 
 namespace libj {
 namespace node {
+namespace http {
 
-class HttpServerImpl
-    : public HttpServer {
+class ServerImpl
+    : public Server {
  public:
     Type<String>::Cptr toString() const {
         return ee_->toString();
     }
 
     static Ptr create() {
-        Ptr p(new HttpServerImpl());
+        Ptr p(new ServerImpl());
         return p;
     }
 
@@ -36,7 +37,7 @@ class HttpServerImpl
     uv_tcp_t server_;
     Type<EventEmitter>::Ptr ee_;
     
-    HttpServerImpl()
+    ServerImpl()
         : ee_(EventEmitter::create()) {
         uv_tcp_init(uv_default_loop(), &server_);
     }
@@ -45,17 +46,18 @@ class HttpServerImpl
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
 
-Type<String>::Cptr HttpServer::EVENT_REQUEST = String::create("request");
-Type<String>::Cptr HttpServer::EVENT_CONNECTION = String::create("connection");
-Type<String>::Cptr HttpServer::EVENT_CLOSE = String::create("close");
+Type<String>::Cptr Server::EVENT_REQUEST = String::create("request");
+Type<String>::Cptr Server::EVENT_CONNECTION = String::create("connection");
+Type<String>::Cptr Server::EVENT_CLOSE = String::create("close");
 
-Type<HttpServer>::Ptr HttpServer::create() {
-    return HttpServerImpl::create();
+Type<Server>::Ptr Server::create() {
+    return ServerImpl::create();
 }
 
-Type<HttpServer>::Ptr HttpServer::create(Type<JsFunction>::Ptr requestListener) {
-    return HttpServerImpl::create(requestListener);
+Type<Server>::Ptr Server::create(Type<JsFunction>::Ptr requestListener) {
+    return ServerImpl::create(requestListener);
 }
 
+}  // namespace http
 }  // namespace node
 }  // namespace libj

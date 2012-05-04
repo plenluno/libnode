@@ -7,8 +7,9 @@
 
 namespace libj {
 namespace node {
+namespace http {
 
-class HttpServer : LIBNODE_EVENT_EMITTER(HttpServer)
+class Server : LIBNODE_EVENT_EMITTER(Server)
 public:
     static Type<String>::Cptr EVENT_REQUEST;
     static Type<String>::Cptr EVENT_CONNECTION;
@@ -20,6 +21,7 @@ public:
     virtual void close() = 0;
 };
 
+}  // namespace http
 }  // namespace node
 }  // namespace libj
 

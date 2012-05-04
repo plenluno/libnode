@@ -6,6 +6,7 @@
 
 namespace libj {
 namespace node {
+namespace events {
 
 static Type<JsArray>::Ptr results = JsArray::create();
 
@@ -122,5 +123,6 @@ TEST(GTestEventEmitter, TestEmit) {
     ASSERT_TRUE(i0 != i1 && (i1 == 2 || i1 == 8));
 }
 
+}  // namespace events
 }  // namespace node
 }  // namespace libj

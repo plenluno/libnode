@@ -6,6 +6,7 @@
 
 namespace libj {
 namespace node {
+namespace events {
 
 class EventEmitterImpl : public EventEmitter {
  public:
@@ -83,5 +84,6 @@ Type<EventEmitter>::Ptr EventEmitter::create() {
     return EventEmitterImpl::create();
 }
 
+}  // namespace events
 }  // namespace node
 }  // namespace libj

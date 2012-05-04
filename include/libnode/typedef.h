@@ -15,9 +15,6 @@ typedef ArrayList JsArray;
 typedef Function JsFunction;
 typedef Map JsObject;
 
-#define LIBNODE_MODULE(T) \
-    LIBJ_SINGLETON(T)
-
 #define LIBNODE_JS_ARRAY(T) public libj::node::JsArray { \
     LIBJ_MUTABLE_DECLS(T, libj::node::JsArray)
 

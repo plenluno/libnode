@@ -9,6 +9,7 @@
 
 namespace libj {
 namespace node {
+namespace events {
 
 class EventEmitter : LIBNODE_JS_OBJECT(EventEmitter)
  public:
@@ -21,8 +22,8 @@ class EventEmitter : LIBNODE_JS_OBJECT(EventEmitter)
     virtual Value listeners(Type<String>::Cptr event) = 0;
 };
 
-#define LIBNODE_EVENT_EMITTER(T) public libj::node::EventEmitter { \
-    LIBJ_MUTABLE_DECLS(T, libj::node::EventEmitter)
+#define LIBNODE_EVENT_EMITTER(T) public libj::node::events::EventEmitter { \
+    LIBJ_MUTABLE_DECLS(T, libj::node::events::EventEmitter)
 
 #define LIBNODE_EVENT_EMITTER_IMPL(EE) \
  public: \
@@ -48,6 +49,7 @@ class EventEmitter : LIBNODE_JS_OBJECT(EventEmitter)
         return EE->listeners(event); \
     }
 
+}  // namespace events
 }  // namespace node
 }  // namespace libj
 

@@ -8,13 +8,12 @@
 
 namespace libj {
 namespace node {
+namespace url {
 
-class Url : LIBNODE_MODULE(Url)
- public:
-    Type<JsObject>::Ptr parse(Type<String>::Cptr urlStr);
-    Type<String>::Cptr format(Type<JsObject>::Cptr urlObj);
-};
+Type<JsObject>::Ptr parse(Type<String>::Cptr urlStr);
+Type<String>::Cptr format(Type<JsObject>::Cptr urlObj);
 
+}  // namespace url
 }  // namespace node
 }  // namespace libj
 
