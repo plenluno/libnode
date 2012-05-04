@@ -1,8 +1,8 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
-#include <url_parser.h>
 #include <libj/string.h>
+#include <url_parser.h>
 
 namespace libj {
 
@@ -16,4 +16,4 @@ TEST(GTestUrlParser, TestParseUrl) {
     parsed_url_free(url);
 }
 
-}
+}  // namespace libj
