@@ -24,6 +24,8 @@ sysdep module for system specific information.
 #ifndef HTUTILS_H
 #define HTUTILS_H
 
+#include <stddef.h>
+
 /*
 .
   Destination for User Print Messages
