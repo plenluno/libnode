@@ -21,7 +21,7 @@ class EventEmitterImpl : public EventEmitter {
             a = JsArray::create();
             listeners_->put(event, a);
         } else {
-            toPtr<JsArray>(v, &a);
+            a = toPtr<JsArray>(v);
         }
         a->add(listener);
     }
@@ -37,8 +37,7 @@ class EventEmitterImpl : public EventEmitter {
     void removeAllListeners(Type<String>::Cptr event) {
         Value v = listeners_->get(event);
         if (!v.instanceOf(Type<Null>::id())) {
-            Type<JsArray>::Ptr a;
-            toPtr<JsArray>(v, &a);
+            Type<JsArray>::Ptr a = toPtr<JsArray>(v);
             a->clear();
         }
     }
@@ -46,13 +45,11 @@ class EventEmitterImpl : public EventEmitter {
     void emit(Type<String>::Cptr event, Type<JsArray>::Cptr args) {
         Value v = listeners_->get(event);
         if (!v.instanceOf(Type<Null>::id())) {
-            Type<JsArray>::Ptr a;
-            toPtr<JsArray>(v, &a);
+            Type<JsArray>::Ptr a = toPtr<JsArray>(v);
             Size n = a->size();
             for (Size i = 0; i < n; i++) {
                 Value v = a->get(i);
-                Type<JsFunction>::Ptr f;
-                toPtr<JsFunction>(v, &f);
+                Type<JsFunction>::Ptr f = toPtr<JsFunction>(v);
                 (*f)(args);
             }
         }

@@ -14,23 +14,19 @@ class ServerRequestImpl : public ServerRequest {
     static Type<String>::Cptr HEADERS;
     static Type<String>::Cptr HTTP_VERSION;
  
- private:
+ public:
+    // TODO: test
     template<typename T>
-    typename Type<T>::Cptr get(Type<String>::Cptr name) const {
+    typename Type<T>::Cptr getCptr(Type<String>::Cptr name) const {
         Value v = get(name);
         if (v.instanceOf(Type<Null>::id())) {
-            typename Type<T>::Cptr nullp(static_cast<T*>(0));
+            LIBJ_NULL_CPTR_TYPE(T, nullp);
             return nullp;
         }
-        typename Type<T>::Cptr p;
-        if (!toCptr<T>(v, &p)) {
-            typename Type<T>::Cptr nullp(static_cast<T*>(0));
-            return nullp;
-        }
+        typename Type<T>::Cptr p = toCptr<T>(v);
         return p;
     }
  
- public:
     Type<String>::Cptr toString() const {
         return ee_->toString();
     }
@@ -41,19 +37,19 @@ class ServerRequestImpl : public ServerRequest {
     }
     
     Type<String>::Cptr method() const {
-        return get<String>(METHOD);
+        return getCptr<String>(METHOD);
     }
     
     Type<String>::Cptr url() const {
-        return get<String>(URL);
+        return getCptr<String>(URL);
     }
     
     Type<JsObject>::Cptr headers() const {
-        return get<JsObject>(HEADERS);
+        return getCptr<JsObject>(HEADERS);
     }
     
     Type<String>::Cptr httpVersion() const {
-        return get<String>(HTTP_VERSION);
+        return getCptr<String>(HTTP_VERSION);
     }
     
  private:

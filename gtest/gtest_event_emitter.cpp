@@ -87,17 +87,14 @@ TEST(GTestEventEmitter, TestAddAndGetListeners) {
     Value v = ee->listeners(event);
     ASSERT_TRUE(v.instanceOf(Type<JsArray>::id()));
     
-    Type<JsArray>::Ptr a;
-    toPtr<JsArray>(v, &a);
+    Type<JsArray>::Ptr a = toPtr<JsArray>(v);
     ASSERT_EQ(a->size(), 2);
     
     v = a->get(0);
-    Type<JsFunction>::Ptr f1;
-    toPtr<JsFunction>(v, &f1);
+    Type<JsFunction>::Ptr f1 = toPtr<JsFunction>(v);
     ASSERT_TRUE(f1 == add || f1 == sub);
     v = a->get(1);
-    Type<JsFunction>::Ptr f2;
-    toPtr<JsFunction>(v, &f2);
+    Type<JsFunction>::Ptr f2 = toPtr<JsFunction>(v);
     ASSERT_TRUE(f1 != f2 && (f1 == add || f1 == sub));
 }
 
