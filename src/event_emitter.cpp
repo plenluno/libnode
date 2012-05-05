@@ -27,7 +27,11 @@ class EventEmitterImpl : public EventEmitter {
     }
     
     void removeListener(Type<String>::Cptr event, Type<JsFunction>::Cptr listener) {
-        // TODO: implement
+        Value v = listeners_->get(event);
+        if (!v.instanceOf(Type<Null>::id())) {
+            Type<JsArray>::Ptr a = toPtr<JsArray>(v);
+            while (a->remove(listener)) {}
+        }
     }
     
     void removeAllListeners() {
