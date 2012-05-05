@@ -4,7 +4,7 @@
 #define LIBNODE_URL_H_
 
 #include "libj/string.h"
-#include "libnode/typedef.h"
+#include "libnode/js_object.h"
 
 namespace libj {
 namespace node {

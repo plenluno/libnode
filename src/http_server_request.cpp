@@ -1,7 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include "libnode/http_server_request.h"
-#include "libj/null.h"
 
 namespace libj {
 namespace node {
@@ -15,22 +14,6 @@ class ServerRequestImpl : public ServerRequest {
     static Type<String>::Cptr HTTP_VERSION;
  
  public:
-    // TODO: test
-    template<typename T>
-    typename Type<T>::Cptr getCptr(Type<String>::Cptr name) const {
-        Value v = get(name);
-        if (v.instanceOf(Type<Null>::id())) {
-            LIBJ_NULL_CPTR_TYPE(T, nullp);
-            return nullp;
-        }
-        typename Type<T>::Cptr p = toCptr<T>(v);
-        return p;
-    }
- 
-    Type<String>::Cptr toString() const {
-        return ee_->toString();
-    }
-
     static Ptr create() {
         Ptr p(new ServerRequestImpl());
         return p;
@@ -59,7 +42,6 @@ class ServerRequestImpl : public ServerRequest {
          : ee_(EventEmitter::create()) {
      }
 
-     LIBNODE_JS_OBJECT_IMPL(ee_);
      LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
 

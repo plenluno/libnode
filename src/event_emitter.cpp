@@ -1,8 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include "libnode/event_emitter.h"
-#include "libj/array_list.h"
-#include "libj/null.h"
 
 namespace libj {
 namespace node {
@@ -61,10 +59,6 @@ class EventEmitterImpl : public EventEmitter {
     
     Value listeners(Type<String>::Cptr event) {
         return listeners_->get(event);
-    }
-
-    Type<String>::Cptr toString() const {
-           return listeners_->toString();
     }
 
     static Ptr create() {

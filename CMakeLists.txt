@@ -39,6 +39,9 @@ link_directories(
 set(libnode-src
     src/event_emitter.cpp
     src/http_server.cpp
+    src/http_server_request.cpp
+    src/http_server_response.cpp
+    src/js_object.cpp
     src/node.cpp
     src/url.cpp
 )

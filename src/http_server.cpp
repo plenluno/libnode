@@ -7,13 +7,8 @@ namespace libj {
 namespace node {
 namespace http {
 
-class ServerImpl
-    : public Server {
+class ServerImpl : public Server {
  public:
-    Type<String>::Cptr toString() const {
-        return ee_->toString();
-    }
-
     static Ptr create() {
         Ptr p(new ServerImpl());
         return p;
@@ -42,7 +37,6 @@ class ServerImpl
         uv_tcp_init(uv_default_loop(), &server_);
     }
 
-    LIBNODE_JS_OBJECT_IMPL(ee_);
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
 

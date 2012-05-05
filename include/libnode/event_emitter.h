@@ -4,7 +4,7 @@
 #define LIBNODE_EVENT_EMITTER_H_
 
 #include "libj/string.h"
-#include "libj/function.h"
+#include "libnode/js_object.h"
 #include "libnode/typedef.h"
 
 namespace libj {
@@ -26,6 +26,7 @@ class EventEmitter : LIBNODE_JS_OBJECT(EventEmitter)
     LIBJ_MUTABLE_DECLS(T, libj::node::events::EventEmitter)
 
 #define LIBNODE_EVENT_EMITTER_IMPL(EE) \
+    LIBNODE_JS_OBJECT_IMPL(EE); \
  public: \
     void on(Type<String>::Cptr event, Type<JsFunction>::Ptr listener) { \
         EE->on(event, listener); \
