@@ -27,12 +27,13 @@ class ServerResponseImpl : public ServerResponse {
             to<Int>(v, &sc);
             return sc;
         } else {
-            return -1;
+            return 0;
         }
     }
    
     void setHeader(Type<String>::Cptr name, Type<String>::Cptr value) {
-        put(name, value);
+        if (name)
+            put(name->toLowerCase(), value);
     }
     
     Type<String>::Cptr getHeader(Type<String>::Cptr name) const {
