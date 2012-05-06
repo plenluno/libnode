@@ -6,8 +6,7 @@ namespace libj {
 namespace node {
 namespace http {
 
-uv_buf_t* ServerResponseImpl::responseBuf = 0;
-
+Type<String>::Cptr ServerResponseImpl::HEADERS = String::create("headers");
 Type<String>::Cptr ServerResponseImpl::STATUS_CODE = String::create("statusCode");
 
 }  // namespace http
