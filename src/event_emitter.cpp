@@ -50,8 +50,7 @@ class EventEmitterImpl : public EventEmitter {
             Type<JsArray>::Ptr a = toPtr<JsArray>(v);
             Size n = a->size();
             for (Size i = 0; i < n; i++) {
-                Value v = a->get(i);
-                Type<JsFunction>::Ptr f = toPtr<JsFunction>(v);
+                Type<JsFunction>::Ptr f = toPtr<JsFunction>(a->get(i));
                 (*f)(args);
             }
         }

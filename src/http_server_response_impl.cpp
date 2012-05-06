@@ -6,11 +6,9 @@ namespace libj {
 namespace node {
 namespace http {
 
-Type<String>::Cptr ServerResponse::EVENT_CLOSE = String::create("close");
+uv_buf_t* ServerResponseImpl::responseBuf = 0;
 
-Type<ServerResponse>::Ptr ServerResponse::create() {
-    return ServerResponseImpl::create();
-}
+Type<String>::Cptr ServerResponseImpl::STATUS_CODE = String::create("statusCode");
 
 }  // namespace http
 }  // namespace node

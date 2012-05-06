@@ -1,6 +1,9 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include "libj/json.h"
 #include "libnode/http_server.h"
+#include "./http_server_request_impl.h"
+#include "./http_server_response_impl.h"
 #include <uv.h>
 #include <http_parser.h>
 
@@ -10,11 +13,21 @@ namespace http {
 
 class ServerImpl : public Server {
  private:
-     struct Client {
-       uv_tcp_t tcp;
-       http_parser parser;
-       uv_write_t write;
-     };
+    class Client {
+     public:
+        Client(ServerImpl* srv)
+            : server(srv)
+            , request(static_cast<ServerRequestImpl*>(0))
+            , response(static_cast<ServerResponseImpl*>(0)) {
+        }
+        
+        uv_tcp_t tcp;
+        http_parser parser;
+        uv_write_t write;
+        ServerImpl* server;
+        Type<ServerRequestImpl>::Ptr request;
+        Type<ServerResponseImpl>::Ptr response;
+    };
 
  public:
     static Ptr create() {
@@ -45,38 +58,25 @@ class ServerImpl : public Server {
 
  private:
     static http_parser_settings* settings;
-    static uv_buf_t* responseBuf;
     
-    static void onConnection(uv_stream_t* server, int status) {
+    static void onConnection(uv_stream_t* stream, int status) {
         if (!settings) {
             settings = static_cast<http_parser_settings*>(
                         malloc(sizeof(http_parser_settings)));
-            settings->on_message_begin = 0;
-            settings->on_header_field = 0;
-            settings->on_header_value = 0;
-            settings->on_url = 0;
-            settings->on_body = 0;
+            settings->on_url = ServerImpl::onUrl;
+            settings->on_header_field = ServerImpl::onHeaderField;
+            settings->on_header_value = ServerImpl::onHeaderValue;
             settings->on_headers_complete = ServerImpl::onHeadersComplete;
-            settings->on_message_complete = 0;
+            settings->on_message_begin = ServerImpl::onMessageBegin;
+            settings->on_body = ServerImpl::onBody;
+            settings->on_message_complete = ServerImpl::onMessageComplete;
         }
         
-        if (!responseBuf) {
-            const char response[] =
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/plain\r\n"
-                "Content-Length: 6\r\n"
-                "\r\n"
-                "hello\n";
-            responseBuf = static_cast<uv_buf_t*>(malloc(sizeof(uv_buf_t)));
-            responseBuf->base = static_cast<char*>(malloc(sizeof(response)));
-            responseBuf->len = sizeof(response);
-            strncpy(responseBuf->base, response, sizeof(response));
-        }
-        
-        Client* client = new Client();
+        ServerImpl* server = static_cast<ServerImpl*>(stream->data);
+        Client* client = new Client(server);
         
         uv_tcp_init(uv_default_loop(), &client->tcp);
-        if (uv_accept(server, reinterpret_cast<uv_stream_t*>(&client->tcp)))
+        if (uv_accept(stream, reinterpret_cast<uv_stream_t*>(&client->tcp)))
             return;
             
         http_parser_init(&client->parser, HTTP_REQUEST);
@@ -88,6 +88,10 @@ class ServerImpl : public Server {
             reinterpret_cast<uv_stream_t*>(&client->tcp),
             ServerImpl::onAlloc,
             ServerImpl::onRead);
+        
+        Type<JsArray>::Ptr args = JsArray::create();
+        // TODO: add socket
+        server->emit(EVENT_CONNECTION, args);
     }
     
     static uv_buf_t onAlloc(uv_handle_t* handle, size_t suggestedSize) {
@@ -97,8 +101,19 @@ class ServerImpl : public Server {
         return buf;
     }
     
+    static void onClose(uv_handle_t* handle) {
+        free(handle);
+    }
+    
     static void onRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf) {
         Client* client = static_cast<Client*>(stream->data);
+        if (!client->request)
+            client->request = ServerRequestImpl::create();
+        if (!client->response)
+            client->response = ServerResponseImpl::create(
+                                    &client->write,
+                                    reinterpret_cast<uv_stream_t*>(&client->tcp));
+
         if (nread >= 0) {
             size_t parsed = http_parser_execute(
                                 &client->parser,
@@ -121,27 +136,60 @@ class ServerImpl : public Server {
         free(buf.base);
     }
     
-    static void onClose(uv_handle_t* handle) {
-        free(handle);
+    static int onUrl(http_parser* parser, const char* at, size_t length) {
+        Client* client = static_cast<Client*>(parser->data);
+        client->request->setUrl(String::create(at, String::ASCII, length));
+        return 0;
+    }
+    
+    static Type<String>::Cptr headerName;
+    
+    static int onHeaderField(http_parser* parser, const char* at, size_t length) {
+        Client* client = static_cast<Client*>(parser->data);
+        headerName = String::create(at, String::ASCII, length);
+        return 0;
+    }
+    
+    static int onHeaderValue(http_parser* parser, const char* at, size_t length) {
+        Client* client = static_cast<Client*>(parser->data);
+        client->request->setHeader(headerName, String::create(at, String::ASCII, length));
+        return 0;
     }
     
     static int onHeadersComplete(http_parser* parser) {
         Client* client = static_cast<Client*>(parser->data);
-        uv_write(
-            &client->write,
-            reinterpret_cast<uv_stream_t*>(&client->tcp),
-            responseBuf,
-            1,
-            ServerImpl::afterWrite);
-        return 1;
+        Type<JsArray>::Ptr args = JsArray::create();
+        Type<ServerRequest>::Ptr req = client->request;
+        Type<ServerResponse>::Ptr res = client->response;
+        args->add(req);
+        args->add(res);
+        client->server->emit(Server::EVENT_REQUEST, args);
+        return 0;
     }
     
-    static void afterWrite(uv_write_t* write, int status) {
-        uv_close(
-            reinterpret_cast<uv_handle_t*>(write->handle),
-            ServerImpl::onClose);
+    static int onMessageBegin(http_parser* parser) {
+        return 0;
     }
     
+    static int onBody(http_parser* parser, const char* at, size_t length) {
+        Client* client = static_cast<Client*>(parser->data);
+        Type<String>::Cptr chunk = String::create(at, String::ASCII, length);
+        Type<JsArray>::Ptr args = JsArray::create();
+        args->add(chunk);
+        client->request->emit(ServerRequest::EVENT_DATA, args);
+        return 0;
+    }
+    
+    static int onMessageComplete(http_parser* parser) {
+        Client* client = static_cast<Client*>(parser->data);
+        Type<JsArray>::Ptr args = JsArray::create();
+        client->request->emit(ServerRequest::EVENT_END, args);
+        // TypeId id;
+        // std::cout
+        //     << static_cast<const char*>(json::stringify(client->request)->data(&id))
+        //     << std::endl;
+        return 0;
+    }
     
  private:
     uv_tcp_t server_;
@@ -156,7 +204,7 @@ class ServerImpl : public Server {
 };
 
 http_parser_settings* ServerImpl::settings = 0;
-uv_buf_t* ServerImpl::responseBuf = 0;
+LIBJ_NULL_CPTR(String, ServerImpl::headerName);
 
 Type<String>::Cptr Server::EVENT_REQUEST = String::create("request");
 Type<String>::Cptr Server::EVENT_CONNECTION = String::create("connection");
