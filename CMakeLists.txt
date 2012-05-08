@@ -125,7 +125,7 @@ target_link_libraries(node-with-bdw-gc
 )
 
 set_target_properties(node-with-bdw-gc
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions -DLIBJ_USE_BOEHM_GC")
 
 # echo server with shared_ptr
 add_executable(echo-server-with-sp
@@ -151,4 +151,4 @@ target_link_libraries(echo-server-with-bdw-gc
 )
 
 set_target_properties(echo-server-with-bdw-gc
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions -DLIBJ_USE_BOEHM_GC")
