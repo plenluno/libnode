@@ -48,11 +48,22 @@ set(libnode-src
     src/url.cpp
 )
 
+if(APPLE)
 set(libnode-common-deps
     parser-http
     parser-url
+    pthread
     uv
 )
+else(APPLE)
+set(libnode-common-deps
+    parser-http
+    parser-url
+    pthread
+    uv
+    rt
+)
+endif(APPLE)
 
 set(libnode-deps-with-sp
     j-with-sp
@@ -96,7 +107,6 @@ add_executable(libnode-gtest
 
 target_link_libraries(libnode-gtest
     gtest
-    pthread
     ${libnode-deps-with-sp}
 )
 
