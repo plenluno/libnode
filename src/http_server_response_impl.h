@@ -3,13 +3,16 @@
 #ifndef LIBNODE_HTTP_SERVER_RESPONSE_IMPL_H_
 #define LIBNODE_HTTP_SERVER_RESPONSE_IMPL_H_
 
-#include "libj/json.h"
+#include "libj/string_buffer.h"
 #include "libnode/http_server_response.h"
 #include <uv.h>
+#include <iostream>
 
 namespace libj {
 namespace node {
 namespace http {
+
+class ServerContext;
 
 class ServerResponseImpl : public ServerResponse {
  private:
@@ -17,14 +20,8 @@ class ServerResponseImpl : public ServerResponse {
     static Type<String>::Cptr STATUS_CODE;
 
  public:
-    static LIBJ_PTR(ServerResponseImpl) create() {
-        LIBJ_PTR(ServerResponseImpl) p(new ServerResponseImpl());
-        return p;
-    }
-    
-    static LIBJ_PTR(ServerResponseImpl)
-    create(uv_write_t* uw, uv_stream_t* us) {
-        LIBJ_PTR(ServerResponseImpl) p(new ServerResponseImpl(uw, us));
+    static Ptr create() {
+        Ptr p(new ServerResponseImpl());
         return p;
     }
    
@@ -72,20 +69,15 @@ class ServerResponseImpl : public ServerResponse {
     }
     
     void write(Type<Object>::Cptr chunk) {
-        if (chunk->instanceOf(Type<String>::id())) {
-            Type<String>::Cptr s = LIBJ_STATIC_CPTR_CAST(String)(chunk);
-            body_ = body_->concat(s);
-        } else {
-            // TODO: else
-        }
+        body_->append(chunk);
     }
     
     void makeResponse() {
-        res_ = String::create("HTTP/1.1 200 OK\r\n");
+        res_->append(String::create("HTTP/1.1 200 OK\r\n"));
         Int len = body_->length();
         setHeader(
             String::create("Content-Length"),
-            json::stringify(len));
+            String::valueOf(len));
         Type<String>::Cptr colon = String::create(": ");
         Type<String>::Cptr nl = String::create("\r\n");
         Type<JsObject>::Ptr headers = getHeaders();
@@ -94,74 +86,60 @@ class ServerResponseImpl : public ServerResponse {
         while (itr->hasNext()) {
             Type<String>::Cptr name = toCptr<String>(itr->next());
             Type<String>::Cptr value = toCptr<String>(headers->get(name));
-            res_ = res_->concat(name)->concat(colon)
-                       ->concat(value)->concat(nl);
+            res_->append(name);
+            res_->append(colon);
+            res_->append(value);
+            res_->append(nl);
         }
-        res_ = res_->concat(nl)->concat(body_);
+        res_->append(nl);
+        res_->append(body_);
     }
     
-    void end() {
-        makeResponse();
+    // TODO: introduce Buffer
+    void makeResBuf() {
         Size len = res_->length();
-        const char* r = static_cast<const char*>(res_->data(0));
-        resBuf_ = static_cast<uv_buf_t*>(malloc(sizeof(uv_buf_t)));
-        resBuf_->base = static_cast<char*>(malloc(len));
-        resBuf_->len = len;
-        strncpy(resBuf_->base, r, len);
-        if (write_ && stream_) {
-            uv_write(
-                write_,
-                stream_,
-                resBuf_,
-                1,
-                ServerResponseImpl::afterWrite);
+        std::string r;
+        for (Size i = 0; i < len; i++) {
+            r += static_cast<char>(res_->charAt(i));
         }
+        resBuf_.base = static_cast<char*>(malloc(len));
+        resBuf_.len = len;
+        strncpy(resBuf_.base, r.c_str(), len);
     }
+    
+    void end();
     
  private:
-    static void onClose(uv_handle_t* handle) {
-        free(handle);
-    }
+    static void onClose(uv_handle_t* handle);
     
     static void afterWrite(uv_write_t* write, int status) {
+        write->handle->data = write->data;
         uv_close(
             reinterpret_cast<uv_handle_t*>(write->handle),
             ServerResponseImpl::onClose);
     }
    
  private:
-    uv_write_t* write_;
-    uv_stream_t* stream_;
-    uv_buf_t* resBuf_;
+    ServerContext* context_;
+    uv_buf_t resBuf_;
     
     // TODO: introduce Buffer
-    Type<String>::Cptr res_;
-    Type<String>::Cptr body_;
+    Type<StringBuffer>::Ptr res_;
+    Type<StringBuffer>::Ptr body_;
     Type<EventEmitter>::Ptr ee_;
 
+ public:
     ServerResponseImpl()
-        : write_(0)
-        , stream_(0)
-        , resBuf_(0)
-        , res_(String::create())
-        , body_(String::create())
+        : context_(0)
+        , res_(StringBuffer::create())
+        , body_(StringBuffer::create())
         , ee_(EventEmitter::create()) {
     }
     
-    ServerResponseImpl(
-        uv_write_t* uw,
-        uv_stream_t* us)
-        : write_(uw)
-        , stream_(us)
-        , resBuf_(0)
-        , res_(String::create())
-        , body_(String::create())
-        , ee_(EventEmitter::create()) {
-    }
+    ServerResponseImpl(ServerContext* context);
 
- public:
     ~ServerResponseImpl() {
-        free(resBuf_);
+        free(resBuf_.base);
     }
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);

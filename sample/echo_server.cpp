@@ -3,6 +3,7 @@
 #include "libnode/http_server.h"
 #include "libnode/http_server_request.h"
 #include "libnode/http_server_response.h"
+#include <iostream>
 
 namespace libj {
 namespace node {
@@ -44,6 +45,8 @@ class OnEnd : LIBNODE_JS_FUNCTION(OnEnd)
         res_->setHeader(String::create("Content-Type"), String::create("text/plain"));
         res_->write(json::stringify(req_));
         res_->end();
+        req_->removeAllListeners(http::ServerRequest::EVENT_DATA);
+        req_->removeAllListeners(http::ServerRequest::EVENT_END);
         return 0;
     }
 };
@@ -73,5 +76,4 @@ int main() {
     run();
     return 0;
 }
-
 

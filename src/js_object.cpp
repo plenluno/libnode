@@ -12,8 +12,32 @@ class JsObjectImpl : public JsObject {
         return p;
     }
     
+    Value put(const Value& key, const Value& val) {
+        return map_->put(String::valueOf(key), val);
+    }
+    
     Type<String>::Cptr toString() const {
         return map_->toString();
+    }
+    
+    Size size() const {
+        return map_->size();
+    }
+    
+    Value get(const Value& key) const {
+        return map_->get(key);
+    }
+    
+    Value remove(const Value& key) {
+        return map_->remove(key);
+    }
+    
+    Type<Set>::Cptr keySet() const {
+        return map_->keySet();
+    }
+    
+    void clear() {
+        map_->clear();
     }
 
  private:
@@ -21,8 +45,6 @@ class JsObjectImpl : public JsObject {
 
     JsObjectImpl() : map_(Map::create()) {
     }
-
-    LIBJ_MAP_IMPL(map_);
 };
 
 Type<JsObject>::Ptr JsObject::create() {

@@ -4,6 +4,7 @@
 #define LIBNODE_HTTP_SERVER_REQUEST_IMPL_H_
 
 #include "libnode/http_server_request.h"
+#include <iostream>
 
 namespace libj {
 namespace node {
@@ -17,8 +18,8 @@ class ServerRequestImpl : public ServerRequest {
     static Type<String>::Cptr HTTP_VERSION;
  
  public:
-    static LIBJ_PTR(ServerRequestImpl) create() {
-        LIBJ_PTR(ServerRequestImpl) p(new ServerRequestImpl());
+    static Ptr create() {
+        Ptr p(new ServerRequestImpl());
         return p;
     }
     
@@ -62,6 +63,7 @@ class ServerRequestImpl : public ServerRequest {
  private:
      Type<EventEmitter>::Ptr ee_;
 
+ public:
      ServerRequestImpl()
          : ee_(EventEmitter::create()) {
      }

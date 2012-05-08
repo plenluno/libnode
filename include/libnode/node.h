@@ -3,7 +3,6 @@
 #ifndef LIBNODE_NODE_H_
 #define LIBNODE_NODE_H_
 
-
 namespace libj {
 namespace node {
 

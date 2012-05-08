@@ -1,34 +1,13 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libj/json.h"
 #include "libnode/http_server.h"
-#include "./http_server_request_impl.h"
-#include "./http_server_response_impl.h"
-#include <uv.h>
-#include <http_parser.h>
+#include "./http_server_context.h"
 
 namespace libj {
 namespace node {
 namespace http {
 
 class ServerImpl : public Server {
- private:
-    class Client {
-     public:
-        Client(ServerImpl* srv)
-            : server(srv)
-            , request(static_cast<ServerRequestImpl*>(0))
-            , response(static_cast<ServerResponseImpl*>(0)) {
-        }
-        
-        uv_tcp_t tcp;
-        http_parser parser;
-        uv_write_t write;
-        ServerImpl* server;
-        Type<ServerRequestImpl>::Ptr request;
-        Type<ServerResponseImpl>::Ptr response;
-    };
-
  public:
     static Ptr create() {
         Ptr p(new ServerImpl());
@@ -57,35 +36,33 @@ class ServerImpl : public Server {
     }
 
  private:
-    static http_parser_settings* settings;
+    static http_parser_settings settings;
     
     static void onConnection(uv_stream_t* stream, int status) {
-        if (!settings) {
-            settings = static_cast<http_parser_settings*>(
-                        malloc(sizeof(http_parser_settings)));
-            settings->on_url = ServerImpl::onUrl;
-            settings->on_header_field = ServerImpl::onHeaderField;
-            settings->on_header_value = ServerImpl::onHeaderValue;
-            settings->on_headers_complete = ServerImpl::onHeadersComplete;
-            settings->on_message_begin = ServerImpl::onMessageBegin;
-            settings->on_body = ServerImpl::onBody;
-            settings->on_message_complete = ServerImpl::onMessageComplete;
+        if (!settings.on_url) {
+            settings.on_url = ServerImpl::onUrl;
+            settings.on_header_field = ServerImpl::onHeaderField;
+            settings.on_header_value = ServerImpl::onHeaderValue;
+            settings.on_headers_complete = ServerImpl::onHeadersComplete;
+            settings.on_message_begin = ServerImpl::onMessageBegin;
+            settings.on_body = ServerImpl::onBody;
+            settings.on_message_complete = ServerImpl::onMessageComplete;
         }
         
         ServerImpl* server = static_cast<ServerImpl*>(stream->data);
-        Client* client = new Client(server);
+        ServerContext* context = new ServerContext(server);
         
-        uv_tcp_init(uv_default_loop(), &client->tcp);
-        if (uv_accept(stream, reinterpret_cast<uv_stream_t*>(&client->tcp)))
+        uv_tcp_init(uv_default_loop(), &context->tcp);
+        if (uv_accept(stream, reinterpret_cast<uv_stream_t*>(&context->tcp)))
             return;
             
-        http_parser_init(&client->parser, HTTP_REQUEST);
+        http_parser_init(&context->parser, HTTP_REQUEST);
 
-        client->tcp.data = client;
-        client->parser.data = client;
+        context->tcp.data = context;
+        context->parser.data = context;
 
         uv_read_start(
-            reinterpret_cast<uv_stream_t*>(&client->tcp),
+            reinterpret_cast<uv_stream_t*>(&context->tcp),
             ServerImpl::onAlloc,
             ServerImpl::onRead);
         
@@ -102,22 +79,19 @@ class ServerImpl : public Server {
     }
     
     static void onClose(uv_handle_t* handle) {
-        free(handle);
     }
     
     static void onRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf) {
-        Client* client = static_cast<Client*>(stream->data);
-        if (!client->request)
-            client->request = ServerRequestImpl::create();
-        if (!client->response)
-            client->response = ServerResponseImpl::create(
-                                    &client->write,
-                                    reinterpret_cast<uv_stream_t*>(&client->tcp));
+        ServerContext* context = static_cast<ServerContext*>(stream->data);
+        if (!context->request)
+            context->request = new ServerRequestImpl();
+        if (!context->response)
+            context->response = new ServerResponseImpl(context);
 
         if (nread >= 0) {
             size_t parsed = http_parser_execute(
-                                &client->parser,
-                                settings,
+                                &context->parser,
+                                &settings,
                                 buf.base,
                                 nread);
             if (parsed < nread) {
@@ -128,7 +102,7 @@ class ServerImpl : public Server {
             }
         } else { 
             uv_err_t err = uv_last_error(uv_default_loop());
-            assert(err.code == UV_EOF);
+            //assert(err.code == UV_EOF);
             uv_close(
                 reinterpret_cast<uv_handle_t*>(stream),
                 ServerImpl::onClose);
@@ -137,33 +111,34 @@ class ServerImpl : public Server {
     }
     
     static int onUrl(http_parser* parser, const char* at, size_t length) {
-        Client* client = static_cast<Client*>(parser->data);
-        client->request->setUrl(String::create(at, String::ASCII, length));
+        ServerContext* context = static_cast<ServerContext*>(parser->data);
+        context->request->setUrl(String::create(at, String::ASCII, length));
         return 0;
     }
     
     static Type<String>::Cptr headerName;
     
     static int onHeaderField(http_parser* parser, const char* at, size_t length) {
-        Client* client = static_cast<Client*>(parser->data);
+        ServerContext* context = static_cast<ServerContext*>(parser->data);
         headerName = String::create(at, String::ASCII, length);
         return 0;
     }
     
     static int onHeaderValue(http_parser* parser, const char* at, size_t length) {
-        Client* client = static_cast<Client*>(parser->data);
-        client->request->setHeader(headerName, String::create(at, String::ASCII, length));
+        ServerContext* context = static_cast<ServerContext*>(parser->data);
+        context->request->setHeader(headerName, String::create(at, String::ASCII, length));
         return 0;
     }
     
     static int onHeadersComplete(http_parser* parser) {
-        Client* client = static_cast<Client*>(parser->data);
+        ServerContext* context = static_cast<ServerContext*>(parser->data);
         Type<JsArray>::Ptr args = JsArray::create();
-        Type<ServerRequest>::Ptr req = client->request;
-        Type<ServerResponse>::Ptr res = client->response;
+        Type<ServerRequest>::Ptr req(context->request);
+        Type<ServerResponse>::Ptr res(context->response);
         args->add(req);
         args->add(res);
-        client->server->emit(Server::EVENT_REQUEST, args);
+        ServerImpl* server = static_cast<ServerImpl*>(context->server);
+        server->emit(Server::EVENT_REQUEST, args);
         return 0;
     }
     
@@ -172,22 +147,18 @@ class ServerImpl : public Server {
     }
     
     static int onBody(http_parser* parser, const char* at, size_t length) {
-        Client* client = static_cast<Client*>(parser->data);
+        ServerContext* context = static_cast<ServerContext*>(parser->data);
         Type<String>::Cptr chunk = String::create(at, String::ASCII, length);
         Type<JsArray>::Ptr args = JsArray::create();
         args->add(chunk);
-        client->request->emit(ServerRequest::EVENT_DATA, args);
+        context->request->emit(ServerRequest::EVENT_DATA, args);
         return 0;
     }
     
     static int onMessageComplete(http_parser* parser) {
-        Client* client = static_cast<Client*>(parser->data);
+        ServerContext* context = static_cast<ServerContext*>(parser->data);
         Type<JsArray>::Ptr args = JsArray::create();
-        client->request->emit(ServerRequest::EVENT_END, args);
-        // TypeId id;
-        // std::cout
-        //     << static_cast<const char*>(json::stringify(client->request)->data(&id))
-        //     << std::endl;
+        context->request->emit(ServerRequest::EVENT_END, args);
         return 0;
     }
     
@@ -203,8 +174,8 @@ class ServerImpl : public Server {
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
 
-http_parser_settings* ServerImpl::settings = 0;
 LIBJ_NULL_CPTR(String, ServerImpl::headerName);
+http_parser_settings ServerImpl::settings = {};
 
 Type<String>::Cptr Server::EVENT_REQUEST = String::create("request");
 Type<String>::Cptr Server::EVENT_CONNECTION = String::create("connection");
