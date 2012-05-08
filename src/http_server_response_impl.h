@@ -6,6 +6,7 @@
 #include "libj/string_buffer.h"
 #include "libnode/http_server_response.h"
 #include <uv.h>
+#include <string.h>
 #include <iostream>
 
 namespace libj {
