@@ -11,11 +11,11 @@ namespace http {
 
 class Server : LIBNODE_EVENT_EMITTER(Server)
 public:
-    static Type<String>::Cptr EVENT_REQUEST;
-    static Type<String>::Cptr EVENT_CONNECTION;
-    static Type<String>::Cptr EVENT_CLOSE;
+    static String::CPtr EVENT_REQUEST;
+    static String::CPtr EVENT_CONNECTION;
+    static String::CPtr EVENT_CLOSE;
     
-    static Ptr create(Type<JsFunction>::Ptr requestListener);
+    static Ptr create(JsFunction::Ptr requestListener);
     
     virtual bool listen(Int port) = 0;
     virtual void close() = 0;

@@ -17,8 +17,8 @@ class ServerContext;
 
 class ServerResponseImpl : public ServerResponse {
  private:
-    static Type<String>::Cptr HEADERS;
-    static Type<String>::Cptr STATUS_CODE;
+    static String::CPtr HEADERS;
+    static String::CPtr STATUS_CODE;
 
  public:
     static Ptr create() {
@@ -41,8 +41,8 @@ class ServerResponseImpl : public ServerResponse {
         }
     }
     
-    Type<JsObject>::Ptr getHeaders() {
-        Type<JsObject>::Ptr headers = getPtr<JsObject>(HEADERS);
+    JsObject::Ptr getHeaders() {
+        JsObject::Ptr headers = getPtr<JsObject>(HEADERS);
         if (!headers) {
             headers = JsObject::create();
             put(HEADERS, headers);
@@ -50,26 +50,26 @@ class ServerResponseImpl : public ServerResponse {
         return headers;
     }
    
-    void setHeader(Type<String>::Cptr name, Type<String>::Cptr value) {
+    void setHeader(String::CPtr name, String::CPtr value) {
         getHeaders()->put(name, value);
     }
     
-    Type<String>::Cptr getHeader(Type<String>::Cptr name) const {
-        Type<JsObject>::Ptr headers = getPtr<JsObject>(HEADERS);
+    String::CPtr getHeader(String::CPtr name) const {
+        JsObject::Ptr headers = getPtr<JsObject>(HEADERS);
         if (headers) {
             Value v = headers->get(name);
-            return toCptr<String>(v);
+            return toCPtr<String>(v);
         } else {
             LIBJ_NULL_CPTR(String, nullp);
             return nullp;
         }
     }
     
-    void removeHeader(Type<String>::Cptr name) {
+    void removeHeader(String::CPtr name) {
         getHeaders()->remove(name);
     }
     
-    void write(Type<Object>::Cptr chunk) {
+    void write(Object::CPtr chunk) {
         body_->append(chunk);
     }
     
@@ -79,14 +79,14 @@ class ServerResponseImpl : public ServerResponse {
         setHeader(
             String::create("Content-Length"),
             String::valueOf(len));
-        Type<String>::Cptr colon = String::create(": ");
-        Type<String>::Cptr nl = String::create("\r\n");
-        Type<JsObject>::Ptr headers = getHeaders();
-        Type<Set>::Cptr ks = headers->keySet();
-        Type<Iterator>::Ptr itr = ks->iterator();
+        String::CPtr colon = String::create(": ");
+        String::CPtr nl = String::create("\r\n");
+        JsObject::Ptr headers = getHeaders();
+        Set::CPtr ks = headers->keySet();
+        Iterator::Ptr itr = ks->iterator();
         while (itr->hasNext()) {
-            Type<String>::Cptr name = toCptr<String>(itr->next());
-            Type<String>::Cptr value = toCptr<String>(headers->get(name));
+            String::CPtr name = toCPtr<String>(itr->next());
+            String::CPtr value = toCPtr<String>(headers->get(name));
             res_->append(name);
             res_->append(colon);
             res_->append(value);
@@ -125,9 +125,9 @@ class ServerResponseImpl : public ServerResponse {
     uv_buf_t resBuf_;
     
     // TODO: introduce Buffer
-    Type<StringBuffer>::Ptr res_;
-    Type<StringBuffer>::Ptr body_;
-    Type<EventEmitter>::Ptr ee_;
+    StringBuffer::Ptr res_;
+    StringBuffer::Ptr body_;
+    EventEmitter::Ptr ee_;
 
  public:
     ServerResponseImpl()

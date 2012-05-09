@@ -6,10 +6,10 @@ namespace libj {
 namespace node {
 namespace http {
 
-Type<String>::Cptr ServerRequestImpl::METHOD = String::create("method");
-Type<String>::Cptr ServerRequestImpl::URL = String::create("url");
-Type<String>::Cptr ServerRequestImpl::HEADERS = String::create("headers");
-Type<String>::Cptr ServerRequestImpl::HTTP_VERSION = String::create("httpVerion");
+String::CPtr ServerRequestImpl::METHOD = String::create("method");
+String::CPtr ServerRequestImpl::URL = String::create("url");
+String::CPtr ServerRequestImpl::HEADERS = String::create("headers");
+String::CPtr ServerRequestImpl::HTTP_VERSION = String::create("httpVerion");
 
 }  // namespace http
 }  // namespace node

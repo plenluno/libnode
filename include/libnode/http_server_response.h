@@ -11,14 +11,14 @@ namespace http {
 
 class ServerResponse : LIBNODE_EVENT_EMITTER(ServerResponse)
 public:
-    static Type<String>::Cptr EVENT_CLOSE;
+    static String::CPtr EVENT_CLOSE;
     
     virtual void writeHead(Int statusCode) = 0;
     virtual Int statusCode() const = 0;
-    virtual void setHeader(Type<String>::Cptr name, Type<String>::Cptr value) = 0;
-    virtual Type<String>::Cptr getHeader(Type<String>::Cptr name) const = 0;
-    virtual void removeHeader(Type<String>::Cptr name) = 0;
-    virtual void write(Type<Object>::Cptr chunk) = 0;
+    virtual void setHeader(String::CPtr name, String::CPtr value) = 0;
+    virtual String::CPtr getHeader(String::CPtr name) const = 0;
+    virtual void removeHeader(String::CPtr name) = 0;
+    virtual void write(Object::CPtr chunk) = 0;
     virtual void end() = 0;
 };
 

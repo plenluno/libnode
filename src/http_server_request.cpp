@@ -6,11 +6,11 @@ namespace libj {
 namespace node {
 namespace http {
 
-Type<String>::Cptr ServerRequest::EVENT_DATA = String::create("data");
-Type<String>::Cptr ServerRequest::EVENT_END = String::create("end");
-Type<String>::Cptr ServerRequest::EVENT_CLOSE = String::create("close");
+String::CPtr ServerRequest::EVENT_DATA = String::create("data");
+String::CPtr ServerRequest::EVENT_END = String::create("end");
+String::CPtr ServerRequest::EVENT_CLOSE = String::create("close");
 
-Type<ServerRequest>::Ptr ServerRequest::create() {
+ServerRequest::Ptr ServerRequest::create() {
     return ServerRequestImpl::create();
 }
 

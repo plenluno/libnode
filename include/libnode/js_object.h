@@ -18,11 +18,11 @@ class JsObject : LIBJ_MAP(JsObject)
 #define LIBNODE_JS_OBJECT_IMPL(JO) \
     LIBJ_MAP_IMPL(JO) \
  public: \
-    Type<String>::Cptr toString() const { \
+    String::CPtr toString() const { \
         return JO->toString(); \
     } \
     template<typename T> \
-    typename Type<T>::Ptr getPtr(Type<String>::Cptr name) const { \
+    typename Type<T>::Ptr getPtr(String::CPtr name) const { \
         Value v = get(name); \
         if (v.instanceOf(Type<Null>::id())) { \
             LIBJ_NULL_PTR_TYPE(T, nullp); \
@@ -32,13 +32,13 @@ class JsObject : LIBJ_MAP(JsObject)
         return p; \
     } \
     template<typename T> \
-    typename Type<T>::Cptr getCptr(Type<String>::Cptr name) const { \
+    typename Type<T>::CPtr getCPtr(String::CPtr name) const { \
         Value v = get(name); \
         if (v.instanceOf(Type<Null>::id())) { \
             LIBJ_NULL_CPTR_TYPE(T, nullp); \
             return nullp; \
         } \
-        typename Type<T>::Cptr p = toCptr<T>(v); \
+        typename Type<T>::CPtr p = toCPtr<T>(v); \
         return p; \
     }
     

@@ -7,8 +7,8 @@ namespace libj {
 namespace node {
 namespace http {
 
-Type<String>::Cptr ServerResponseImpl::HEADERS = String::create("headers");
-Type<String>::Cptr ServerResponseImpl::STATUS_CODE = String::create("statusCode");
+String::CPtr ServerResponseImpl::HEADERS = String::create("headers");
+String::CPtr ServerResponseImpl::STATUS_CODE = String::create("statusCode");
 
 ServerResponseImpl::ServerResponseImpl(ServerContext* context)
     : context_(context)

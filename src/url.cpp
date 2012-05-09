@@ -6,12 +6,12 @@ namespace libj {
 namespace node {
 namespace url {
 
-Type<JsObject>::Ptr parse(Type<String>::Cptr urlStr) {
+JsObject::Ptr parse(String::CPtr urlStr) {
     // TODO: implement
     return JsObject::create();
 }
 
-Type<String>::Cptr format(Type<JsObject>::Cptr urlObj) {
+String::CPtr format(JsObject::CPtr urlObj) {
     // TODO: implement
     return String::create();
 }

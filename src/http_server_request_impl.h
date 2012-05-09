@@ -12,10 +12,10 @@ namespace http {
 
 class ServerRequestImpl : public ServerRequest {
  private:
-    static Type<String>::Cptr METHOD;
-    static Type<String>::Cptr URL;
-    static Type<String>::Cptr HEADERS;
-    static Type<String>::Cptr HTTP_VERSION;
+    static String::CPtr METHOD;
+    static String::CPtr URL;
+    static String::CPtr HEADERS;
+    static String::CPtr HTTP_VERSION;
  
  public:
     static Ptr create() {
@@ -23,32 +23,32 @@ class ServerRequestImpl : public ServerRequest {
         return p;
     }
     
-    Type<String>::Cptr method() const {
-        return getCptr<String>(METHOD);
+    String::CPtr method() const {
+        return getCPtr<String>(METHOD);
     }
     
-    Type<String>::Cptr url() const {
-        return getCptr<String>(URL);
+    String::CPtr url() const {
+        return getCPtr<String>(URL);
     }
     
-    Type<JsObject>::Cptr headers() const {
-        return getCptr<JsObject>(HEADERS);
+    JsObject::CPtr headers() const {
+        return getCPtr<JsObject>(HEADERS);
     }
     
-    Type<String>::Cptr httpVersion() const {
-        return getCptr<String>(HTTP_VERSION);
+    String::CPtr httpVersion() const {
+        return getCPtr<String>(HTTP_VERSION);
     }
     
-    void setMethod(Type<String>::Cptr method) {
+    void setMethod(String::CPtr method) {
         put(METHOD, method);
     }
     
-    void setUrl(Type<String>::Cptr url) {
+    void setUrl(String::CPtr url) {
         put(URL, url);
     }
     
-    void setHeader(Type<String>::Cptr name, Type<String>::Cptr value) {
-        Type<JsObject>::Ptr headers = getPtr<JsObject>(HEADERS);
+    void setHeader(String::CPtr name, String::CPtr value) {
+        JsObject::Ptr headers = getPtr<JsObject>(HEADERS);
         if (!headers) {
             headers = JsObject::create();
             put(HEADERS, headers);
@@ -56,12 +56,12 @@ class ServerRequestImpl : public ServerRequest {
         headers->put(name->toLowerCase(), value);
     }
     
-    void setHttpVersion(Type<String>::Cptr httpVersion) {
+    void setHttpVersion(String::CPtr httpVersion) {
         put(HTTP_VERSION, httpVersion);
     }
     
  private:
-     Type<EventEmitter>::Ptr ee_;
+     EventEmitter::Ptr ee_;
 
  public:
      ServerRequestImpl()

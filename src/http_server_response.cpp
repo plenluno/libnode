@@ -6,9 +6,9 @@ namespace libj {
 namespace node {
 namespace http {
 
-Type<String>::Cptr ServerResponse::EVENT_CLOSE = String::create("close");
+String::CPtr ServerResponse::EVENT_CLOSE = String::create("close");
 
-Type<ServerResponse>::Ptr ServerResponse::create() {
+ServerResponse::Ptr ServerResponse::create() {
     return ServerResponseImpl::create();
 }
 

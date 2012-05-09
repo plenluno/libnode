@@ -14,7 +14,7 @@ class ServerImpl : public Server {
         return p;
     }
 
-    static Ptr create(Type<JsFunction>::Ptr requestListener) {
+    static Ptr create(JsFunction::Ptr requestListener) {
         Ptr p = create();
         p->on(EVENT_REQUEST, requestListener);
         return p;
@@ -66,7 +66,7 @@ class ServerImpl : public Server {
             ServerImpl::onAlloc,
             ServerImpl::onRead);
         
-        Type<JsArray>::Ptr args = JsArray::create();
+        JsArray::Ptr args = JsArray::create();
         // TODO: add socket
         server->emit(EVENT_CONNECTION, args);
     }
@@ -116,7 +116,7 @@ class ServerImpl : public Server {
         return 0;
     }
     
-    static Type<String>::Cptr headerName;
+    static String::CPtr headerName;
     
     static int onHeaderField(http_parser* parser, const char* at, size_t length) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
@@ -132,9 +132,9 @@ class ServerImpl : public Server {
     
     static int onHeadersComplete(http_parser* parser) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
-        Type<JsArray>::Ptr args = JsArray::create();
-        Type<ServerRequest>::Ptr req(context->request);
-        Type<ServerResponse>::Ptr res(context->response);
+        JsArray::Ptr args = JsArray::create();
+        ServerRequest::Ptr req(context->request);
+        ServerResponse::Ptr res(context->response);
         args->add(req);
         args->add(res);
         ServerImpl* server = static_cast<ServerImpl*>(context->server);
@@ -148,8 +148,8 @@ class ServerImpl : public Server {
     
     static int onBody(http_parser* parser, const char* at, size_t length) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
-        Type<String>::Cptr chunk = String::create(at, String::ASCII, length);
-        Type<JsArray>::Ptr args = JsArray::create();
+        String::CPtr chunk = String::create(at, String::ASCII, length);
+        JsArray::Ptr args = JsArray::create();
         args->add(chunk);
         context->request->emit(ServerRequest::EVENT_DATA, args);
         return 0;
@@ -157,14 +157,14 @@ class ServerImpl : public Server {
     
     static int onMessageComplete(http_parser* parser) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
-        Type<JsArray>::Ptr args = JsArray::create();
+        JsArray::Ptr args = JsArray::create();
         context->request->emit(ServerRequest::EVENT_END, args);
         return 0;
     }
     
  private:
     uv_tcp_t server_;
-    Type<EventEmitter>::Ptr ee_;
+    EventEmitter::Ptr ee_;
     
     ServerImpl()
         : ee_(EventEmitter::create()) {
@@ -177,15 +177,15 @@ class ServerImpl : public Server {
 LIBJ_NULL_CPTR(String, ServerImpl::headerName);
 http_parser_settings ServerImpl::settings = {};
 
-Type<String>::Cptr Server::EVENT_REQUEST = String::create("request");
-Type<String>::Cptr Server::EVENT_CONNECTION = String::create("connection");
-Type<String>::Cptr Server::EVENT_CLOSE = String::create("close");
+String::CPtr Server::EVENT_REQUEST = String::create("request");
+String::CPtr Server::EVENT_CONNECTION = String::create("connection");
+String::CPtr Server::EVENT_CLOSE = String::create("close");
 
-Type<Server>::Ptr Server::create() {
+Server::Ptr Server::create() {
     return ServerImpl::create();
 }
 
-Type<Server>::Ptr Server::create(Type<JsFunction>::Ptr requestListener) {
+Server::Ptr Server::create(JsFunction::Ptr requestListener) {
     return ServerImpl::create(requestListener);
 }
 

@@ -8,14 +8,14 @@ namespace libj {
 namespace node {
 namespace events {
 
-static Type<JsArray>::Ptr results = JsArray::create();
+static JsArray::Ptr results = JsArray::create();
 
 class Add : LIBNODE_JS_FUNCTION(Add)
 };
 
 class AddImpl : public Add {
  public:
-    Value operator()(Type<JsArray>::Cptr args) {
+    Value operator()(JsArray::CPtr args) {
         if (args->size() == 2 &&
             args->get(0).type() == Type<Int>::id() &&
             args->get(1).type() == Type<Int>::id()) {
@@ -30,13 +30,13 @@ class AddImpl : public Add {
         }
     }
 
-    static Type<Add>::Ptr create() {
-        Type<Add>::Ptr p(new AddImpl());
+    static Add::Ptr create() {
+        Add::Ptr p(new AddImpl());
         return p;
     }
 };
 
-Type<Add>::Ptr Add::create() {
+Add::Ptr Add::create() {
     return AddImpl::create();
 }
 
@@ -45,7 +45,7 @@ class Sub : LIBNODE_JS_FUNCTION(Sub)
 
 class SubImpl : public Sub {
  public:
-    Value operator()(Type<JsArray>::Cptr args) {
+    Value operator()(JsArray::CPtr args) {
         if (args->size() == 2 &&
             args->get(0).type() == Type<Int>::id() &&
             args->get(1).type() == Type<Int>::id()) {
@@ -60,53 +60,53 @@ class SubImpl : public Sub {
         }
     }
 
-    static Type<Sub>::Ptr create() {
-        Type<Sub>::Ptr p(new SubImpl());
+    static Sub::Ptr create() {
+        Sub::Ptr p(new SubImpl());
         return p;
     }
 };
 
-Type<Sub>::Ptr Sub::create() {
+Sub::Ptr Sub::create() {
     return SubImpl::create();
 }
 
 
 TEST(GTestEventEmitter, TestCreate) {
-    Type<EventEmitter>::Ptr ee = EventEmitter::create();
+    EventEmitter::Ptr ee = EventEmitter::create();
     ASSERT_TRUE(ee ? true : false);
 }
 
 TEST(GTestEventEmitter, TestAddAndGetListeners) {
-    Type<EventEmitter>::Ptr ee = EventEmitter::create();
-    Type<String>::Cptr event = String::create("event");
-    Type<JsFunction>::Ptr add = Add::create();
-    Type<JsFunction>::Ptr sub = Sub::create();
+    EventEmitter::Ptr ee = EventEmitter::create();
+    String::CPtr event = String::create("event");
+    JsFunction::Ptr add = Add::create();
+    JsFunction::Ptr sub = Sub::create();
     ee->on(event, add);
     ee->addListener(String::create("event"), sub);
     
     Value v = ee->listeners(event);
     ASSERT_TRUE(v.instanceOf(Type<JsArray>::id()));
     
-    Type<JsArray>::Ptr a = toPtr<JsArray>(v);
+    JsArray::Ptr a = toPtr<JsArray>(v);
     ASSERT_EQ(a->size(), 2);
     
     v = a->get(0);
-    Type<JsFunction>::Ptr f1 = toPtr<JsFunction>(v);
+    JsFunction::Ptr f1 = toPtr<JsFunction>(v);
     ASSERT_TRUE(f1 == add || f1 == sub);
     v = a->get(1);
-    Type<JsFunction>::Ptr f2 = toPtr<JsFunction>(v);
+    JsFunction::Ptr f2 = toPtr<JsFunction>(v);
     ASSERT_TRUE(f1 != f2 && (f1 == add || f1 == sub));
 }
 
 TEST(GTestEventEmitter, TestEmit) {
-    Type<EventEmitter>::Ptr ee = EventEmitter::create();
-    Type<String>::Cptr event = String::create("event");
-    Type<JsFunction>::Ptr add = Add::create();
-    Type<JsFunction>::Ptr sub = Sub::create();
+    EventEmitter::Ptr ee = EventEmitter::create();
+    String::CPtr event = String::create("event");
+    JsFunction::Ptr add = Add::create();
+    JsFunction::Ptr sub = Sub::create();
     ee->on(event, add);
     ee->on(event, sub);
     
-    Type<JsArray>::Ptr args = JsArray::create();
+    JsArray::Ptr args = JsArray::create();
     args->add(5);
     args->add(3);
     ee->emit(event, args);

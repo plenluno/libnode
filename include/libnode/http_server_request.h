@@ -11,14 +11,14 @@ namespace http {
 
 class ServerRequest : LIBNODE_EVENT_EMITTER(ServerRequest)
 public:
-    static Type<String>::Cptr EVENT_DATA;
-    static Type<String>::Cptr EVENT_END;
-    static Type<String>::Cptr EVENT_CLOSE;
+    static String::CPtr EVENT_DATA;
+    static String::CPtr EVENT_END;
+    static String::CPtr EVENT_CLOSE;
     
-    virtual Type<String>::Cptr method() const = 0;
-    virtual Type<String>::Cptr url() const = 0;
-    virtual Type<JsObject>::Cptr headers() const = 0;
-    virtual Type<String>::Cptr httpVersion() const = 0;
+    virtual String::CPtr method() const = 0;
+    virtual String::CPtr url() const = 0;
+    virtual JsObject::CPtr headers() const = 0;
+    virtual String::CPtr httpVersion() const = 0;
 };
 
 }  // namespace http

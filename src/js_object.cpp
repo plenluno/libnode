@@ -16,7 +16,7 @@ class JsObjectImpl : public JsObject {
         return map_->put(String::valueOf(key), val);
     }
     
-    Type<String>::Cptr toString() const {
+    String::CPtr toString() const {
         return map_->toString();
     }
     
@@ -32,7 +32,7 @@ class JsObjectImpl : public JsObject {
         return map_->remove(key);
     }
     
-    Type<Set>::Cptr keySet() const {
+    Set::CPtr keySet() const {
         return map_->keySet();
     }
     
@@ -41,13 +41,13 @@ class JsObjectImpl : public JsObject {
     }
 
  private:
-    Type<Map>::Ptr map_;
+    Map::Ptr map_;
 
     JsObjectImpl() : map_(Map::create()) {
     }
 };
 
-Type<JsObject>::Ptr JsObject::create() {
+JsObject::Ptr JsObject::create() {
     return JsObjectImpl::create();
 }
 

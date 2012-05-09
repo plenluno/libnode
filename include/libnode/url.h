@@ -10,8 +10,8 @@ namespace libj {
 namespace node {
 namespace url {
 
-Type<JsObject>::Ptr parse(Type<String>::Cptr urlStr);
-Type<String>::Cptr format(Type<JsObject>::Cptr urlObj);
+JsObject::Ptr parse(String::CPtr urlStr);
+String::CPtr format(JsObject::CPtr urlObj);
 
 }  // namespace url
 }  // namespace node
