@@ -2,25 +2,21 @@ cmake_minimum_required(VERSION 2.8)
 
 project(libnode)
 
-find_package(Boost)
-if(NOT Boost_FOUND)
-    message(FATAL_ERROR "boost not found.")
-endif()
+option(LIBNODE_USE_GTEST "Use googletest" OFF)
 
-find_library(GC gc REQUIRED)
-if(NOT EXISTS ${GC})
-    message(FATAL_ERROR "libgc not found.")
-endif()
+message(STATUS "LIBNODE_USE_GTEST=${LIBNODE_USE_GTEST}")
 
 find_library(PTHREAD pthread REQUIRED)
 if(NOT EXISTS ${PTHREAD})
     message(FATAL_ERROR "libpthread not found.")
 endif()
 
-find_library(GTEST gtest REQUIRED)
-if(NOT EXISTS ${GTEST})
-    message(FATAL_ERROR "libgtest not found.")
-endif()
+if(LIBNODE_USE_GTEST)
+    find_library(GTEST gtest REQUIRED)
+    if(NOT EXISTS ${GTEST})
+        message(FATAL_ERROR "libgtest not found.")
+    endif()
+endif(LIBNODE_USE_GTEST)
 
 include_directories(
     include
@@ -49,14 +45,16 @@ set(libnode-src
 )
 
 if(APPLE)
-set(libnode-common-deps
+set(libnode-deps
+    j
     parser-http
     parser-url
     pthread
     uv
 )
 else(APPLE)
-set(libnode-common-deps
+set(libnode-deps
+    j
     parser-http
     parser-url
     pthread
@@ -64,16 +62,6 @@ set(libnode-common-deps
     rt
 )
 endif(APPLE)
-
-set(libnode-deps-with-sp
-    j-with-sp
-    ${libnode-common-deps}
-)
-
-set(libnode-deps-with-bdw-gc
-    j-with-bdw-gc
-    ${libnode-common-deps}
-)
 
 # url_parser
 add_library(parser-url
@@ -96,69 +84,40 @@ add_custom_command(
     COMMAND ln -sf ${CMAKE_BINARY_DIR}/deps/libuv/uv.a ${CMAKE_BINARY_DIR}/libuv.a
 )
 
+# libnode
+add_library(node STATIC
+    ${libnode-src}
+)
+target_link_libraries(node
+    ${libnode-deps}
+)
+set_target_properties(node
+    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+
+# echo server
+add_executable(echo-server
+    sample/echo_server.cpp
+)
+target_link_libraries(echo-server
+    node
+    ${libnode-deps}
+)
+set_target_properties(echo-server
+    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+
 # gtest
-add_executable(libnode-gtest
-    gtest/gtest_main.cpp
-    gtest/gtest_event_emitter.cpp
-    gtest/gtest_http_server.cpp
-    gtest/gtest_url_parser.cpp
-    ${libnode-src}
-)
-
-target_link_libraries(libnode-gtest
-    gtest
-    ${libnode-deps-with-sp}
-)
-
-set_target_properties(libnode-gtest
-    PROPERTIES COMPILE_FLAGS "-DLIBJ_GTEST_BUILD_ERRORS")
-
-# libnode with shared_ptr
-add_library(node-with-sp STATIC
-    ${libnode-src}
-)
-
-target_link_libraries(node-with-sp
-    ${libnode-deps-with-sp}
-)
-
-set_target_properties(node-with-sp
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
-
-# libnode with bdw gc
-add_library(node-with-bdw-gc STATIC
-    ${libnode-src}
-)
-
-target_link_libraries(node-with-bdw-gc
-    ${libnode-deps-with-bdw-gc}
-)
-
-set_target_properties(node-with-bdw-gc
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions -DLIBJ_USE_BOEHM_GC")
-
-# echo server with shared_ptr
-add_executable(echo-server-with-sp
-    sample/echo_server.cpp
-)
-
-target_link_libraries(echo-server-with-sp
-    node-with-sp
-    ${libnode-deps-with-sp}
-)
-
-set_target_properties(echo-server-with-sp
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
-
-# echo server with bdw gc
-add_executable(echo-server-with-bdw-gc
-    sample/echo_server.cpp
-)
-
-target_link_libraries(echo-server-with-bdw-gc
-    node-with-bdw-gc
-    ${libnode-deps-with-bdw-gc}
-)
-
-set_target_properties(echo-server-with-bdw-gc
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions -DLIBJ_USE_BOEHM_GC")
+if(LIBNODE_USE_GTEST)
+    add_executable(libnode-gtest
+        gtest/gtest_main.cpp
+        gtest/gtest_event_emitter.cpp
+        gtest/gtest_http_server.cpp
+        gtest/gtest_url_parser.cpp
+        ${libnode-src}
+    )
+    target_link_libraries(libnode-gtest
+        gtest
+        ${libnode-deps}
+    )
+    set_target_properties(libnode-gtest
+        PROPERTIES COMPILE_FLAGS "-DLIBJ_GTEST_BUILD_ERRORS")
+endif(LIBNODE_USE_GTEST)
