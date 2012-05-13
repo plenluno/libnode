@@ -17,6 +17,12 @@ ServerResponseImpl::ServerResponseImpl(ServerContext* context)
     , ee_(EventEmitter::create()) {
 }
 
+ServerResponseImpl::~ServerResponseImpl() {
+    if (context_)
+        context_->response = 0;
+    free(resBuf_.base);
+}
+
 void ServerResponseImpl::end() {
     makeResponse();
     makeResBuf();

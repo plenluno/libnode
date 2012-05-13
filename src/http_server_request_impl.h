@@ -10,6 +10,8 @@ namespace libj {
 namespace node {
 namespace http {
 
+class ServerContext;
+
 class ServerRequestImpl : public ServerRequest {
  private:
     static String::CPtr METHOD;
@@ -61,12 +63,19 @@ class ServerRequestImpl : public ServerRequest {
     }
     
  private:
+     ServerContext* context_;
+     
      EventEmitter::Ptr ee_;
 
  public:
      ServerRequestImpl()
-         : ee_(EventEmitter::create()) {
+         : context_(0)
+         , ee_(EventEmitter::create()) {
      }
+     
+     ServerRequestImpl(ServerContext* context);
+
+     ~ServerRequestImpl();
 
      LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };

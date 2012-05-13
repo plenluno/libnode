@@ -84,7 +84,7 @@ class ServerImpl : public Server {
     static void onRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf) {
         ServerContext* context = static_cast<ServerContext*>(stream->data);
         if (!context->request)
-            context->request = new ServerRequestImpl();
+            context->request = new ServerRequestImpl(context);
         if (!context->response)
             context->response = new ServerResponseImpl(context);
 
@@ -148,17 +148,21 @@ class ServerImpl : public Server {
     
     static int onBody(http_parser* parser, const char* at, size_t length) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
-        String::CPtr chunk = String::create(at, String::ASCII, length);
-        JsArray::Ptr args = JsArray::create();
-        args->add(chunk);
-        context->request->emit(ServerRequest::EVENT_DATA, args);
+        if (context->request) {
+            String::CPtr chunk = String::create(at, String::ASCII, length);
+            JsArray::Ptr args = JsArray::create();
+            args->add(chunk);
+            context->request->emit(ServerRequest::EVENT_DATA, args);
+        }
         return 0;
     }
     
     static int onMessageComplete(http_parser* parser) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
-        JsArray::Ptr args = JsArray::create();
-        context->request->emit(ServerRequest::EVENT_END, args);
+        if (context->request) {
+            JsArray::Ptr args = JsArray::create();
+            context->request->emit(ServerRequest::EVENT_END, args);
+        }
         return 0;
     }
     

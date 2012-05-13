@@ -139,9 +139,7 @@ class ServerResponseImpl : public ServerResponse {
     
     ServerResponseImpl(ServerContext* context);
 
-    ~ServerResponseImpl() {
-        free(resBuf_.base);
-    }
+    ~ServerResponseImpl();
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
