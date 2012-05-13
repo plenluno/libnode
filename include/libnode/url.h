@@ -10,6 +10,18 @@ namespace libj {
 namespace node {
 namespace url {
 
+extern String::CPtr HREF;
+extern String::CPtr PROTOCOL;
+extern String::CPtr HOST;
+extern String::CPtr AUTH;
+extern String::CPtr HOSTNAME;
+extern String::CPtr PORT;
+extern String::CPtr PATHNAME;
+extern String::CPtr SEARCH;
+extern String::CPtr PATH;
+extern String::CPtr QUERY;
+extern String::CPtr HASH;
+
 JsObject::Ptr parse(String::CPtr urlStr);
 String::CPtr format(JsObject::CPtr urlObj);
 
