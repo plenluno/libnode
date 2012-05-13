@@ -65,8 +65,7 @@ parse_url(const char *url)
     tmpstr = strchr(curstr, ':');
     if ( NULL == tmpstr ) {
         /* Not found the character */
-        parsed_url_free(purl);
-        return NULL;
+        goto PATH_START;
     }
     /* Get the scheme length */
     len = tmpstr - curstr;
@@ -217,6 +216,8 @@ parse_url(const char *url)
     if ( '\0' == *curstr ) {
         return purl;
     }
+
+PATH_START:
 
     /* Skip '/' */
     if ( '/' != *curstr ) {
