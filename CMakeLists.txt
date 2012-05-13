@@ -34,6 +34,7 @@ link_directories(
 
 set(libnode-src
     src/event_emitter.cpp
+    src/file_system.cpp
     src/http_server.cpp
     src/http_server_request.cpp
     src/http_server_request_impl.cpp
@@ -103,6 +104,17 @@ target_link_libraries(echo-server
     ${libnode-deps}
 )
 set_target_properties(echo-server
+    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+
+# static server
+add_executable(static-server
+    sample/static_server.cpp
+)
+target_link_libraries(static-server
+    node
+    ${libnode-deps}
+)
+set_target_properties(static-server
     PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
 
 # gtest
