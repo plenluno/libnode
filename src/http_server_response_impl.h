@@ -21,11 +21,6 @@ class ServerResponseImpl : public ServerResponse {
     static String::CPtr STATUS_CODE;
 
  public:
-    static Ptr create() {
-        Ptr p(new ServerResponseImpl());
-        return p;
-    }
-   
     void writeHead(Int statusCode) {
         put(STATUS_CODE, statusCode);
     }
@@ -130,13 +125,6 @@ class ServerResponseImpl : public ServerResponse {
     EventEmitter::Ptr ee_;
 
  public:
-    ServerResponseImpl()
-        : context_(0)
-        , res_(StringBuffer::create())
-        , body_(StringBuffer::create())
-        , ee_(EventEmitter::create()) {
-    }
-    
     ServerResponseImpl(ServerContext* context);
 
     ~ServerResponseImpl();

@@ -10,11 +10,6 @@ String::CPtr ServerRequest::EVENT_DATA = String::create("data");
 String::CPtr ServerRequest::EVENT_END = String::create("end");
 String::CPtr ServerRequest::EVENT_CLOSE = String::create("close");
 
-ServerRequest::Ptr ServerRequest::create() {
-    return ServerRequestImpl::create();
-}
-
-
 }  // namespace http
 }  // namespace node
 }  // namespace libj

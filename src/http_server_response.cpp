@@ -8,10 +8,6 @@ namespace http {
 
 String::CPtr ServerResponse::EVENT_CLOSE = String::create("close");
 
-ServerResponse::Ptr ServerResponse::create() {
-    return ServerResponseImpl::create();
-}
-
 }  // namespace http
 }  // namespace node
 }  // namespace libj

@@ -15,6 +15,9 @@ class JsObject : LIBJ_MAP(JsObject)
 #define LIBNODE_JS_OBJECT(T) public libj::node::JsObject { \
     LIBJ_MUTABLE_DECLS(T, libj::node::JsObject)
 
+#define LIBNODE_JS_OBJECT_WITHOUT_CREATE(T) public libj::node::JsObject { \
+    LIBJ_MUTABLE_DECLS_WITHOUT_CREATE(T, libj::node::JsObject)
+
 #define LIBNODE_JS_OBJECT_IMPL(JO) \
     LIBJ_MAP_IMPL(JO) \
  public: \

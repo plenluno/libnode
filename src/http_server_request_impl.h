@@ -20,11 +20,6 @@ class ServerRequestImpl : public ServerRequest {
     static String::CPtr HTTP_VERSION;
  
  public:
-    static Ptr create() {
-        Ptr p(new ServerRequestImpl());
-        return p;
-    }
-    
     String::CPtr method() const {
         return getCPtr<String>(METHOD);
     }
@@ -63,21 +58,16 @@ class ServerRequestImpl : public ServerRequest {
     }
     
  private:
-     ServerContext* context_;
-     
-     EventEmitter::Ptr ee_;
+    ServerContext* context_;
+
+    EventEmitter::Ptr ee_;
 
  public:
-     ServerRequestImpl()
-         : context_(0)
-         , ee_(EventEmitter::create()) {
-     }
-     
-     ServerRequestImpl(ServerContext* context);
+    ServerRequestImpl(ServerContext* context);
 
-     ~ServerRequestImpl();
+    ~ServerRequestImpl();
 
-     LIBNODE_EVENT_EMITTER_IMPL(ee_);
+    LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
 
 }  // namespace http
