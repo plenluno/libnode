@@ -4,7 +4,7 @@
 #define LIBNODE_FILE_SYSTEM_H_
 
 #include "libj/string.h"
-#include "libnode/typedef.h"
+#include "libnode/js_function.h"
 
 namespace libj {
 namespace node {

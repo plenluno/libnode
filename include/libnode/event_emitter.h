@@ -4,8 +4,9 @@
 #define LIBNODE_EVENT_EMITTER_H_
 
 #include "libj/string.h"
+#include "libnode/js_array.h"
+#include "libnode/js_function.h"
 #include "libnode/js_object.h"
-#include "libnode/typedef.h"
 
 namespace libj {
 namespace node {
