@@ -20,11 +20,16 @@ class ServerImpl : public Server {
         return p;
     }
     
-    bool listen(Int port) {
+    bool listen(Int port, String::CPtr hostName) {
+        if (!hostName)
+            return false;
+        std::string addr;
+        for (Size i = 0; i < hostName->length(); i++)
+            addr += static_cast<char>(hostName->charAt(i));
         server_.data = this;
         return !(uv_tcp_bind(
                     &server_,
-                    uv_ip4_addr("0.0.0.0", port))) &&
+                    uv_ip4_addr(addr.c_str(), port))) &&
                !uv_listen(
                     reinterpret_cast<uv_stream_t*>(&server_),
                     128,
@@ -181,6 +186,7 @@ class ServerImpl : public Server {
 LIBJ_NULL_CPTR(String, ServerImpl::headerName);
 http_parser_settings ServerImpl::settings = {};
 
+String::CPtr Server::IN_ADDR_ANY = String::create("0.0.0.0");
 String::CPtr Server::EVENT_REQUEST = String::create("request");
 String::CPtr Server::EVENT_CONNECTION = String::create("connection");
 String::CPtr Server::EVENT_CLOSE = String::create("close");
