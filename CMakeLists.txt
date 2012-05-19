@@ -123,6 +123,8 @@ if(LIBNODE_USE_GTEST)
         gtest/gtest_main.cpp
         gtest/gtest_event_emitter.cpp
         gtest/gtest_http_server.cpp
+        gtest/gtest_js_object.cpp
+        gtest/gtest_url.cpp
         gtest/gtest_url_parser.cpp
         ${libnode-src}
     )
