@@ -21,14 +21,18 @@ String::CPtr HASH = String::create("hash");
 
 static String::CPtr COLON = String::create(":");
 static String::CPtr SLASH = String::create("/");
+static String::CPtr SHARP = String::create("#");
 static String::CPtr QUESTION = String::create("?");
 
 JsObject::Ptr parse(String::CPtr urlStr) {
-    std::string u;
-    for (Size i = 0; i < urlStr->length(); i++)
-        u += static_cast<char>(urlStr->charAt(i));
-    struct parsed_url* url = parse_url(u.c_str());
+    if (!urlStr) {
+        JsObject::Ptr nullp(static_cast<JsObject*>(0));
+        return nullp;
+    }
+    
+    struct parsed_url* url = parse_url(urlStr->toStdString().c_str());
     JsObject::Ptr obj = JsObject::create();
+    
     obj->put(HREF, urlStr);
     if (url->scheme) {
         obj->put(PROTOCOL, String::create(url->scheme)->toLowerCase());
@@ -61,6 +65,17 @@ JsObject::Ptr parse(String::CPtr urlStr) {
             obj->put(PATH, pathname);
         }
     }
+    if (url->username && url->password) {
+        String::CPtr auth = String::create(url->username);
+        auth = auth->concat(COLON);
+        auth = auth->concat(String::create(url->password));
+        obj->put(AUTH, auth);
+    }
+    if (url->fragment) {
+        String::CPtr hash = SHARP->concat(String::create(url->fragment));
+        obj->put(HASH, hash);
+    }
+    
     parsed_url_free(url);
     return obj;
 }
