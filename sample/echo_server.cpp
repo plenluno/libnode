@@ -8,7 +8,7 @@
 namespace libj {
 namespace node {
 
-class OnData : LIBNODE_JS_FUNCTION(OnData)
+class OnData : LIBJ_JS_FUNCTION(OnData)
  private:
     String::CPtr body_;
     
@@ -25,7 +25,7 @@ class OnData : LIBNODE_JS_FUNCTION(OnData)
     }
 };
 
-class OnEnd : LIBNODE_JS_FUNCTION(OnEnd)
+class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
  private:
     OnData::Ptr onData_;
     http::ServerRequest::Ptr req_;
@@ -51,7 +51,7 @@ class OnEnd : LIBNODE_JS_FUNCTION(OnEnd)
     }
 };
 
-class OnRequest : LIBNODE_JS_FUNCTION(OnRequest)
+class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
  public:
     Value operator()(JsArray::CPtr args) {
         http::ServerRequest::Ptr req = toPtr<http::ServerRequest>(args->get(0));

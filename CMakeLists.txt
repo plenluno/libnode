@@ -40,7 +40,6 @@ set(libnode-src
     src/http_server_request_impl.cpp
     src/http_server_response.cpp
     src/http_server_response_impl.cpp
-    src/js_object.cpp
     src/node.cpp
     src/url.cpp
 )
@@ -123,7 +122,6 @@ if(LIBNODE_USE_GTEST)
         gtest/gtest_main.cpp
         gtest/gtest_event_emitter.cpp
         gtest/gtest_http_server.cpp
-        gtest/gtest_js_object.cpp
         gtest/gtest_url.cpp
         gtest/gtest_url_parser.cpp
         ${libnode-src}

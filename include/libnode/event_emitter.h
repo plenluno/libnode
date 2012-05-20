@@ -4,15 +4,15 @@
 #define LIBNODE_EVENT_EMITTER_H_
 
 #include "libj/string.h"
-#include "libnode/js_array.h"
-#include "libnode/js_function.h"
-#include "libnode/js_object.h"
+#include "libj/js_array.h"
+#include "libj/js_function.h"
+#include "libj/js_object.h"
 
 namespace libj {
 namespace node {
 namespace events {
 
-class EventEmitter : LIBNODE_JS_OBJECT(EventEmitter)
+class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
  public:
     virtual void on(String::CPtr event, JsFunction::Ptr listener) = 0;
     virtual void addListener(String::CPtr event, JsFunction::Ptr listener) = 0;
@@ -30,7 +30,7 @@ class EventEmitter : LIBNODE_JS_OBJECT(EventEmitter)
     LIBJ_MUTABLE_DECLS_WITHOUT_CREATE(T, libj::node::events::EventEmitter)
 
 #define LIBNODE_EVENT_EMITTER_IMPL(EE) \
-    LIBNODE_JS_OBJECT_IMPL(EE); \
+    LIBJ_JS_OBJECT_IMPL(EE); \
  public: \
     void on(String::CPtr event, JsFunction::Ptr listener) { \
         EE->on(event, listener); \

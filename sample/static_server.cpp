@@ -11,7 +11,7 @@ static libj::String::CPtr root;
 namespace libj {
 namespace node {
 
-class OnRead : LIBNODE_JS_FUNCTION(OnRead)
+class OnRead : LIBJ_JS_FUNCTION(OnRead)
  private:
     http::ServerResponse::Ptr res_;
     
@@ -29,7 +29,7 @@ class OnRead : LIBNODE_JS_FUNCTION(OnRead)
     }
 };
 
-class OnRequest : LIBNODE_JS_FUNCTION(OnRequest)
+class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
  public:
     Value operator()(JsArray::CPtr args) {
         http::ServerRequest::Ptr req = toPtr<http::ServerRequest>(args->get(0));

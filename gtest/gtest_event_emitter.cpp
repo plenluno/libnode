@@ -10,7 +10,7 @@ namespace events {
 
 static JsArray::Ptr results = JsArray::create();
 
-class Add : LIBNODE_JS_FUNCTION(Add)
+class Add : LIBJ_JS_FUNCTION(Add)
 };
 
 class AddImpl : public Add {
@@ -40,7 +40,7 @@ Add::Ptr Add::create() {
     return AddImpl::create();
 }
 
-class Sub : LIBNODE_JS_FUNCTION(Sub)
+class Sub : LIBJ_JS_FUNCTION(Sub)
 };
 
 class SubImpl : public Sub {

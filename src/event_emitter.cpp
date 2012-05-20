@@ -1,5 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include "libj/null.h"
 #include "libnode/event_emitter.h"
 
 namespace libj {
@@ -71,7 +72,7 @@ class EventEmitterImpl : public EventEmitter {
     EventEmitterImpl()
         : listeners_(JsObject::create()) {}
     
-    LIBNODE_JS_OBJECT_IMPL(listeners_);
+    LIBJ_JS_OBJECT_IMPL(listeners_);
 };
 
 EventEmitter::Ptr EventEmitter::create() {
