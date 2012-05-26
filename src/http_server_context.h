@@ -5,9 +5,9 @@
 
 #include <uv.h>
 #include <http_parser.h>
+#include "./net_socket_impl.h"
 #include "./http_server_request_impl.h"
 #include "./http_server_response_impl.h"
-#include <iostream>
 
 namespace libj {
 namespace node {
@@ -17,14 +17,15 @@ class ServerContext {
  public:
     ServerContext(void* srv)
         : server(srv)
+        , socket(net::SocketImpl::create())
         , request(static_cast<ServerRequestImpl*>(0))
         , response(static_cast<ServerResponseImpl*>(0)) {
     }
     
-    uv_tcp_t tcp;
     http_parser parser;
     uv_write_t write;
     void* server;
+    net::SocketImpl::Ptr socket;
     ServerRequestImpl* request;
     ServerResponseImpl* response;
 };

@@ -36,6 +36,8 @@ class ServerRequestImpl : public ServerRequest {
         return getCPtr<String>(HTTP_VERSION);
     }
     
+    net::Socket::Ptr connection() const;
+    
     void setMethod(String::CPtr method) {
         put(METHOD, method);
     }

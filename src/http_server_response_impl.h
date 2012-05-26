@@ -7,7 +7,6 @@
 #include "libnode/http_server_response.h"
 #include <uv.h>
 #include <string.h>
-#include <iostream>
 
 namespace libj {
 namespace node {

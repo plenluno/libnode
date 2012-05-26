@@ -1,4 +1,5 @@
 #include "libj/json.h"
+#include "libj/console.h"
 #include "libnode/node.h"
 #include "libnode/http_server.h"
 #include "libnode/http_server_request.h"
@@ -27,18 +28,21 @@ class OnData : LIBJ_JS_FUNCTION(OnData)
 
 class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
  private:
-    OnData::Ptr onData_;
+    http::Server::Ptr srv_;
     http::ServerRequest::Ptr req_;
     http::ServerResponse::Ptr res_;
+    OnData::Ptr onData_;
     
  public:
     OnEnd(
-        OnData::Ptr onData,
+        http::Server::Ptr srv,
         http::ServerRequest::Ptr req,
-        http::ServerResponse::Ptr res)
-        : onData_(onData)
+        http::ServerResponse::Ptr res,
+        OnData::Ptr onData)
+        : srv_(srv)
         , req_(req)
-        , res_(res) {}
+        , res_(res)
+        , onData_(onData) {}
     
     Value operator()(JsArray::CPtr args) {
         req_->put(String::create("body"), onData_->getBody());
@@ -47,19 +51,31 @@ class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
         res_->end();
         req_->removeAllListeners(http::ServerRequest::EVENT_DATA);
         req_->removeAllListeners(http::ServerRequest::EVENT_END);
+        // only one reply
+        srv_->close();
         return 0;
     }
 };
 
 class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
+ private:
+    http::Server::Ptr srv_;
+
+ public:
+    OnRequest(
+        http::Server::Ptr srv)
+        : srv_(srv) {}
+
  public:
     Value operator()(JsArray::CPtr args) {
         http::ServerRequest::Ptr req = toPtr<http::ServerRequest>(args->get(0));
         http::ServerResponse::Ptr res = toPtr<http::ServerResponse>(args->get(1));
         OnData::Ptr onData(new OnData());
-        OnEnd::Ptr onEnd(new OnEnd(onData, req, res));
+        OnEnd::Ptr onEnd(new OnEnd(srv_, req, res, onData));
         req->on(http::ServerRequest::EVENT_DATA, onData);
         req->on(http::ServerRequest::EVENT_END, onEnd);
+        console::log(String::create("remote address: ")->
+            concat(req->connection()->remoteAddress()));
         return 0;
     }
 };
@@ -70,8 +86,9 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
 int main() {
     using namespace libj;
     using namespace node;
-    OnRequest::Ptr requestHandler(new OnRequest());
-    http::Server::Ptr server = http::Server::create(requestHandler);
+    http::Server::Ptr server = http::Server::create();
+    OnRequest::Ptr onRequest(new OnRequest(server));
+    server->on(http::Server::EVENT_REQUEST, onRequest);
     server->listen(10000);
     run();
     return 0;

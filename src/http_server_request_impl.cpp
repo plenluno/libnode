@@ -22,6 +22,10 @@ ServerRequestImpl::~ServerRequestImpl() {
         context_->request = 0;
 }
 
+net::Socket::Ptr ServerRequestImpl::connection() const {
+    return context_->socket;
+}
+
 }  // namespace http
 }  // namespace node
 }  // namespace libj

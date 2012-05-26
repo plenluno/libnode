@@ -2,6 +2,7 @@
 
 #include "libnode/http_server.h"
 #include "./http_server_context.h"
+#include <uv.h>
 
 namespace libj {
 namespace node {
@@ -21,23 +22,27 @@ class ServerImpl : public Server {
     }
     
     bool listen(Int port, String::CPtr hostName) {
-        if (!hostName)
+        if (isOpen_ || !hostName)
             return false;
         std::string addr;
         for (Size i = 0; i < hostName->length(); i++)
             addr += static_cast<char>(hostName->charAt(i));
         server_.data = this;
-        return !(uv_tcp_bind(
+        isOpen_ = !(uv_tcp_bind(
                     &server_,
                     uv_ip4_addr(addr.c_str(), port))) &&
-               !uv_listen(
+                  !uv_listen(
                     reinterpret_cast<uv_stream_t*>(&server_),
                     128,
                     ServerImpl::onConnection);
+        return isOpen_;
     }
     
     void close() {
-        // TODO: implement
+        if (isOpen_) {
+            uv_close(reinterpret_cast<uv_handle_t*>(&server_), ServerImpl::onClose);
+            isOpen_ = false;
+        }
     }
 
  private:
@@ -56,23 +61,23 @@ class ServerImpl : public Server {
         
         ServerImpl* server = static_cast<ServerImpl*>(stream->data);
         ServerContext* context = new ServerContext(server);
+        uv_tcp_t* tcp = context->socket->getTcp();
         
-        uv_tcp_init(uv_default_loop(), &context->tcp);
-        if (uv_accept(stream, reinterpret_cast<uv_stream_t*>(&context->tcp)))
+        if (uv_accept(stream, reinterpret_cast<uv_stream_t*>(tcp)))
             return;
-            
+
         http_parser_init(&context->parser, HTTP_REQUEST);
 
-        context->tcp.data = context;
+        tcp->data = context;
         context->parser.data = context;
 
         uv_read_start(
-            reinterpret_cast<uv_stream_t*>(&context->tcp),
+            reinterpret_cast<uv_stream_t*>(tcp),
             ServerImpl::onAlloc,
             ServerImpl::onRead);
         
         JsArray::Ptr args = JsArray::create();
-        // TODO: add socket
+        args->add(context->socket);
         server->emit(EVENT_CONNECTION, args);
     }
     
@@ -174,9 +179,11 @@ class ServerImpl : public Server {
  private:
     uv_tcp_t server_;
     EventEmitter::Ptr ee_;
+    bool isOpen_;
     
     ServerImpl()
-        : ee_(EventEmitter::create()) {
+        : ee_(EventEmitter::create())
+        , isOpen_(false) {
         uv_tcp_init(uv_default_loop(), &server_);
     }
 
