@@ -13,7 +13,7 @@ class ServerResponse : LIBNODE_EVENT_EMITTER_WITHOUT_CREATE(ServerResponse)
 public:
     static String::CPtr EVENT_CLOSE;
     
-    virtual void writeHead(Int statusCode) = 0;
+    virtual Boolean writeHead(Int statusCode) = 0;
     virtual Int statusCode() const = 0;
     virtual void setHeader(String::CPtr name, String::CPtr value) = 0;
     virtual String::CPtr getHeader(String::CPtr name) const = 0;

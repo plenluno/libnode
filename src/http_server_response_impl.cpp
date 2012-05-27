@@ -12,6 +12,7 @@ String::CPtr ServerResponseImpl::STATUS_CODE = String::create("statusCode");
 
 ServerResponseImpl::ServerResponseImpl(ServerContext* context)
     : context_(context)
+    , status_(static_cast<http::Status*>(0))
     , res_(StringBuffer::create())
     , body_(StringBuffer::create())
     , ee_(EventEmitter::create()) {

@@ -5,6 +5,7 @@
 
 #include "libj/string_buffer.h"
 #include "libnode/http_server_response.h"
+#include "libnode/http_status.h"
 #include <uv.h>
 #include <string.h>
 
@@ -20,16 +21,19 @@ class ServerResponseImpl : public ServerResponse {
     static String::CPtr STATUS_CODE;
 
  public:
-    void writeHead(Int statusCode) {
-        put(STATUS_CODE, statusCode);
+    Boolean writeHead(Int statusCode) {
+        status_ = http::Status::create(statusCode);
+        if (status_) {
+            put(STATUS_CODE, statusCode);
+            return true;
+        } else {
+            return false;
+        }
     }
    
     Int statusCode() const {
-        Value v = get(STATUS_CODE);
-        if (v.type() == Type<Int>::id()) {
-            Int sc;
-            to<Int>(v, &sc);
-            return sc;
+        if (status_) {
+            return status_->code();
         } else {
             return 0;
         }
@@ -68,7 +72,14 @@ class ServerResponseImpl : public ServerResponse {
     }
     
     void makeResponse() {
-        res_->append(String::create("HTTP/1.1 200 OK\r\n"));
+        res_->append(String::create("HTTP/1.1 "));
+        if (status_) {
+            res_->append(String::valueOf(status_->code()));
+            res_->append(String::create(" "));
+            res_->append(status_->toString());
+        } else {
+            res_->append(String::create("200 OK\r\n"));
+        }
         Int len = body_->length();
         setHeader(
             String::create("Content-Length"),
@@ -118,9 +129,12 @@ class ServerResponseImpl : public ServerResponse {
     ServerContext* context_;
     uv_buf_t resBuf_;
     
+    http::Status::CPtr status_;
+    
     // TODO: introduce Buffer
     StringBuffer::Ptr res_;
     StringBuffer::Ptr body_;
+    
     EventEmitter::Ptr ee_;
 
  public:

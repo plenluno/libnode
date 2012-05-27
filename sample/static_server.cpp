@@ -4,6 +4,7 @@
 #include "libnode/http_server.h"
 #include "libnode/http_server_request.h"
 #include "libnode/http_server_response.h"
+#include "libnode/http_status.h"
 #include <iostream>
 
 static libj::String::CPtr root;
@@ -23,6 +24,8 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
         res_->setHeader(String::create("Content-Type"), String::create("text/plain"));
         if (content) {
             res_->write(content);
+        } else {
+            res_->writeHead(http::Status::NOT_FOUND);
         }
         res_->end();
         return 0;
@@ -50,8 +53,9 @@ int main(int argc, char *argv[]) {
     using namespace libj;
     using namespace node;
     if (argc < 2) {
-        std::cout << "usage: static-server ROOT_PATH" << std::endl;
-        return 1;
+        char dir[256];
+        getcwd(dir, 256);
+        root = String::create(dir);
     } else {
         root = String::create(argv[1]);
     }
