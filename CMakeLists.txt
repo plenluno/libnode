@@ -40,7 +40,9 @@ set(libnode-src
     src/http_server_request_impl.cpp
     src/http_server_response.cpp
     src/http_server_response_impl.cpp
+    src/http_status.cpp
     src/node.cpp
+    src/timer.cpp
     src/url.cpp
 )
 
@@ -114,6 +116,17 @@ target_link_libraries(static-server
     ${libnode-deps}
 )
 set_target_properties(static-server
+    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+
+# countdown timer
+add_executable(countdown-timer
+    sample/countdown_timer.cpp
+)
+target_link_libraries(countdown-timer
+    node
+    ${libnode-deps}
+)
+set_target_properties(countdown-timer
     PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
 
 # gtest
