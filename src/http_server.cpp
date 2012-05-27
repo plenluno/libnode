@@ -9,6 +9,11 @@ namespace node {
 namespace http {
 
 class ServerImpl : public Server {
+ private:
+    static String::CPtr METHOD_GET;
+    static String::CPtr METHOD_POST;
+    static String::CPtr STR_DOT;
+     
  public:
     static Ptr create() {
         Ptr p(new ServerImpl());
@@ -142,6 +147,22 @@ class ServerImpl : public Server {
     
     static int onHeadersComplete(http_parser* parser) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
+        switch (parser->method) {
+        case HTTP_GET:
+            context->request->setMethod(METHOD_GET);
+            break;
+        case HTTP_POST:
+            context->request->setMethod(METHOD_POST);
+            break;
+        default:
+            context->request->setMethod(String::create());
+        }
+        
+        String::CPtr httpVer = String::valueOf(static_cast<Int>(parser->http_major));
+        httpVer = httpVer->concat(STR_DOT);
+        httpVer = httpVer->concat(String::valueOf(static_cast<Int>(parser->http_minor)));
+        context->request->setHttpVersion(httpVer);
+        
         JsArray::Ptr args = JsArray::create();
         ServerRequest::Ptr req(context->request);
         ServerResponse::Ptr res(context->response);
@@ -192,6 +213,10 @@ class ServerImpl : public Server {
 
 LIBJ_NULL_CPTR(String, ServerImpl::headerName);
 http_parser_settings ServerImpl::settings = {};
+
+String::CPtr ServerImpl::METHOD_GET = String::create("GET");
+String::CPtr ServerImpl::METHOD_POST = String::create("POST");
+String::CPtr ServerImpl::STR_DOT = String::create(".");
 
 String::CPtr Server::IN_ADDR_ANY = String::create("0.0.0.0");
 String::CPtr Server::EVENT_REQUEST = String::create("request");
