@@ -24,7 +24,7 @@ include_directories(
     deps/http-parser
     deps/url_parser
     deps/libj/include
-    deps/libj/deps
+    deps/libj/deps/boost-svn
     deps/libuv/include
 )
 
