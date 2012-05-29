@@ -14,24 +14,32 @@ namespace events {
 
 class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
  public:
-    virtual void on(String::CPtr event, JsFunction::Ptr listener) = 0;
-    virtual void addListener(String::CPtr event, JsFunction::Ptr listener) = 0;
-    virtual void removeListener(String::CPtr event, JsFunction::CPtr listener) = 0;
+    virtual void on(
+        String::CPtr event, JsFunction::Ptr listener) = 0;
+    virtual void addListener(
+        String::CPtr event, JsFunction::Ptr listener) = 0;
+
+    virtual void removeListener(
+        String::CPtr event, JsFunction::CPtr listener) = 0;
     virtual void removeAllListeners() = 0;
     virtual void removeAllListeners(String::CPtr event) = 0;
+
     virtual void emit(String::CPtr event, JsArray::CPtr args) = 0;
+
     virtual Value listeners(String::CPtr event) = 0;
 };
 
-#define LIBNODE_EVENT_EMITTER(T) public libj::node::events::EventEmitter { \
+#define LIBNODE_EVENT_EMITTER(T) \
+    public libj::node::events::EventEmitter { \
     LIBJ_MUTABLE_DECLS(T, libj::node::events::EventEmitter)
 
-#define LIBNODE_EVENT_EMITTER_WITHOUT_CREATE(T) public libj::node::events::EventEmitter { \
+#define LIBNODE_EVENT_EMITTER_WITHOUT_CREATE(T) \
+    public libj::node::events::EventEmitter { \
     LIBJ_MUTABLE_DECLS_WITHOUT_CREATE(T, libj::node::events::EventEmitter)
 
 #define LIBNODE_EVENT_EMITTER_IMPL(EE) \
     LIBJ_JS_OBJECT_IMPL(EE); \
- public: \
+public: \
     void on(String::CPtr event, JsFunction::Ptr listener) { \
         EE->on(event, listener); \
     } \

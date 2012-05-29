@@ -83,13 +83,13 @@ TEST(GTestEventEmitter, TestAddAndGetListeners) {
     JsFunction::Ptr sub = Sub::create();
     ee->on(event, add);
     ee->addListener(String::create("event"), sub);
-    
+
     Value v = ee->listeners(event);
     ASSERT_TRUE(v.instanceOf(Type<JsArray>::id()));
-    
+
     JsArray::Ptr a = toPtr<JsArray>(v);
     ASSERT_EQ(a->size(), 2);
-    
+
     v = a->get(0);
     JsFunction::Ptr f1 = toPtr<JsFunction>(v);
     ASSERT_TRUE(f1 == add || f1 == sub);
@@ -105,12 +105,12 @@ TEST(GTestEventEmitter, TestEmit) {
     JsFunction::Ptr sub = Sub::create();
     ee->on(event, add);
     ee->on(event, sub);
-    
+
     JsArray::Ptr args = JsArray::create();
     args->add(5);
     args->add(3);
     ee->emit(event, args);
-    
+
     Value v0 = results->get(0);
     Value v1 = results->get(1);
     Int i0, i1;

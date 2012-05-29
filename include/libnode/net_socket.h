@@ -10,7 +10,7 @@ namespace node {
 namespace net {
 
 class Socket : LIBNODE_EVENT_EMITTER_WITHOUT_CREATE(Socket)
-public:    
+ public:
     virtual String::CPtr remoteAddress() = 0;
 };
 

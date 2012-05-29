@@ -1,7 +1,8 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libnode/url.h"
 #include <url_parser.h>
+
+#include "libnode/url.h"
 
 namespace libj {
 namespace node {
@@ -29,10 +30,10 @@ JsObject::Ptr parse(String::CPtr urlStr) {
         JsObject::Ptr nullp(static_cast<JsObject*>(0));
         return nullp;
     }
-    
+
     struct parsed_url* url = parse_url(urlStr->toStdString().c_str());
     JsObject::Ptr obj = JsObject::create();
-    
+
     obj->put(HREF, urlStr);
     if (url->scheme) {
         obj->put(PROTOCOL, String::create(url->scheme)->toLowerCase());
@@ -75,13 +76,13 @@ JsObject::Ptr parse(String::CPtr urlStr) {
         String::CPtr hash = SHARP->concat(String::create(url->fragment));
         obj->put(HASH, hash);
     }
-    
+
     parsed_url_free(url);
     return obj;
 }
 
 String::CPtr format(JsObject::CPtr urlObj) {
-    // TODO: implement
+    // TODO(plenluno): implement
     return String::create();
 }
 

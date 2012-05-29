@@ -1,10 +1,9 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_HTTP_SERVER_REQUEST_IMPL_H_
-#define LIBNODE_HTTP_SERVER_REQUEST_IMPL_H_
+#ifndef SRC_HTTP_SERVER_REQUEST_IMPL_H_
+#define SRC_HTTP_SERVER_REQUEST_IMPL_H_
 
 #include "libnode/http_server_request.h"
-#include <iostream>
 
 namespace libj {
 namespace node {
@@ -18,34 +17,34 @@ class ServerRequestImpl : public ServerRequest {
     static String::CPtr URL;
     static String::CPtr HEADERS;
     static String::CPtr HTTP_VERSION;
- 
+
  public:
     String::CPtr method() const {
         return getCPtr<String>(METHOD);
     }
-    
+
     String::CPtr url() const {
         return getCPtr<String>(URL);
     }
-    
+
     JsObject::CPtr headers() const {
         return getCPtr<JsObject>(HEADERS);
     }
-    
+
     String::CPtr httpVersion() const {
         return getCPtr<String>(HTTP_VERSION);
     }
-    
+
     net::Socket::Ptr connection() const;
-    
+
     void setMethod(String::CPtr method) {
         put(METHOD, method);
     }
-    
+
     void setUrl(String::CPtr url) {
         put(URL, url);
     }
-    
+
     void setHeader(String::CPtr name, String::CPtr value) {
         JsObject::Ptr headers = getPtr<JsObject>(HEADERS);
         if (!headers) {
@@ -54,11 +53,11 @@ class ServerRequestImpl : public ServerRequest {
         }
         headers->put(name->toLowerCase(), value);
     }
-    
+
     void setHttpVersion(String::CPtr httpVersion) {
         put(HTTP_VERSION, httpVersion);
     }
-    
+
  private:
     ServerContext* context_;
 
@@ -76,4 +75,4 @@ class ServerRequestImpl : public ServerRequest {
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_HTTP_SERVER_REQUEST_IMPL_H_
+#endif  // SRC_HTTP_SERVER_REQUEST_IMPL_H_

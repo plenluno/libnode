@@ -1,3 +1,5 @@
+// Copyright (c) 2012 Plenluno All rights reserved.
+
 #include "libnode/node.h"
 #include "libnode/url.h"
 #include "libnode/file_system.h"
@@ -5,7 +7,6 @@
 #include "libnode/http_server_request.h"
 #include "libnode/http_server_response.h"
 #include "libnode/http_status.h"
-#include <iostream>
 
 static libj::String::CPtr root;
 
@@ -15,13 +16,15 @@ namespace node {
 class OnRead : LIBJ_JS_FUNCTION(OnRead)
  private:
     http::ServerResponse::Ptr res_;
-    
+
  public:
     OnRead(http::ServerResponse::Ptr res) : res_(res) {}
-    
+
     Value operator()(JsArray::CPtr args) {
         String::CPtr content = toCPtr<String>(args->get(1));
-        res_->setHeader(String::create("Content-Type"), String::create("text/plain"));
+        res_->setHeader(
+            String::create("Content-Type"),
+            String::create("text/plain"));
         if (content) {
             res_->write(content);
         } else {
@@ -35,8 +38,10 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
 class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
  public:
     Value operator()(JsArray::CPtr args) {
-        http::ServerRequest::Ptr req = toPtr<http::ServerRequest>(args->get(0));
-        http::ServerResponse::Ptr res = toPtr<http::ServerResponse>(args->get(1));
+        http::ServerRequest::Ptr req =
+            toPtr<http::ServerRequest>(args->get(0));
+        http::ServerResponse::Ptr res =
+            toPtr<http::ServerResponse>(args->get(1));
         JsObject::Ptr url = url::parse(req->url());
         OnRead::Ptr onRead(new OnRead(res));
         fs::readFile(
@@ -46,22 +51,24 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
     }
 };
 
-}  // node
-}  // libj
+}  // namespace node
+}  // namespace libj
 
 int main(int argc, char *argv[]) {
-    using namespace libj;
-    using namespace node;
+    namespace node = libj::node;
+    namespace http = libj::node::http;
+
     if (argc < 2) {
         char dir[256];
         getcwd(dir, 256);
-        root = String::create(dir);
+        root = libj::String::create(dir);
     } else {
-        root = String::create(argv[1]);
+        root = libj::String::create(argv[1]);
     }
-    OnRequest::Ptr requestHandler(new OnRequest());
+
+    node::OnRequest::Ptr requestHandler(new node::OnRequest());
     http::Server::Ptr server = http::Server::create(requestHandler);
     server->listen(10001);
-    run();
+    node::run();
     return 0;
 }

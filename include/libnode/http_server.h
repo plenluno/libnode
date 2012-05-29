@@ -10,14 +10,14 @@ namespace node {
 namespace http {
 
 class Server : LIBNODE_EVENT_EMITTER(Server)
-public:
+ public:
     static String::CPtr IN_ADDR_ANY;
     static String::CPtr EVENT_REQUEST;
     static String::CPtr EVENT_CONNECTION;
     static String::CPtr EVENT_CLOSE;
-    
+
     static Ptr create(JsFunction::Ptr requestListener);
-    
+
     virtual bool listen(Int port, String::CPtr hostName = IN_ADDR_ANY) = 0;
     virtual void close() = 0;
 };

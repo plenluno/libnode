@@ -12,8 +12,8 @@ namespace fs {
 struct FileReadContext {
     uv_file file;
     std::string path;
-    static const int len = 4096;
-    char buf[len];
+    static const int kLen = 4096;
+    char buf[kLen];
     std::string res;
     Function::Ptr cb;
 };
@@ -36,7 +36,7 @@ static void onFileRead(uv_fs_t* req) {
         onFileReadError(req);
     } else if (req->result) {
         FileReadContext* context = static_cast<FileReadContext*>(req->data);
-        context->res.append(std::string(context->buf, context->len));
+        context->res.append(std::string(context->buf, context->kLen));
         readFileData(req, context);
     } else {
         FileReadContext* context = static_cast<FileReadContext*>(req->data);
@@ -59,10 +59,9 @@ static void readFileData(uv_fs_t* req, FileReadContext* context) {
         req,
         context->file,
         context->buf,
-        context->len,
+        context->kLen,
         context->res.length(),
-        onFileRead
-    );
+        onFileRead);
     if (err) {
         req->errorno = err;
         onFileReadError(req);

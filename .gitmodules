@@ -7,3 +7,6 @@
 [submodule "deps/libj"]
 	path = deps/libj
 	url = https://github.com/plenluno/libj.git
+[submodule "tools/cpplint"]
+	path = tools/cpplint
+	url = https://github.com/plenluno/cpplint.git

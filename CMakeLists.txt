@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(libnode)
 
-option(LIBNODE_USE_GTEST "Use googletest" OFF)
+option(LIBNODE_USE_GTEST "Use Google Test" OFF)
 
 message(STATUS "LIBNODE_USE_GTEST=${LIBNODE_USE_GTEST}")
 
@@ -94,7 +94,7 @@ target_link_libraries(node
     ${libnode-deps}
 )
 set_target_properties(node
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+    PROPERTIES COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions")
 
 # echo server
 add_executable(echo-server
@@ -105,7 +105,7 @@ target_link_libraries(echo-server
     ${libnode-deps}
 )
 set_target_properties(echo-server
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+    PROPERTIES COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions")
 
 # static server
 add_executable(static-server
@@ -116,7 +116,7 @@ target_link_libraries(static-server
     ${libnode-deps}
 )
 set_target_properties(static-server
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+    PROPERTIES COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions")
 
 # countdown timer
 add_executable(countdown-timer
@@ -127,7 +127,7 @@ target_link_libraries(countdown-timer
     ${libnode-deps}
 )
 set_target_properties(countdown-timer
-    PROPERTIES COMPILE_FLAGS "-fno-rtti -fno-exceptions")
+    PROPERTIES COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions")
 
 # gtest
 if(LIBNODE_USE_GTEST)
@@ -144,5 +144,5 @@ if(LIBNODE_USE_GTEST)
         ${libnode-deps}
     )
     set_target_properties(libnode-gtest
-        PROPERTIES COMPILE_FLAGS "-DLIBJ_GTEST_BUILD_ERRORS")
+        PROPERTIES COMPILE_FLAGS "-Wall -DLIBJ_GTEST_BUILD_ERRORS")
 endif(LIBNODE_USE_GTEST)

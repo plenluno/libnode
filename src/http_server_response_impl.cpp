@@ -28,7 +28,8 @@ void ServerResponseImpl::end() {
     makeResponse();
     makeResBuf();
     uv_write_t* write = &context_->write;
-    uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(context_->socket->getTcp());
+    uv_tcp_t* tcp = context_->socket->getTcp();
+    uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(tcp);
     if (write && stream) {
         write->data = context_;
         uv_write(

@@ -10,7 +10,6 @@ class StatusImpl : public Status {
  private:
     static String::CPtr MSG_CONTINUE;
     static String::CPtr MSG_SWITCHING_PROTOCOLS;
-
     static String::CPtr MSG_OK;
     static String::CPtr MSG_CREATED;
     static String::CPtr MSG_ACCEPTED;
@@ -18,7 +17,6 @@ class StatusImpl : public Status {
     static String::CPtr MSG_NO_CONTENT;
     static String::CPtr MSG_RESET_CONTENT;
     static String::CPtr MSG_PARTIAL_CONTENT;
-     
     static String::CPtr MSG_MULTIPLE_CHOICES;
     static String::CPtr MSG_MOVED_PERMANENTLY;
     static String::CPtr MSG_FOUND;
@@ -26,7 +24,6 @@ class StatusImpl : public Status {
     static String::CPtr MSG_NOT_MODIFIED;
     static String::CPtr MSG_USE_PROXY;
     static String::CPtr MSG_TEMPORARY_REDIRECT;
-     
     static String::CPtr MSG_BAD_REQUEST;
     static String::CPtr MSG_UNAUTHORIZED;
     static String::CPtr MSG_PAYMENT_REQUIRED;
@@ -45,20 +42,19 @@ class StatusImpl : public Status {
     static String::CPtr MSG_UNSUPPORTED_MEDIA_TYPE;
     static String::CPtr MSG_REQUESTED_RANGE_NOT_SATISFIABLE;
     static String::CPtr MSG_EXPECTATION_FAILED;
-
     static String::CPtr MSG_INTERNAL_SERVER_ERROR;
     static String::CPtr MSG_NOT_IMPLEMENTED;
     static String::CPtr MSG_BAD_GATEWAY;
     static String::CPtr MSG_SERVICE_UNAVAILABLE;
     static String::CPtr MSG_GATEWAY_TIMEOUT;
     static String::CPtr MSG_HTTP_VERSION_NOT_SUPPORTED;
-    
+
  private:
     Status::CPtr status_;
-    
+
     StatusImpl(Int code, String::CPtr msg)
         : status_(Status::create(code, msg)) {}
- 
+
  public:
     static CPtr create(Int code) {
         String::CPtr msg;
@@ -190,12 +186,12 @@ class StatusImpl : public Status {
         CPtr p(new StatusImpl(code, msg));
         return p;
     }
-     
+
     static CPtr create(Int code, String::CPtr msg) {
         CPtr p(new StatusImpl(code, msg));
         return p;
     }
-     
+
     LIBJ_STATUS_IMPL(status_);
 };
 
@@ -203,7 +199,6 @@ String::CPtr StatusImpl::MSG_CONTINUE =
     String::create("Continue");
 String::CPtr StatusImpl::MSG_SWITCHING_PROTOCOLS =
     String::create("Switching Protocols");
-
 String::CPtr StatusImpl::MSG_OK =
     String::create("OK");
 String::CPtr StatusImpl::MSG_CREATED =
@@ -218,7 +213,6 @@ String::CPtr StatusImpl::MSG_RESET_CONTENT =
     String::create("Reset Content");
 String::CPtr StatusImpl::MSG_PARTIAL_CONTENT =
     String::create("Partial Content");
-
 String::CPtr StatusImpl::MSG_MULTIPLE_CHOICES =
     String::create("Multiple Choices");
 String::CPtr StatusImpl::MSG_MOVED_PERMANENTLY =
@@ -233,7 +227,6 @@ String::CPtr StatusImpl::MSG_USE_PROXY =
     String::create("Use Proxy");
 String::CPtr StatusImpl::MSG_TEMPORARY_REDIRECT =
     String::create("Temporary Redirect");
-
 String::CPtr StatusImpl::MSG_BAD_REQUEST =
     String::create("Bad Request");
 String::CPtr StatusImpl::MSG_UNAUTHORIZED =
@@ -270,7 +263,6 @@ String::CPtr StatusImpl::MSG_REQUESTED_RANGE_NOT_SATISFIABLE =
     String::create("Requested Range Not Satisfiable");
 String::CPtr StatusImpl::MSG_EXPECTATION_FAILED =
     String::create("Expectation Failed");
-
 String::CPtr StatusImpl::MSG_INTERNAL_SERVER_ERROR =
     String::create("Internal Server Error");
 String::CPtr StatusImpl::MSG_NOT_IMPLEMENTED =

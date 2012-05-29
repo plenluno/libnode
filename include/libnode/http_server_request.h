@@ -10,11 +10,11 @@ namespace node {
 namespace http {
 
 class ServerRequest : LIBNODE_EVENT_EMITTER_WITHOUT_CREATE(ServerRequest)
-public:
+ public:
     static String::CPtr EVENT_DATA;
     static String::CPtr EVENT_END;
     static String::CPtr EVENT_CLOSE;
-    
+
     virtual String::CPtr method() const = 0;
     virtual String::CPtr url() const = 0;
     virtual JsObject::CPtr headers() const = 0;

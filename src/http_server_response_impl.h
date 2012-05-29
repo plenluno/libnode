@@ -1,13 +1,14 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_HTTP_SERVER_RESPONSE_IMPL_H_
-#define LIBNODE_HTTP_SERVER_RESPONSE_IMPL_H_
+#ifndef SRC_HTTP_SERVER_RESPONSE_IMPL_H_
+#define SRC_HTTP_SERVER_RESPONSE_IMPL_H_
+
+#include <uv.h>
+#include <string>
 
 #include "libj/string_buffer.h"
 #include "libnode/http_server_response.h"
 #include "libnode/http_status.h"
-#include <uv.h>
-#include <string.h>
 
 namespace libj {
 namespace node {
@@ -30,7 +31,7 @@ class ServerResponseImpl : public ServerResponse {
             return false;
         }
     }
-   
+
     Int statusCode() const {
         if (status_) {
             return status_->code();
@@ -38,7 +39,7 @@ class ServerResponseImpl : public ServerResponse {
             return 0;
         }
     }
-    
+
     JsObject::Ptr getHeaders() {
         JsObject::Ptr headers = getPtr<JsObject>(HEADERS);
         if (!headers) {
@@ -47,11 +48,11 @@ class ServerResponseImpl : public ServerResponse {
         }
         return headers;
     }
-   
+
     void setHeader(String::CPtr name, String::CPtr value) {
         getHeaders()->put(name, value);
     }
-    
+
     String::CPtr getHeader(String::CPtr name) const {
         JsObject::Ptr headers = getPtr<JsObject>(HEADERS);
         if (headers) {
@@ -62,15 +63,15 @@ class ServerResponseImpl : public ServerResponse {
             return nullp;
         }
     }
-    
+
     void removeHeader(String::CPtr name) {
         getHeaders()->remove(name);
     }
-    
+
     void write(Object::CPtr chunk) {
         body_->append(chunk);
     }
-    
+
     void makeResponse() {
         res_->append(String::create("HTTP/1.1 "));
         if (status_) {
@@ -100,8 +101,8 @@ class ServerResponseImpl : public ServerResponse {
         res_->append(nl);
         res_->append(body_);
     }
-    
-    // TODO: introduce Buffer
+
+    // TODO(plenluno): introduce Buffer
     void makeResBuf() {
         Size len = res_->length();
         std::string r;
@@ -112,29 +113,29 @@ class ServerResponseImpl : public ServerResponse {
         resBuf_.len = len;
         strncpy(resBuf_.base, r.c_str(), len);
     }
-    
+
     void end();
-    
+
  private:
     static void onClose(uv_handle_t* handle);
-    
+
     static void afterWrite(uv_write_t* write, int status) {
         write->handle->data = write->data;
         uv_close(
             reinterpret_cast<uv_handle_t*>(write->handle),
             ServerResponseImpl::onClose);
     }
-   
+
  private:
     ServerContext* context_;
     uv_buf_t resBuf_;
-    
+
     http::Status::CPtr status_;
-    
-    // TODO: introduce Buffer
+
+    // TODO(plenluno): introduce Buffer
     StringBuffer::Ptr res_;
     StringBuffer::Ptr body_;
-    
+
     EventEmitter::Ptr ee_;
 
  public:
@@ -149,4 +150,4 @@ class ServerResponseImpl : public ServerResponse {
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_HTTP_SERVER_RESPONSE_IMPL_H_
+#endif  // SRC_HTTP_SERVER_RESPONSE_IMPL_H_

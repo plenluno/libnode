@@ -1,8 +1,9 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libnode/timer.h"
-#include <map>
 #include <uv.h>
+#include <map>
+
+#include "libnode/timer.h"
 
 namespace libj {
 namespace node {
@@ -10,7 +11,7 @@ namespace node {
 namespace {
     Int nextTimeoutId = 1;
     Int nextIntervalId = -1;
-    
+
     struct TimerContext {
         Int id;
         uv_timer_t timer;
@@ -19,14 +20,14 @@ namespace {
         JsArray::CPtr args;
         bool isCleared;
     };
-    
-    std::map<Int,TimerContext*> timers;
-    
+
+    std::map<Int, TimerContext*> timers;
+
     void clearTimer(Value timerId) {
         Int id;
         if (!to<Int>(timerId, &id))
             return;
-        std::map<Int,TimerContext*>::const_iterator itr = timers.find(id);
+        std::map<Int, TimerContext*>::const_iterator itr = timers.find(id);
         if (itr != timers.end()) {
             TimerContext* context = itr->second;
             uv_timer_stop(&context->timer);
@@ -35,14 +36,14 @@ namespace {
             uv_unref(uv_default_loop());
         }
     }
-    
+
     void onTimeout(uv_timer_t* handle, int status) {
         TimerContext* context = static_cast<TimerContext*>(handle->data);
         if (!context->isCleared)
             (*context->callback)(context->args);
         clearTimer(context->id);
     }
-    
+
     void onInterval(uv_timer_t* handle, int status) {
         TimerContext* context = static_cast<TimerContext*>(handle->data);
         if (context->isCleared) {
@@ -53,7 +54,7 @@ namespace {
             uv_timer_start(&context->timer, onInterval, context->timeout, 1);
         }
     }
-    
+
     Int setTimer(
         Int id,
         Int delay,
@@ -86,7 +87,7 @@ void clearTimeout(Value timeoutId) {
     Int id;
     if (!to<Int>(timeoutId, &id))
         return;
-    std::map<Int,TimerContext*>::const_iterator itr = timers.find(id);
+    std::map<Int, TimerContext*>::const_iterator itr = timers.find(id);
     if (itr != timers.end()) {
         TimerContext* context = itr->second;
         context->isCleared = true;
