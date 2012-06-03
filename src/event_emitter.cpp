@@ -45,7 +45,7 @@ class EventEmitterImpl : public EventEmitter {
         }
     }
 
-    void emit(String::CPtr event, JsArray::CPtr args) {
+    void emit(String::CPtr event, JsArray::Ptr args) {
         Value v = listeners_->get(event);
         if (!v.instanceOf(Type<Null>::id())) {
             JsArray::Ptr a = toPtr<JsArray>(v);

@@ -17,7 +17,7 @@ namespace {
         uv_timer_t timer;
         int64_t timeout;
         JsFunction::Ptr callback;
-        JsArray::CPtr args;
+        JsArray::Ptr args;
         bool isCleared;
     };
 
@@ -59,7 +59,7 @@ namespace {
         Int id,
         Int delay,
         JsFunction::Ptr callback,
-        JsArray::CPtr args,
+        JsArray::Ptr args,
         uv_timer_cb cb) {
         TimerContext* context = new TimerContext;
         context->id = id;
@@ -75,11 +75,11 @@ namespace {
     }
 }
 
-Value setTimeout(JsFunction::Ptr callback, Int delay, JsArray::CPtr args) {
+Value setTimeout(JsFunction::Ptr callback, Int delay, JsArray::Ptr args) {
     return setTimer(nextTimeoutId++, delay, callback, args, onTimeout);
 }
 
-Value setInterval(JsFunction::Ptr callback, Int delay, JsArray::CPtr args) {
+Value setInterval(JsFunction::Ptr callback, Int delay, JsArray::Ptr args) {
     return setTimer(nextIntervalId--, delay, callback, args, onInterval);
 }
 

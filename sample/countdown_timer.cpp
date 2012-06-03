@@ -1,6 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include "libj/console.h"
+#include "libj/string.h"
 #include "libnode/node.h"
 #include "libnode/timer.h"
 
@@ -18,7 +19,7 @@ class OnInterval : LIBJ_JS_FUNCTION(OnInterval)
         id_ = id;
     }
 
-    Value operator()(JsArray::CPtr args) {
+    Value operator()(JsArray::Ptr args) {
         if (count) {
             console::log(String::valueOf(count--));
         } else {

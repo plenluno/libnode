@@ -9,7 +9,7 @@ namespace libj {
 namespace node {
 namespace net {
 
-class Socket : LIBNODE_EVENT_EMITTER_WITHOUT_CREATE(Socket)
+class Socket : LIBNODE_EVENT_EMITTER(Socket)
  public:
     virtual String::CPtr remoteAddress() = 0;
 };

@@ -9,7 +9,7 @@ namespace libj {
 namespace node {
 namespace http {
 
-class ServerResponse : LIBNODE_EVENT_EMITTER_WITHOUT_CREATE(ServerResponse)
+class ServerResponse : LIBNODE_EVENT_EMITTER(ServerResponse)
  public:
     static String::CPtr EVENT_CLOSE;
 

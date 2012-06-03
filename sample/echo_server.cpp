@@ -19,7 +19,7 @@ class OnData : LIBJ_JS_FUNCTION(OnData)
 
     String::CPtr getBody() const { return body_; }
 
-    Value operator()(JsArray::CPtr args) {
+    Value operator()(JsArray::Ptr args) {
         String::CPtr chunk = toCPtr<String>(args->get(0));
         if (chunk)
             body_ = body_->concat(chunk);
@@ -45,7 +45,7 @@ class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
         , res_(res)
         , onData_(onData) {}
 
-    Value operator()(JsArray::CPtr args) {
+    Value operator()(JsArray::Ptr args) {
         req_->put(String::create("body"), onData_->getBody());
         res_->setHeader(
             String::create("Content-Type"),
@@ -70,7 +70,7 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
         : srv_(srv) {}
 
  public:
-    Value operator()(JsArray::CPtr args) {
+    Value operator()(JsArray::Ptr args) {
         http::ServerRequest::Ptr req =
             toPtr<http::ServerRequest>(args->get(0));
         http::ServerResponse::Ptr res =

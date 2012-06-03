@@ -20,7 +20,7 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
  public:
     OnRead(http::ServerResponse::Ptr res) : res_(res) {}
 
-    Value operator()(JsArray::CPtr args) {
+    Value operator()(JsArray::Ptr args) {
         String::CPtr content = toCPtr<String>(args->get(1));
         res_->setHeader(
             String::create("Content-Type"),
@@ -37,7 +37,7 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
 
 class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
  public:
-    Value operator()(JsArray::CPtr args) {
+    Value operator()(JsArray::Ptr args) {
         http::ServerRequest::Ptr req =
             toPtr<http::ServerRequest>(args->get(0));
         http::ServerResponse::Ptr res =
