@@ -33,6 +33,7 @@ link_directories(
 )
 
 set(libnode-src
+    src/buffer.cpp
     src/event_emitter.cpp
     src/file_system.cpp
     src/http_server.cpp
