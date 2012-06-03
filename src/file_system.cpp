@@ -1,5 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include "libj/js_array.h"
 #include "libnode/file_system.h"
 #include <uv.h>
 #include <fcntl.h>
@@ -21,7 +22,7 @@ struct FileReadContext {
 static void onFileReadError(uv_fs_t* req) {
     FileReadContext* context = static_cast<FileReadContext*>(req->data);
     if (context->cb) {
-        ArrayList::Ptr args = ArrayList::create();
+        JsArray::Ptr args = JsArray::create();
         args->add(req->errorno);
         (*(context->cb))(args);
     }
@@ -41,7 +42,7 @@ static void onFileRead(uv_fs_t* req) {
     } else {
         FileReadContext* context = static_cast<FileReadContext*>(req->data);
         if (context->cb) {
-            ArrayList::Ptr args = ArrayList::create();
+            JsArray::Ptr args = JsArray::create();
             args->add(req->errorno);
             args->add(String::create(context->res.c_str()));
             (*(context->cb))(args);
