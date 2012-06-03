@@ -3,7 +3,7 @@
 #ifndef LIBNODE_HTTP_STATUS_H_
 #define LIBNODE_HTTP_STATUS_H_
 
-#include "libj/status.h"
+#include <libj/status.h>
 
 namespace libj {
 namespace node {

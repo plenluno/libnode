@@ -1,7 +1,8 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libj/console.h"
-#include "libj/string.h"
+#include <libj/console.h>
+#include <libj/string.h>
+
 #include "libnode/node.h"
 #include "libnode/timer.h"
 

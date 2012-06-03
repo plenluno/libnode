@@ -3,8 +3,8 @@
 #ifndef LIBNODE_TIMER_H_
 #define LIBNODE_TIMER_H_
 
-#include "libj/js_array.h"
-#include "libj/js_function.h"
+#include <libj/js_array.h>
+#include <libj/js_function.h>
 
 namespace libj {
 namespace node {

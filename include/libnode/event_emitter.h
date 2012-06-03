@@ -3,10 +3,10 @@
 #ifndef LIBNODE_EVENT_EMITTER_H_
 #define LIBNODE_EVENT_EMITTER_H_
 
-#include "libj/string.h"
-#include "libj/js_array.h"
-#include "libj/js_function.h"
-#include "libj/js_object.h"
+#include <libj/js_array.h>
+#include <libj/js_function.h>
+#include <libj/js_object.h>
+#include <libj/string.h>
 
 namespace libj {
 namespace node {

@@ -1,6 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libj/null.h"
+#include <libj/null.h>
+
 #include "libnode/event_emitter.h"
 
 namespace libj {

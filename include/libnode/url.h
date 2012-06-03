@@ -3,8 +3,8 @@
 #ifndef LIBNODE_URL_H_
 #define LIBNODE_URL_H_
 
-#include "libj/string.h"
-#include "libj/js_object.h"
+#include <libj/js_object.h>
+#include <libj/string.h>
 
 namespace libj {
 namespace node {

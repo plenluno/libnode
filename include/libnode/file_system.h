@@ -3,8 +3,8 @@
 #ifndef LIBNODE_FILE_SYSTEM_H_
 #define LIBNODE_FILE_SYSTEM_H_
 
-#include "libj/string.h"
-#include "libj/js_function.h"
+#include <libj/js_function.h>
+#include <libj/string.h>
 
 namespace libj {
 namespace node {
