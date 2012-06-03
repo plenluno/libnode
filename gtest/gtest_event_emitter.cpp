@@ -11,11 +11,8 @@ namespace events {
 static JsArray::Ptr results = JsArray::create();
 
 class Add : LIBJ_JS_FUNCTION(Add)
-};
-
-class AddImpl : public Add {
  public:
-    Value operator()(JsArray::CPtr args) {
+    Value operator()(JsArray::Ptr args) {
         if (args->size() == 2 &&
             args->get(0).type() == Type<Int>::id() &&
             args->get(1).type() == Type<Int>::id()) {
@@ -31,21 +28,14 @@ class AddImpl : public Add {
     }
 
     static Add::Ptr create() {
-        Add::Ptr p(new AddImpl());
+        Add::Ptr p(new Add());
         return p;
     }
 };
 
-Add::Ptr Add::create() {
-    return AddImpl::create();
-}
-
 class Sub : LIBJ_JS_FUNCTION(Sub)
-};
-
-class SubImpl : public Sub {
  public:
-    Value operator()(JsArray::CPtr args) {
+    Value operator()(JsArray::Ptr args) {
         if (args->size() == 2 &&
             args->get(0).type() == Type<Int>::id() &&
             args->get(1).type() == Type<Int>::id()) {
@@ -61,15 +51,10 @@ class SubImpl : public Sub {
     }
 
     static Sub::Ptr create() {
-        Sub::Ptr p(new SubImpl());
+        Sub::Ptr p(new Sub());
         return p;
     }
 };
-
-Sub::Ptr Sub::create() {
-    return SubImpl::create();
-}
-
 
 TEST(GTestEventEmitter, TestCreate) {
     EventEmitter::Ptr ee = EventEmitter::create();
