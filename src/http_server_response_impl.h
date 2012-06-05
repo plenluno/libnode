@@ -4,6 +4,7 @@
 #define SRC_HTTP_SERVER_RESPONSE_IMPL_H_
 
 #include <libj/string_buffer.h>
+#include <string.h>
 #include <uv.h>
 #include <string>
 
