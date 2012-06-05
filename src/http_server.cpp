@@ -120,7 +120,7 @@ class ServerImpl : public Server {
                     ServerImpl::onClose);
             }
         } else {
-            uv_err_t err = uv_last_error(uv_default_loop());
+            // uv_err_t err = uv_last_error(uv_default_loop());
             // assert(err.code == UV_EOF);
             uv_close(
                 reinterpret_cast<uv_handle_t*>(stream),
