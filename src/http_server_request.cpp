@@ -6,9 +6,9 @@ namespace libj {
 namespace node {
 namespace http {
 
-String::CPtr ServerRequest::EVENT_DATA = String::create("data");
-String::CPtr ServerRequest::EVENT_END = String::create("end");
-String::CPtr ServerRequest::EVENT_CLOSE = String::create("close");
+const String::CPtr ServerRequest::EVENT_DATA = String::create("data");
+const String::CPtr ServerRequest::EVENT_END = String::create("end");
+const String::CPtr ServerRequest::EVENT_CLOSE = String::create("close");
 
 }  // namespace http
 }  // namespace node

@@ -8,46 +8,46 @@ namespace http {
 
 class StatusImpl : public Status {
  private:
-    static String::CPtr MSG_CONTINUE;
-    static String::CPtr MSG_SWITCHING_PROTOCOLS;
-    static String::CPtr MSG_OK;
-    static String::CPtr MSG_CREATED;
-    static String::CPtr MSG_ACCEPTED;
-    static String::CPtr MSG_NON_AUTHORITATIVE_INFORMATION;
-    static String::CPtr MSG_NO_CONTENT;
-    static String::CPtr MSG_RESET_CONTENT;
-    static String::CPtr MSG_PARTIAL_CONTENT;
-    static String::CPtr MSG_MULTIPLE_CHOICES;
-    static String::CPtr MSG_MOVED_PERMANENTLY;
-    static String::CPtr MSG_FOUND;
-    static String::CPtr MSG_SEE_OTHER;
-    static String::CPtr MSG_NOT_MODIFIED;
-    static String::CPtr MSG_USE_PROXY;
-    static String::CPtr MSG_TEMPORARY_REDIRECT;
-    static String::CPtr MSG_BAD_REQUEST;
-    static String::CPtr MSG_UNAUTHORIZED;
-    static String::CPtr MSG_PAYMENT_REQUIRED;
-    static String::CPtr MSG_FORBIDDEN;
-    static String::CPtr MSG_NOT_FOUND;
-    static String::CPtr MSG_METHOD_NOT_ALLOWED;
-    static String::CPtr MSG_NOT_ACCEPTABLE;
-    static String::CPtr MSG_PROXY_AUTHENTICATION_REQUIRED;
-    static String::CPtr MSG_REQUEST_TIMEOUT;
-    static String::CPtr MSG_CONFLICT;
-    static String::CPtr MSG_GONE;
-    static String::CPtr MSG_LENGTH_REQUIRED;
-    static String::CPtr MSG_PRECONDITION_FAILED;
-    static String::CPtr MSG_REQUEST_ENTITY_TOO_LARGE;
-    static String::CPtr MSG_REQUEST_URI_TOO_LONG;
-    static String::CPtr MSG_UNSUPPORTED_MEDIA_TYPE;
-    static String::CPtr MSG_REQUESTED_RANGE_NOT_SATISFIABLE;
-    static String::CPtr MSG_EXPECTATION_FAILED;
-    static String::CPtr MSG_INTERNAL_SERVER_ERROR;
-    static String::CPtr MSG_NOT_IMPLEMENTED;
-    static String::CPtr MSG_BAD_GATEWAY;
-    static String::CPtr MSG_SERVICE_UNAVAILABLE;
-    static String::CPtr MSG_GATEWAY_TIMEOUT;
-    static String::CPtr MSG_HTTP_VERSION_NOT_SUPPORTED;
+    static const String::CPtr MSG_CONTINUE;
+    static const String::CPtr MSG_SWITCHING_PROTOCOLS;
+    static const String::CPtr MSG_OK;
+    static const String::CPtr MSG_CREATED;
+    static const String::CPtr MSG_ACCEPTED;
+    static const String::CPtr MSG_NON_AUTHORITATIVE_INFORMATION;
+    static const String::CPtr MSG_NO_CONTENT;
+    static const String::CPtr MSG_RESET_CONTENT;
+    static const String::CPtr MSG_PARTIAL_CONTENT;
+    static const String::CPtr MSG_MULTIPLE_CHOICES;
+    static const String::CPtr MSG_MOVED_PERMANENTLY;
+    static const String::CPtr MSG_FOUND;
+    static const String::CPtr MSG_SEE_OTHER;
+    static const String::CPtr MSG_NOT_MODIFIED;
+    static const String::CPtr MSG_USE_PROXY;
+    static const String::CPtr MSG_TEMPORARY_REDIRECT;
+    static const String::CPtr MSG_BAD_REQUEST;
+    static const String::CPtr MSG_UNAUTHORIZED;
+    static const String::CPtr MSG_PAYMENT_REQUIRED;
+    static const String::CPtr MSG_FORBIDDEN;
+    static const String::CPtr MSG_NOT_FOUND;
+    static const String::CPtr MSG_METHOD_NOT_ALLOWED;
+    static const String::CPtr MSG_NOT_ACCEPTABLE;
+    static const String::CPtr MSG_PROXY_AUTHENTICATION_REQUIRED;
+    static const String::CPtr MSG_REQUEST_TIMEOUT;
+    static const String::CPtr MSG_CONFLICT;
+    static const String::CPtr MSG_GONE;
+    static const String::CPtr MSG_LENGTH_REQUIRED;
+    static const String::CPtr MSG_PRECONDITION_FAILED;
+    static const String::CPtr MSG_REQUEST_ENTITY_TOO_LARGE;
+    static const String::CPtr MSG_REQUEST_URI_TOO_LONG;
+    static const String::CPtr MSG_UNSUPPORTED_MEDIA_TYPE;
+    static const String::CPtr MSG_REQUESTED_RANGE_NOT_SATISFIABLE;
+    static const String::CPtr MSG_EXPECTATION_FAILED;
+    static const String::CPtr MSG_INTERNAL_SERVER_ERROR;
+    static const String::CPtr MSG_NOT_IMPLEMENTED;
+    static const String::CPtr MSG_BAD_GATEWAY;
+    static const String::CPtr MSG_SERVICE_UNAVAILABLE;
+    static const String::CPtr MSG_GATEWAY_TIMEOUT;
+    static const String::CPtr MSG_HTTP_VERSION_NOT_SUPPORTED;
 
  private:
     Status::CPtr status_;
@@ -195,85 +195,85 @@ class StatusImpl : public Status {
     LIBJ_STATUS_IMPL(status_);
 };
 
-String::CPtr StatusImpl::MSG_CONTINUE =
+const String::CPtr StatusImpl::MSG_CONTINUE =
     String::create("Continue");
-String::CPtr StatusImpl::MSG_SWITCHING_PROTOCOLS =
+const String::CPtr StatusImpl::MSG_SWITCHING_PROTOCOLS =
     String::create("Switching Protocols");
-String::CPtr StatusImpl::MSG_OK =
+const String::CPtr StatusImpl::MSG_OK =
     String::create("OK");
-String::CPtr StatusImpl::MSG_CREATED =
+const String::CPtr StatusImpl::MSG_CREATED =
     String::create("Created");
-String::CPtr StatusImpl::MSG_ACCEPTED =
+const String::CPtr StatusImpl::MSG_ACCEPTED =
     String::create("Accepted");
-String::CPtr StatusImpl::MSG_NON_AUTHORITATIVE_INFORMATION =
+const String::CPtr StatusImpl::MSG_NON_AUTHORITATIVE_INFORMATION =
     String::create("Non-Authoritative Information");
-String::CPtr StatusImpl::MSG_NO_CONTENT =
+const String::CPtr StatusImpl::MSG_NO_CONTENT =
     String::create("No Content");
-String::CPtr StatusImpl::MSG_RESET_CONTENT =
+const String::CPtr StatusImpl::MSG_RESET_CONTENT =
     String::create("Reset Content");
-String::CPtr StatusImpl::MSG_PARTIAL_CONTENT =
+const String::CPtr StatusImpl::MSG_PARTIAL_CONTENT =
     String::create("Partial Content");
-String::CPtr StatusImpl::MSG_MULTIPLE_CHOICES =
+const String::CPtr StatusImpl::MSG_MULTIPLE_CHOICES =
     String::create("Multiple Choices");
-String::CPtr StatusImpl::MSG_MOVED_PERMANENTLY =
+const String::CPtr StatusImpl::MSG_MOVED_PERMANENTLY =
     String::create("Moved Permanently");
-String::CPtr StatusImpl::MSG_FOUND =
+const String::CPtr StatusImpl::MSG_FOUND =
     String::create("Found");
-String::CPtr StatusImpl::MSG_SEE_OTHER =
+const String::CPtr StatusImpl::MSG_SEE_OTHER =
     String::create("See Other");
-String::CPtr StatusImpl::MSG_NOT_MODIFIED =
+const String::CPtr StatusImpl::MSG_NOT_MODIFIED =
     String::create("Not Modified");
-String::CPtr StatusImpl::MSG_USE_PROXY =
+const String::CPtr StatusImpl::MSG_USE_PROXY =
     String::create("Use Proxy");
-String::CPtr StatusImpl::MSG_TEMPORARY_REDIRECT =
+const String::CPtr StatusImpl::MSG_TEMPORARY_REDIRECT =
     String::create("Temporary Redirect");
-String::CPtr StatusImpl::MSG_BAD_REQUEST =
+const String::CPtr StatusImpl::MSG_BAD_REQUEST =
     String::create("Bad Request");
-String::CPtr StatusImpl::MSG_UNAUTHORIZED =
+const String::CPtr StatusImpl::MSG_UNAUTHORIZED =
     String::create("Unauthorized");
-String::CPtr StatusImpl::MSG_PAYMENT_REQUIRED =
+const String::CPtr StatusImpl::MSG_PAYMENT_REQUIRED =
     String::create("Payment Required");
-String::CPtr StatusImpl::MSG_FORBIDDEN =
+const String::CPtr StatusImpl::MSG_FORBIDDEN =
     String::create("Forbidden");
-String::CPtr StatusImpl::MSG_NOT_FOUND =
+const String::CPtr StatusImpl::MSG_NOT_FOUND =
     String::create("Not Found");
-String::CPtr StatusImpl::MSG_METHOD_NOT_ALLOWED =
+const String::CPtr StatusImpl::MSG_METHOD_NOT_ALLOWED =
     String::create("Method Not Allowed");
-String::CPtr StatusImpl::MSG_NOT_ACCEPTABLE =
+const String::CPtr StatusImpl::MSG_NOT_ACCEPTABLE =
     String::create("Not Acceptable");
-String::CPtr StatusImpl::MSG_PROXY_AUTHENTICATION_REQUIRED =
+const String::CPtr StatusImpl::MSG_PROXY_AUTHENTICATION_REQUIRED =
     String::create("Proxy Authentication Required");
-String::CPtr StatusImpl::MSG_REQUEST_TIMEOUT =
+const String::CPtr StatusImpl::MSG_REQUEST_TIMEOUT =
     String::create("Request Timeout");
-String::CPtr StatusImpl::MSG_CONFLICT =
+const String::CPtr StatusImpl::MSG_CONFLICT =
     String::create("Conflict");
-String::CPtr StatusImpl::MSG_GONE =
+const String::CPtr StatusImpl::MSG_GONE =
     String::create("Gone");
-String::CPtr StatusImpl::MSG_LENGTH_REQUIRED =
+const String::CPtr StatusImpl::MSG_LENGTH_REQUIRED =
     String::create("Length Required");
-String::CPtr StatusImpl::MSG_PRECONDITION_FAILED =
+const String::CPtr StatusImpl::MSG_PRECONDITION_FAILED =
     String::create("Precondition Failed");
-String::CPtr StatusImpl::MSG_REQUEST_ENTITY_TOO_LARGE =
+const String::CPtr StatusImpl::MSG_REQUEST_ENTITY_TOO_LARGE =
     String::create("Request Entity Too Large");
-String::CPtr StatusImpl::MSG_REQUEST_URI_TOO_LONG =
+const String::CPtr StatusImpl::MSG_REQUEST_URI_TOO_LONG =
     String::create("Request-URI Too Long");
-String::CPtr StatusImpl::MSG_UNSUPPORTED_MEDIA_TYPE =
+const String::CPtr StatusImpl::MSG_UNSUPPORTED_MEDIA_TYPE =
     String::create("Unsupported Media Type");
-String::CPtr StatusImpl::MSG_REQUESTED_RANGE_NOT_SATISFIABLE =
+const String::CPtr StatusImpl::MSG_REQUESTED_RANGE_NOT_SATISFIABLE =
     String::create("Requested Range Not Satisfiable");
-String::CPtr StatusImpl::MSG_EXPECTATION_FAILED =
+const String::CPtr StatusImpl::MSG_EXPECTATION_FAILED =
     String::create("Expectation Failed");
-String::CPtr StatusImpl::MSG_INTERNAL_SERVER_ERROR =
+const String::CPtr StatusImpl::MSG_INTERNAL_SERVER_ERROR =
     String::create("Internal Server Error");
-String::CPtr StatusImpl::MSG_NOT_IMPLEMENTED =
+const String::CPtr StatusImpl::MSG_NOT_IMPLEMENTED =
     String::create("Not Implemented");
-String::CPtr StatusImpl::MSG_BAD_GATEWAY =
+const String::CPtr StatusImpl::MSG_BAD_GATEWAY =
     String::create("Bad Gateway");
-String::CPtr StatusImpl::MSG_SERVICE_UNAVAILABLE =
+const String::CPtr StatusImpl::MSG_SERVICE_UNAVAILABLE =
     String::create("Service Unavailable");
-String::CPtr StatusImpl::MSG_GATEWAY_TIMEOUT =
+const String::CPtr StatusImpl::MSG_GATEWAY_TIMEOUT =
     String::create("Gateway Timeout");
-String::CPtr StatusImpl::MSG_HTTP_VERSION_NOT_SUPPORTED =
+const String::CPtr StatusImpl::MSG_HTTP_VERSION_NOT_SUPPORTED =
     String::create("HTTP Version Not Supported");
 
 Status::CPtr Status::create(Int code) {

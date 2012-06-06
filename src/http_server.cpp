@@ -11,11 +11,6 @@ namespace node {
 namespace http {
 
 class ServerImpl : public Server {
- private:
-    static String::CPtr METHOD_GET;
-    static String::CPtr METHOD_POST;
-    static String::CPtr STR_DOT;
-
  public:
     static Ptr create() {
         Ptr p(new ServerImpl());
@@ -153,13 +148,17 @@ class ServerImpl : public Server {
     }
 
     static int onHeadersComplete(http_parser* parser) {
+        static const String::CPtr methodGet = String::create("GET");
+        static const String::CPtr methodPost = String::create("POST");
+        static const String::CPtr dot = String::create(".");
+
         ServerContext* context = static_cast<ServerContext*>(parser->data);
         switch (parser->method) {
         case HTTP_GET:
-            context->request->setMethod(METHOD_GET);
+            context->request->setMethod(methodGet);
             break;
         case HTTP_POST:
-            context->request->setMethod(METHOD_POST);
+            context->request->setMethod(methodPost);
             break;
         default:
             context->request->setMethod(String::create());
@@ -168,7 +167,7 @@ class ServerImpl : public Server {
         Int majorVer = static_cast<Int>(parser->http_major);
         Int minorVer = static_cast<Int>(parser->http_minor);
         String::CPtr httpVer = String::valueOf(majorVer);
-        httpVer = httpVer->concat(STR_DOT);
+        httpVer = httpVer->concat(dot);
         httpVer = httpVer->concat(String::valueOf(minorVer));
         context->request->setHttpVersion(httpVer);
 
@@ -223,14 +222,10 @@ class ServerImpl : public Server {
 LIBJ_NULL_CPTR(String, ServerImpl::headerName);
 http_parser_settings ServerImpl::settings = {};
 
-String::CPtr ServerImpl::METHOD_GET = String::create("GET");
-String::CPtr ServerImpl::METHOD_POST = String::create("POST");
-String::CPtr ServerImpl::STR_DOT = String::create(".");
-
-String::CPtr Server::IN_ADDR_ANY = String::create("0.0.0.0");
-String::CPtr Server::EVENT_REQUEST = String::create("request");
-String::CPtr Server::EVENT_CONNECTION = String::create("connection");
-String::CPtr Server::EVENT_CLOSE = String::create("close");
+const String::CPtr Server::IN_ADDR_ANY = String::create("0.0.0.0");
+const String::CPtr Server::EVENT_REQUEST = String::create("request");
+const String::CPtr Server::EVENT_CONNECTION = String::create("connection");
+const String::CPtr Server::EVENT_CLOSE = String::create("close");
 
 Server::Ptr Server::create() {
     return ServerImpl::create();

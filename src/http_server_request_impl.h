@@ -13,10 +13,10 @@ class ServerContext;
 
 class ServerRequestImpl : public ServerRequest {
  private:
-    static String::CPtr METHOD;
-    static String::CPtr URL;
-    static String::CPtr HEADERS;
-    static String::CPtr HTTP_VERSION;
+    static const String::CPtr METHOD;
+    static const String::CPtr URL;
+    static const String::CPtr HEADERS;
+    static const String::CPtr HTTP_VERSION;
 
  public:
     String::CPtr method() const {

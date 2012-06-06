@@ -11,10 +11,10 @@ namespace http {
 
 class Server : LIBNODE_EVENT_EMITTER(Server)
  public:
-    static String::CPtr IN_ADDR_ANY;
-    static String::CPtr EVENT_REQUEST;
-    static String::CPtr EVENT_CONNECTION;
-    static String::CPtr EVENT_CLOSE;
+    static const String::CPtr IN_ADDR_ANY;
+    static const String::CPtr EVENT_REQUEST;
+    static const String::CPtr EVENT_CONNECTION;
+    static const String::CPtr EVENT_CLOSE;
 
     static Ptr create();
     static Ptr create(JsFunction::Ptr requestListener);

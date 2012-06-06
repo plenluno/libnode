@@ -6,7 +6,7 @@ namespace libj {
 namespace node {
 namespace http {
 
-String::CPtr ServerResponse::EVENT_CLOSE = String::create("close");
+const String::CPtr ServerResponse::EVENT_CLOSE = String::create("close");
 
 }  // namespace http
 }  // namespace node

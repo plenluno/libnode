@@ -8,24 +8,24 @@ namespace libj {
 namespace node {
 namespace url {
 
-String::CPtr HREF = String::create("href");
-String::CPtr PROTOCOL = String::create("protocol");
-String::CPtr HOST = String::create("host");
-String::CPtr AUTH = String::create("auth");
-String::CPtr HOSTNAME = String::create("hostname");
-String::CPtr PORT = String::create("port");
-String::CPtr PATHNAME = String::create("pathname");
-String::CPtr SEARCH = String::create("search");
-String::CPtr PATH = String::create("path");
-String::CPtr QUERY = String::create("query");
-String::CPtr HASH = String::create("hash");
-
-static String::CPtr COLON = String::create(":");
-static String::CPtr SLASH = String::create("/");
-static String::CPtr SHARP = String::create("#");
-static String::CPtr QUESTION = String::create("?");
+const String::CPtr HREF = String::create("href");
+const String::CPtr PROTOCOL = String::create("protocol");
+const String::CPtr HOST = String::create("host");
+const String::CPtr AUTH = String::create("auth");
+const String::CPtr HOSTNAME = String::create("hostname");
+const String::CPtr PORT = String::create("port");
+const String::CPtr PATHNAME = String::create("pathname");
+const String::CPtr SEARCH = String::create("search");
+const String::CPtr PATH = String::create("path");
+const String::CPtr QUERY = String::create("query");
+const String::CPtr HASH = String::create("hash");
 
 JsObject::Ptr parse(String::CPtr urlStr) {
+    static const String::CPtr colon = String::create(":");
+    static const String::CPtr slash = String::create("/");
+    static const String::CPtr sharp = String::create("#");
+    static const String::CPtr question = String::create("?");
+    
     if (!urlStr) {
         LIBJ_NULL_PTR(JsObject, nullp);
         return nullp;
@@ -47,7 +47,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
         String::CPtr hostname = String::create(url->host)->toLowerCase();
         obj->put(HOSTNAME, hostname);
         if (port) {
-            obj->put(HOST, hostname->concat(COLON)->concat(port));
+            obj->put(HOST, hostname->concat(colon)->concat(port));
         } else {
             obj->put(HOST, hostname);
         }
@@ -58,22 +58,22 @@ JsObject::Ptr parse(String::CPtr urlStr) {
         obj->put(QUERY, query);
     }
     if (url->path) {
-        String::CPtr pathname = SLASH->concat(String::create(url->path));
+        String::CPtr pathname = sharp->concat(String::create(url->path));
         obj->put(PATHNAME, pathname);
         if (query) {
-            obj->put(PATH, pathname->concat(QUESTION)->concat(query));
+            obj->put(PATH, pathname->concat(question)->concat(query));
         } else {
             obj->put(PATH, pathname);
         }
     }
     if (url->username && url->password) {
         String::CPtr auth = String::create(url->username);
-        auth = auth->concat(COLON);
+        auth = auth->concat(colon);
         auth = auth->concat(String::create(url->password));
         obj->put(AUTH, auth);
     }
     if (url->fragment) {
-        String::CPtr hash = SHARP->concat(String::create(url->fragment));
+        String::CPtr hash = sharp->concat(String::create(url->fragment));
         obj->put(HASH, hash);
     }
 

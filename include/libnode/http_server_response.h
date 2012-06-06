@@ -11,7 +11,7 @@ namespace http {
 
 class ServerResponse : LIBNODE_EVENT_EMITTER(ServerResponse)
  public:
-    static String::CPtr EVENT_CLOSE;
+    static const String::CPtr EVENT_CLOSE;
 
     virtual Boolean writeHead(Int statusCode) = 0;
     virtual Int statusCode() const = 0;

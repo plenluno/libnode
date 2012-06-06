@@ -19,8 +19,8 @@ class ServerContext;
 
 class ServerResponseImpl : public ServerResponse {
  private:
-    static String::CPtr HEADERS;
-    static String::CPtr STATUS_CODE;
+    static const String::CPtr HEADERS;
+    static const String::CPtr STATUS_CODE;
 
  public:
     Boolean writeHead(Int statusCode) {

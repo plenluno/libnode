@@ -7,10 +7,14 @@ namespace libj {
 namespace node {
 namespace http {
 
-String::CPtr ServerRequestImpl::METHOD = String::create("method");
-String::CPtr ServerRequestImpl::URL = String::create("url");
-String::CPtr ServerRequestImpl::HEADERS = String::create("headers");
-String::CPtr ServerRequestImpl::HTTP_VERSION = String::create("httpVerion");
+const String::CPtr ServerRequestImpl::METHOD =
+    String::create("method");
+const String::CPtr ServerRequestImpl::URL =
+    String::create("url");
+const String::CPtr ServerRequestImpl::HEADERS =
+    String::create("headers");
+const String::CPtr ServerRequestImpl::HTTP_VERSION =
+    String::create("httpVerion");
 
 ServerRequestImpl::ServerRequestImpl(ServerContext* context)
     : context_(context)

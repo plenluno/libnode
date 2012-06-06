@@ -11,9 +11,9 @@ namespace http {
 
 class ServerRequest : LIBNODE_EVENT_EMITTER(ServerRequest)
  public:
-    static String::CPtr EVENT_DATA;
-    static String::CPtr EVENT_END;
-    static String::CPtr EVENT_CLOSE;
+    static const String::CPtr EVENT_DATA;
+    static const String::CPtr EVENT_END;
+    static const String::CPtr EVENT_CLOSE;
 
     virtual String::CPtr method() const = 0;
     virtual String::CPtr url() const = 0;

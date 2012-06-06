@@ -10,17 +10,17 @@ namespace libj {
 namespace node {
 namespace url {
 
-extern String::CPtr HREF;
-extern String::CPtr PROTOCOL;
-extern String::CPtr HOST;
-extern String::CPtr AUTH;
-extern String::CPtr HOSTNAME;
-extern String::CPtr PORT;
-extern String::CPtr PATHNAME;
-extern String::CPtr SEARCH;
-extern String::CPtr PATH;
-extern String::CPtr QUERY;
-extern String::CPtr HASH;
+extern const String::CPtr HREF;
+extern const String::CPtr PROTOCOL;
+extern const String::CPtr HOST;
+extern const String::CPtr AUTH;
+extern const String::CPtr HOSTNAME;
+extern const String::CPtr PORT;
+extern const String::CPtr PATHNAME;
+extern const String::CPtr SEARCH;
+extern const String::CPtr PATH;
+extern const String::CPtr QUERY;
+extern const String::CPtr HASH;
 
 JsObject::Ptr parse(String::CPtr urlStr);
 String::CPtr format(JsObject::CPtr urlObj);
