@@ -25,7 +25,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
     static const String::CPtr slash = String::create("/");
     static const String::CPtr sharp = String::create("#");
     static const String::CPtr question = String::create("?");
-    
+
     if (!urlStr) {
         LIBJ_NULL_PTR(JsObject, nullp);
         return nullp;
