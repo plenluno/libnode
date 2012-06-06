@@ -27,7 +27,7 @@ static String::CPtr QUESTION = String::create("?");
 
 JsObject::Ptr parse(String::CPtr urlStr) {
     if (!urlStr) {
-        JsObject::Ptr nullp(static_cast<JsObject*>(0));
+        LIBJ_NULL_PTR(JsObject, nullp);
         return nullp;
     }
 

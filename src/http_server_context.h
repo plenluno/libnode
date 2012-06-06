@@ -19,8 +19,8 @@ class ServerContext {
     ServerContext(void* srv)
         : server(srv)
         , socket(net::SocketImpl::create())
-        , request(static_cast<ServerRequestImpl*>(0))
-        , response(static_cast<ServerResponseImpl*>(0)) {
+        , request(LIBJ_NULL(ServerRequestImpl))
+        , response(LIBJ_NULL(ServerResponseImpl)) {
     }
 
     http_parser parser;

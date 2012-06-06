@@ -180,7 +180,7 @@ class StatusImpl : public Status {
             msg = MSG_HTTP_VERSION_NOT_SUPPORTED;
             break;
         default:
-            CPtr p(static_cast<Status*>(0));
+            LIBJ_NULL_CPTR(Status, p);
             return p;
         }
         CPtr p(new StatusImpl(code, msg));
