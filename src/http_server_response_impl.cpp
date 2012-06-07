@@ -18,6 +18,7 @@ ServerResponseImpl::ServerResponseImpl(ServerContext* context)
     , res_(StringBuffer::create())
     , body_(StringBuffer::create())
     , ee_(EventEmitter::create()) {
+    resBuf_.base = 0;
 }
 
 ServerResponseImpl::~ServerResponseImpl() {
