@@ -58,7 +58,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
         obj->put(QUERY, query);
     }
     if (url->path) {
-        String::CPtr pathname = sharp->concat(String::create(url->path));
+        String::CPtr pathname = slash->concat(String::create(url->path));
         obj->put(PATHNAME, pathname);
         if (query) {
             obj->put(PATH, pathname->concat(question)->concat(query));
