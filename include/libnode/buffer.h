@@ -4,11 +4,22 @@
 #define LIBNODE_BUFFER_H_
 
 #include <libj/js_array_buffer.h>
+#include <libj/js_typed_array.h>
 
 namespace libj {
 namespace node {
 
 class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
+    static Ptr create(Size length);
+    static Ptr create(JsTypedArray<UByte>::CPtr array);
+    static Ptr create(String::CPtr str, String::Encoding enc = String::UTF8);
+
+    virtual void write(
+        String::CPtr str,
+        Size offset = 0,
+        Size length = NO_POS,
+        String::Encoding enc = String::UTF8) = 0;
+
     UByte readUInt8(Size offset) const {
         return getUInt8(offset);
     }
