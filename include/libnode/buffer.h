@@ -84,7 +84,7 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
     void writeUInt32BE(UInt value, Size offset) {
         setUInt32(offset, value, false);
     }
-    
+
     void writeInt8(Byte value, Size offset) {
         setInt8(offset, value);
     }
