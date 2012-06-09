@@ -3,12 +3,12 @@
 #ifndef LIBNODE_BUFFER_H_
 #define LIBNODE_BUFFER_H_
 
-#include <libj/js_object.h>
+#include <libj/js_array_buffer.h>
 
 namespace libj {
 namespace node {
 
-class Buffer : LIBJ_JS_OBJECT(Buffer)
+class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
 };
 
 }  // namespace node
