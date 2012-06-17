@@ -21,6 +21,7 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
         Size length = NO_POS,
         String::Encoding enc = String::UTF8) = 0;
 
+#ifdef LIBJ_USE_EXCEPTION
     UByte readUInt8(Size offset) const {
         return getUInt8(offset);
     }
@@ -76,61 +77,118 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
     Double readDoubleBE(Size offset) const {
         return getFloat64(offset, false);
     }
+#endif  // LIBJ_USE_EXCEPTION
 
-    void writeUInt8(UByte value, Size offset) {
-        setUInt8(offset, value);
+    Boolean readUInt8(UByte* value, Size offset) const {
+        return getUInt8(offset, value);
     }
 
-    void writeUInt16LE(UShort value, Size offset) {
-        setUInt16(offset, value, true);
+    Boolean readUInt16LE(UShort* value, Size offset) const {
+        return getUInt16(offset, value, true);
     }
 
-    void writeUInt16BE(UShort value, Size offset) {
-        setUInt16(offset, value, false);
+    Boolean readUInt16BE(UShort* value, Size offset) const {
+        return getUInt16(offset, value, false);
     }
 
-    void writeUInt32LE(UInt value, Size offset) {
-        setUInt32(offset, value, true);
+    Boolean readUInt32LE(UInt* value, Size offset) const {
+        return getUInt32(offset, value, true);
     }
 
-    void writeUInt32BE(UInt value, Size offset) {
-        setUInt32(offset, value, false);
+    Boolean readUInt32BE(UInt* value, Size offset) const {
+        return getUInt32(offset, value, false);
     }
 
-    void writeInt8(Byte value, Size offset) {
-        setInt8(offset, value);
+    Boolean readInt8(Byte* value, Size offset) const {
+        return getInt8(offset, value);
     }
 
-    void writeInt16LE(Short value, Size offset) {
-        setInt16(offset, value, true);
+    Boolean readInt16LE(Short* value, Size offset) const {
+        return getInt16(offset, value, true);
     }
 
-    void writeInt16BE(Short value, Size offset) {
-        setInt16(offset, value, false);
+    Boolean readInt16BE(Short* value, Size offset) const {
+        return getInt16(offset, value, false);
     }
 
-    void writeInt32LE(Int value, Size offset) {
-        setInt32(offset, value, true);
+    Boolean readInt32LE(Int* value, Size offset) const {
+        return getInt32(offset, value, true);
     }
 
-    void writeInt32BE(Int value, Size offset) {
-        setInt32(offset, value, false);
+    Boolean readInt32BE(Int* value, Size offset) const {
+        return getInt32(offset, value, false);
     }
 
-    void writeFloatLE(Float value, Size offset) {
-        setFloat32(offset, value, true);
+    Boolean readFloatLE(Float* value, Size offset) const {
+        return getFloat32(offset, value, true);
     }
 
-    void writeFloatBE(Float value, Size offset) {
-        setFloat32(offset, value, false);
+    Boolean readFloatBE(Float* value, Size offset) const {
+        return getFloat32(offset, value, false);
     }
 
-    void writeDoubleLE(Double value, Size offset) {
-        setFloat64(offset, value, true);
+    Boolean readDoubleLE(Double* value, Size offset) const {
+        return getFloat64(offset, value, true);
     }
 
-    void writeDoubleBE(Double value, Size offset) {
-        setFloat64(offset, value, false);
+    Boolean readDoubleBE(Double* value, Size offset) const {
+        return getFloat64(offset, value, false);
+    }
+
+    Boolean writeUInt8(UByte value, Size offset) {
+        return setUInt8(offset, value);
+    }
+
+    Boolean writeUInt16LE(UShort value, Size offset) {
+        return setUInt16(offset, value, true);
+    }
+
+    Boolean writeUInt16BE(UShort value, Size offset) {
+        return setUInt16(offset, value, false);
+    }
+
+    Boolean writeUInt32LE(UInt value, Size offset) {
+        return setUInt32(offset, value, true);
+    }
+
+    Boolean writeUInt32BE(UInt value, Size offset) {
+        return setUInt32(offset, value, false);
+    }
+
+    Boolean writeInt8(Byte value, Size offset) {
+        return setInt8(offset, value);
+    }
+
+    Boolean writeInt16LE(Short value, Size offset) {
+        return setInt16(offset, value, true);
+    }
+
+    Boolean writeInt16BE(Short value, Size offset) {
+        return setInt16(offset, value, false);
+    }
+
+    Boolean writeInt32LE(Int value, Size offset) {
+        return setInt32(offset, value, true);
+    }
+
+    Boolean writeInt32BE(Int value, Size offset) {
+        return setInt32(offset, value, false);
+    }
+
+    Boolean writeFloatLE(Float value, Size offset) {
+        return setFloat32(offset, value, true);
+    }
+
+    Boolean writeFloatBE(Float value, Size offset) {
+        return setFloat32(offset, value, false);
+    }
+
+    Boolean writeDoubleLE(Double value, Size offset) {
+        return setFloat64(offset, value, true);
+    }
+
+    Boolean writeDoubleBE(Double value, Size offset) {
+        return setFloat64(offset, value, false);
     }
 };
 
