@@ -79,6 +79,7 @@ class ServerResponseImpl : public ServerResponse {
             res_->append(String::valueOf(status_->code()));
             res_->append(String::create(" "));
             res_->append(status_->toString());
+            res_->append(String::create("\r\n"));
         } else {
             res_->append(String::create("200 OK\r\n"));
         }
