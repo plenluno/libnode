@@ -50,10 +50,10 @@ class StatusImpl : public Status {
     static const String::CPtr MSG_HTTP_VERSION_NOT_SUPPORTED;
 
  private:
-    Status::CPtr status_;
+    libj::Status::CPtr status_;
 
     StatusImpl(Int code, String::CPtr msg)
-        : status_(Status::create(code, msg)) {}
+        : status_(libj::Status::create(code, msg)) {}
 
  public:
     static CPtr create(Int code) {
