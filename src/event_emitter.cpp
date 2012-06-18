@@ -17,7 +17,7 @@ class EventEmitterImpl : public EventEmitter {
     void addListener(String::CPtr event, JsFunction::Ptr listener) {
         JsArray::Ptr a;
         Value v = listeners_->get(event);
-        if (v.instanceOf(Type<Null>::id())) {
+        if (v.instanceof(Type<Null>::id())) {
             a = JsArray::create();
             listeners_->put(event, a);
         } else {
@@ -28,7 +28,7 @@ class EventEmitterImpl : public EventEmitter {
 
     void removeListener(String::CPtr event, JsFunction::CPtr listener) {
         Value v = listeners_->get(event);
-        if (!v.instanceOf(Type<Null>::id())) {
+        if (!v.instanceof(Type<Null>::id())) {
             JsArray::Ptr a = toPtr<JsArray>(v);
             while (a->remove(listener)) {}
         }
@@ -40,7 +40,7 @@ class EventEmitterImpl : public EventEmitter {
 
     void removeAllListeners(String::CPtr event) {
         Value v = listeners_->get(event);
-        if (!v.instanceOf(Type<Null>::id())) {
+        if (!v.instanceof(Type<Null>::id())) {
             JsArray::Ptr a = toPtr<JsArray>(v);
             a->clear();
         }
@@ -48,7 +48,7 @@ class EventEmitterImpl : public EventEmitter {
 
     void emit(String::CPtr event, JsArray::Ptr args) {
         Value v = listeners_->get(event);
-        if (!v.instanceOf(Type<Null>::id())) {
+        if (!v.instanceof(Type<Null>::id())) {
             JsArray::Ptr a = toPtr<JsArray>(v);
             Size n = a->size();
             for (Size i = 0; i < n; i++) {

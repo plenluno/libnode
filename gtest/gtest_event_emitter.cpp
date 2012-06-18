@@ -70,7 +70,7 @@ TEST(GTestEventEmitter, TestAddAndGetListeners) {
     ee->addListener(String::create("event"), sub);
 
     Value v = ee->listeners(event);
-    ASSERT_TRUE(v.instanceOf(Type<JsArray>::id()));
+    ASSERT_TRUE(v.instanceof(Type<JsArray>::id()));
 
     JsArray::Ptr a = toPtr<JsArray>(v);
     ASSERT_EQ(a->size(), 2);
