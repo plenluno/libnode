@@ -57,6 +57,11 @@ class StatusImpl : public Status {
 
  public:
     static CPtr create(Int code) {
+        if (code < 200 || code >= 600) {
+            LIBJ_NULL_CPTR(Status, nullp);
+            return nullp;
+        }
+
         String::CPtr msg;
         switch (code) {
         case CONTINUE:
@@ -180,16 +185,21 @@ class StatusImpl : public Status {
             msg = MSG_HTTP_VERSION_NOT_SUPPORTED;
             break;
         default:
-            LIBJ_NULL_CPTR(Status, p);
-            return p;
+            LIBJ_NULL_CPTR(String, nullp);
+            msg = nullp;
         }
         CPtr p(new StatusImpl(code, msg));
         return p;
     }
 
     static CPtr create(Int code, String::CPtr msg) {
-        CPtr p(new StatusImpl(code, msg));
-        return p;
+        if (code < 200 || code >= 600) {
+            LIBJ_NULL_CPTR(Status, nullp);
+            return nullp;
+        } else {
+            CPtr p(new StatusImpl(code, msg));
+            return p;
+        }
     }
 
     LIBJ_STATUS_IMPL(status_);
