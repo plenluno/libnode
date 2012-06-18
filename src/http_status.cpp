@@ -57,7 +57,7 @@ class StatusImpl : public Status {
 
  public:
     static CPtr create(Int code) {
-        if (code < 200 || code >= 600) {
+        if (code < 100 || code >= 600) {
             LIBJ_NULL_CPTR(Status, nullp);
             return nullp;
         }
@@ -193,7 +193,7 @@ class StatusImpl : public Status {
     }
 
     static CPtr create(Int code, String::CPtr msg) {
-        if (code < 200 || code >= 600) {
+        if (code < 100 || code >= 600) {
             LIBJ_NULL_CPTR(Status, nullp);
             return nullp;
         } else {
