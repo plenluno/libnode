@@ -60,6 +60,8 @@ static void afterFileRead(uv_fs_t* req) {
             args->add(String::create(context->res.c_str()));
             (*(context->cb))(args);
         }
+        uv_fs_req_cleanup(req);
+        req->data = context;
         int err = uv_fs_close(
             uv_default_loop(),
             req,
@@ -73,7 +75,8 @@ static void afterFileRead(uv_fs_t* req) {
 }
 
 static void readFileData(uv_fs_t* req, FileReadContext* context) {
-    uv_fs_req_cleanup(req);
+    if (context->res.length())
+        uv_fs_req_cleanup(req);
     req->data = context;
     int err = uv_fs_read(
         uv_default_loop(),
