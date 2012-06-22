@@ -45,7 +45,7 @@ static void afterFileClose(uv_fs_t* req) {
 
 static void readFileData(uv_fs_t* req, FileReadContext* context);
 
-static void afterFileRead(uv_fs_t* req) {  
+static void afterFileRead(uv_fs_t* req) {
     if (req->errorno) {
         onFileReadError(req);
     } else if (req->result) {
