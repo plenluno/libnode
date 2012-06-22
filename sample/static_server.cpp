@@ -28,7 +28,10 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
         if (content) {
             res_->write(content);
         } else {
-            res_->writeHead(http::Status::NOT_FOUND);
+            http::Status::CPtr status404 =
+                http::Status::create(http::Status::NOT_FOUND);
+            res_->writeHead(status404->code());
+            res_->write(status404->message());
         }
         res_->end();
         return 0;

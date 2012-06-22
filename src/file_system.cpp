@@ -27,13 +27,25 @@ static void onFileReadError(uv_fs_t* req) {
         args->add(req->errorno);
         (*(context->cb))(args);
     }
+    uv_fs_req_cleanup(req);
     delete context;
     delete req;
 }
 
+static void afterFileClose(uv_fs_t* req) {
+    if (req->errorno) {
+        onFileReadError(req);
+    } else {
+        FileReadContext* context = static_cast<FileReadContext*>(req->data);
+        uv_fs_req_cleanup(req);
+        delete context;
+        delete req;
+    }
+}
+
 static void readFileData(uv_fs_t* req, FileReadContext* context);
 
-static void onFileRead(uv_fs_t* req) {
+static void afterFileRead(uv_fs_t* req) {  
     if (req->errorno) {
         onFileReadError(req);
     } else if (req->result) {
@@ -48,8 +60,15 @@ static void onFileRead(uv_fs_t* req) {
             args->add(String::create(context->res.c_str()));
             (*(context->cb))(args);
         }
-        delete context;
-        delete req;
+        int err = uv_fs_close(
+            uv_default_loop(),
+            req,
+            context->file,
+            afterFileClose);
+        if (err) {
+            req->errorno = err;
+            onFileReadError(req);
+        }
     }
 }
 
@@ -63,7 +82,7 @@ static void readFileData(uv_fs_t* req, FileReadContext* context) {
         context->buf,
         context->kLen,
         context->res.length(),
-        onFileRead);
+        afterFileRead);
     if (err) {
         req->errorno = err;
         onFileReadError(req);
@@ -83,18 +102,18 @@ static void readFileAfterOpen(uv_fs_t* req) {
 void readFile(
     String::CPtr fileName,
     JsFunction::Ptr callback) {
-    uv_fs_t* req = new uv_fs_t;
     FileReadContext* context = new FileReadContext;
     context->cb = callback;
+    context->path = fileName->toStdString();
+    uv_fs_t* req = new uv_fs_t;
+    req->errorno = 0;
     req->data = context;
-    for (Size i = 0; i < fileName->length(); i++)
-        context->path += static_cast<char>(fileName->charAt(i));
     int err = uv_fs_open(
         uv_default_loop(),
         req,
         context->path.c_str(),
         O_RDONLY,
-        444,
+        438,
         readFileAfterOpen);
     if (err) {
         req->errorno = err;
