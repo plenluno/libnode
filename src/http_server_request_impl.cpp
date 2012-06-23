@@ -21,11 +21,6 @@ ServerRequestImpl::ServerRequestImpl(ServerContext* context)
     , ee_(EventEmitter::create()) {
 }
 
-ServerRequestImpl::~ServerRequestImpl() {
-    if (context_)
-        context_->request = 0;
-}
-
 net::Socket::Ptr ServerRequestImpl::connection() const {
     return context_->socket;
 }

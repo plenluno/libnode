@@ -22,8 +22,6 @@ ServerResponseImpl::ServerResponseImpl(ServerContext* context)
 }
 
 ServerResponseImpl::~ServerResponseImpl() {
-    if (context_)
-        context_->response = 0;
     free(resBuf_.base);
 }
 

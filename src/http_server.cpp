@@ -97,10 +97,14 @@ class ServerImpl : public Server {
 
     static void onRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf) {
         ServerContext* context = static_cast<ServerContext*>(stream->data);
-        if (!context->request)
-            context->request = new ServerRequestImpl(context);
-        if (!context->response)
-            context->response = new ServerResponseImpl(context);
+        if (!context->request) {
+            ServerRequestImpl::Ptr p(new ServerRequestImpl(context));
+            context->request = p;
+        }
+        if (!context->response) {
+            ServerResponseImpl::Ptr p(new ServerResponseImpl(context));
+            context->response = p;
+        }
 
         if (nread >= 0) {
             size_t parsed = http_parser_execute(

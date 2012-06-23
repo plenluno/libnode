@@ -19,6 +19,8 @@ class ServerRequestImpl : public ServerRequest {
     static const String::CPtr HTTP_VERSION;
 
  public:
+    typedef LIBJ_PTR(ServerRequestImpl) Ptr;
+
     String::CPtr method() const {
         return getCPtr<String>(METHOD);
     }
@@ -65,8 +67,6 @@ class ServerRequestImpl : public ServerRequest {
 
  public:
     ServerRequestImpl(ServerContext* context);
-
-    ~ServerRequestImpl();
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };

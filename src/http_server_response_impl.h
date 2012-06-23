@@ -23,6 +23,8 @@ class ServerResponseImpl : public ServerResponse {
     static const String::CPtr STATUS_CODE;
 
  public:
+    typedef LIBJ_PTR(ServerResponseImpl) Ptr;
+
     Boolean writeHead(Int statusCode) {
         status_ = http::Status::create(statusCode);
         if (status_) {

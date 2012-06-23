@@ -27,8 +27,8 @@ class ServerContext {
     uv_write_t write;
     void* server;
     net::SocketImpl::Ptr socket;
-    ServerRequestImpl* request;
-    ServerResponseImpl* response;
+    ServerRequestImpl::Ptr request;
+    ServerResponseImpl::Ptr response;
 };
 
 }  // namespace http
