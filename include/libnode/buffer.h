@@ -11,7 +11,7 @@ namespace node {
 
 class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
  public:
-    static Ptr create(Size length);
+    static Ptr create(Size length = 0);
     static Ptr create(JsTypedArray<UByte>::CPtr array);
     static Ptr create(String::CPtr str, String::Encoding enc = String::UTF8);
 
