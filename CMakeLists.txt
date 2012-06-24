@@ -36,6 +36,7 @@ set(libnode-src
     src/buffer.cpp
     src/event_emitter.cpp
     src/file_system.cpp
+    src/fs_stats.cpp
     src/http_server.cpp
     src/http_server_request.cpp
     src/http_server_request_impl.cpp
