@@ -25,8 +25,6 @@ extern const String::CPtr STAT_MTIME;
 extern const String::CPtr STAT_CTIME;
 
 class Stats : LIBJ_JS_OBJECT(Stats)
- public:
-
 };
 
 }  // namespace fs
