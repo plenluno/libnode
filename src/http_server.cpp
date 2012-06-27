@@ -152,17 +152,41 @@ class ServerImpl : public Server {
     }
 
     static int onHeadersComplete(http_parser* parser) {
+        static const String::CPtr methodDelete = String::create("DELETE");
         static const String::CPtr methodGet = String::create("GET");
+        static const String::CPtr methodHead = String::create("HEAD");
         static const String::CPtr methodPost = String::create("POST");
+        static const String::CPtr methodPut = String::create("PUT");
+        static const String::CPtr methodConnect = String::create("CONNECT");
+        static const String::CPtr methodOptions = String::create("OPTIONS");
+        static const String::CPtr methodTrace = String::create("TRACE");
         static const String::CPtr dot = String::create(".");
 
         ServerContext* context = static_cast<ServerContext*>(parser->data);
         switch (parser->method) {
+        case HTTP_DELETE:
+            context->request->setMethod(methodDelete);
+            break;
         case HTTP_GET:
             context->request->setMethod(methodGet);
             break;
+        case HTTP_HEAD:
+            context->request->setMethod(methodHead);
+            break;
         case HTTP_POST:
             context->request->setMethod(methodPost);
+            break;
+        case HTTP_PUT:
+            context->request->setMethod(methodPut);
+            break;
+        case HTTP_CONNECT:
+            context->request->setMethod(methodConnect);
+            break;
+        case HTTP_OPTIONS:
+            context->request->setMethod(methodOptions);
+            break;
+        case HTTP_TRACE:
+            context->request->setMethod(methodTrace);
             break;
         default:
             context->request->setMethod(String::create());
