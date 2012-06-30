@@ -2,11 +2,13 @@
 
 #include <libj/console.h>
 #include <libj/json.h>
+#include <libj/status.h>
 
 #include "libnode/http_server.h"
 #include "libnode/http_server_request.h"
 #include "libnode/http_server_response.h"
 #include "libnode/node.h"
+#include "libnode/timer.h"
 
 namespace libj {
 namespace node {
@@ -24,7 +26,32 @@ class OnData : LIBJ_JS_FUNCTION(OnData)
         String::CPtr chunk = toCPtr<String>(args->get(0));
         if (chunk)
             body_ = body_->concat(chunk);
-        return 0;
+        return Status::OK;
+    }
+};
+
+class Send : LIBJ_JS_FUNCTION(Send)
+ private:
+    http::Server::Ptr srv_;
+    http::ServerRequest::Ptr req_;
+    http::ServerResponse::Ptr res_;
+
+ public:
+    Send(
+        http::Server::Ptr srv,
+        http::ServerRequest::Ptr req,
+        http::ServerResponse::Ptr res)
+        : srv_(srv)
+        , req_(req)
+        , res_(res) {}
+
+    Value operator()(JsArray::Ptr args) {
+        res_->end();
+        req_->removeAllListeners();
+        srv_->removeAllListeners();
+        // only one reply
+        srv_->close();
+        return Status::OK;
     }
 };
 
@@ -52,12 +79,10 @@ class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
             String::create("Content-Type"),
             String::create("text/plain"));
         res_->write(json::stringify(req_));
-        res_->end();
-        req_->removeAllListeners(http::ServerRequest::EVENT_DATA);
-        req_->removeAllListeners(http::ServerRequest::EVENT_END);
-        // only one reply
-        srv_->close();
-        return 0;
+        Send::Ptr send(new Send(srv_, req_, res_));
+        // 3 sec delay
+        setTimeout(send, 3000, JsArray::create());
+        return Status::OK;
     }
 };
 
@@ -86,7 +111,7 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
             ->concat(req->httpVersion()));
         console::log(String::create("remote address: ")
             ->concat(req->connection()->remoteAddress()));
-        return 0;
+        return Status::OK;
     }
 };
 

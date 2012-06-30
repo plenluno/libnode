@@ -31,14 +31,17 @@ void ServerResponseImpl::end() {
     uv_write_t* write = &context_->write;
     uv_tcp_t* tcp = context_->socket->getTcp();
     uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(tcp);
-    if (write && stream) {
-        write->data = context_;
-        uv_write(
-            write,
-            stream,
-            &resBuf_,
-            1,
-            ServerResponseImpl::afterWrite);
+    assert(write && stream);
+
+    write->data = context_;
+    int err = uv_write(
+        write,
+        stream,
+        &resBuf_,
+        1,
+        ServerResponseImpl::afterWrite);
+    if (err) {
+        delete context_;
     }
 }
 
