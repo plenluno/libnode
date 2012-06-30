@@ -1,5 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <assert.h>
+
 #include "./http_server_context.h"
 #include "./http_server_response_impl.h"
 
