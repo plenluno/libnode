@@ -43,12 +43,14 @@ class ReadContext : public Context {
     ReadContext(Size len, Function::Ptr cb)
         : Context(cb)
         , buffer(new char[len])
-        , length(len) {
+        , length(len)
+        , res(LIBJ_NULL(Buffer))
+        , offset(0) {
         req->data = this;
     }
 
     ~ReadContext() {
-        delete buffer;
+        delete [] buffer;
     }
 };
 
