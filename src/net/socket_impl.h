@@ -3,7 +3,9 @@
 #ifndef SRC_NET_SOCKET_IMPL_H_
 #define SRC_NET_SOCKET_IMPL_H_
 
-#include "libnode/net_socket.h"
+#include <uv.h>
+
+#include "libnode/net/socket.h"
 
 namespace libj {
 namespace node {

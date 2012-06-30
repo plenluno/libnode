@@ -6,9 +6,9 @@
 #include <http_parser.h>
 #include <uv.h>
 
-#include "./http_server_request_impl.h"
-#include "./http_server_response_impl.h"
-#include "./net_socket_impl.h"
+#include "./server_request_impl.h"
+#include "./server_response_impl.h"
+#include "../net/socket_impl.h"
 
 namespace libj {
 namespace node {

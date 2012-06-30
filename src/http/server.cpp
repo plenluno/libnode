@@ -3,8 +3,8 @@
 #include <uv.h>
 #include <string>
 
-#include "libnode/http_server.h"
-#include "./http_server_context.h"
+#include "libnode/http/server.h"
+#include "./server_context.h"
 
 namespace libj {
 namespace node {

@@ -3,7 +3,7 @@
 #ifndef LIBNODE_HTTP_SERVER_REQUEST_H_
 #define LIBNODE_HTTP_SERVER_REQUEST_H_
 
-#include "libnode/net_socket.h"
+#include "libnode/net/socket.h"
 
 namespace libj {
 namespace node {

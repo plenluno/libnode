@@ -3,7 +3,7 @@
 #ifndef SRC_HTTP_SERVER_REQUEST_IMPL_H_
 #define SRC_HTTP_SERVER_REQUEST_IMPL_H_
 
-#include "libnode/http_server_request.h"
+#include "libnode/http/server_request.h"
 
 namespace libj {
 namespace node {

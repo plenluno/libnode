@@ -1,6 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libnode/http_status.h"
+#include "libnode/http/status.h"
 
 namespace libj {
 namespace node {

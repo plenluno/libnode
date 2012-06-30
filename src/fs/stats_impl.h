@@ -3,7 +3,7 @@
 #ifndef SRC_FS_STATS_IMPL_H_
 #define SRC_FS_STATS_IMPL_H_
 
-#include "libnode/fs_stats.h"
+#include "libnode/fs/stats.h"
 
 namespace libj {
 namespace node {

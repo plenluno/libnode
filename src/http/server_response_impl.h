@@ -8,8 +8,8 @@
 #include <uv.h>
 #include <string>
 
-#include "libnode/http_server_response.h"
-#include "libnode/http_status.h"
+#include "libnode/http/server_response.h"
+#include "libnode/http/status.h"
 
 namespace libj {
 namespace node {

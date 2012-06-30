@@ -6,8 +6,8 @@
 #include <string>
 
 #include "libnode/buffer.h"
-#include "libnode/file_system.h"
-#include "./fs_stats_impl.h"
+#include "libnode/fs.h"
+#include "./fs/stats_impl.h"
 
 namespace libj {
 namespace node {

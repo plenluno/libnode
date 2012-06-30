@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
-#include <libnode/event_emitter.h>
+#include <libnode/events/event_emitter.h>
 #include <libj/error.h>
 
 namespace libj {

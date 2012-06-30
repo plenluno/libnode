@@ -34,15 +34,15 @@ link_directories(
 
 set(libnode-src
     src/buffer.cpp
-    src/event_emitter.cpp
-    src/file_system.cpp
-    src/fs_stats.cpp
-    src/http_server.cpp
-    src/http_server_request.cpp
-    src/http_server_request_impl.cpp
-    src/http_server_response.cpp
-    src/http_server_response_impl.cpp
-    src/http_status.cpp
+    src/events/event_emitter.cpp
+    src/fs.cpp
+    src/fs/stats.cpp
+    src/http/server.cpp
+    src/http/server_request.cpp
+    src/http/server_request_impl.cpp
+    src/http/server_response.cpp
+    src/http/server_response_impl.cpp
+    src/http/status.cpp
     src/node.cpp
     src/timer.cpp
     src/url.cpp

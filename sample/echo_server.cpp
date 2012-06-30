@@ -4,9 +4,9 @@
 #include <libj/json.h>
 #include <libj/status.h>
 
-#include "libnode/http_server.h"
-#include "libnode/http_server_request.h"
-#include "libnode/http_server_response.h"
+#include "libnode/http/server.h"
+#include "libnode/http/server_request.h"
+#include "libnode/http/server_response.h"
 #include "libnode/node.h"
 #include "libnode/timer.h"
 

@@ -2,8 +2,8 @@
 
 #include <assert.h>
 
-#include "./http_server_context.h"
-#include "./http_server_response_impl.h"
+#include "./server_context.h"
+#include "./server_response_impl.h"
 
 namespace libj {
 namespace node {

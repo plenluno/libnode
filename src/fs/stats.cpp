@@ -1,6 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libnode/fs_stats.h"
+#include "libnode/fs/stats.h"
 
 namespace libj {
 namespace node {

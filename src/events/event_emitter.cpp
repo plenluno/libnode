@@ -2,7 +2,7 @@
 
 #include <libj/null.h>
 
-#include "libnode/event_emitter.h"
+#include "libnode/events/event_emitter.h"
 
 namespace libj {
 namespace node {

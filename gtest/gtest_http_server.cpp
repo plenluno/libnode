@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
-#include <libnode/http_server.h>
+#include <libnode/http/server.h>
 
 namespace libj {
 namespace node {
