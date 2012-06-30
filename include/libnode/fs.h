@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_FILE_SYSTEM_H_
-#define LIBNODE_FILE_SYSTEM_H_
+#ifndef LIBNODE_FS_H_
+#define LIBNODE_FS_H_
 
 #include <libj/js_function.h>
 #include <libj/string.h>
@@ -36,4 +36,4 @@ void readFile(String::CPtr path, JsFunction::Ptr callback);
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_FILE_SYSTEM_H_
+#endif  // LIBNODE_FS_H_

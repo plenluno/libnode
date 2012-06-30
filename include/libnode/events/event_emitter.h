@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_EVENT_EMITTER_H_
-#define LIBNODE_EVENT_EMITTER_H_
+#ifndef LIBNODE_EVENTS_EVENT_EMITTER_H_
+#define LIBNODE_EVENTS_EVENT_EMITTER_H_
 
 #include <libj/js_array.h>
 #include <libj/js_function.h>
@@ -61,4 +61,4 @@ public: \
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_EVENT_EMITTER_H_
+#endif  // LIBNODE_EVENTS_EVENT_EMITTER_H_
