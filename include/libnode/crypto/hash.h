@@ -19,9 +19,9 @@ class Hash : LIBJ_JS_OBJECT(Hash)
         SHA512,
     };
 
-    static Ptr create(Algorithm alg);
+    static Ptr create(Algorithm algo);
 
-    virtual void update(const Value& data);
+    virtual Boolean update(const Value& data);
     virtual Value digest() = 0;
 };
 
