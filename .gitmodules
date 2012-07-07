@@ -13,6 +13,3 @@
 [submodule "deps/openssl"]
 	path = deps/openssl
 	url = https://github.com/plenluno/openssl.git
-[submodule "deps/iv"]
-	path = deps/iv
-	url = https://github.com/Constellation/iv.git
