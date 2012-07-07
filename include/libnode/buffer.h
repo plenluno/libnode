@@ -12,6 +12,7 @@ namespace node {
 class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
  public:
     static Ptr create(Size length = 0);
+    static Ptr create(const UByte* data, Size length);
     static Ptr create(JsTypedArray<UByte>::CPtr array);
     static Ptr create(String::CPtr str, String::Encoding enc = String::UTF8);
 
@@ -20,6 +21,12 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
         Size offset = 0,
         Size length = NO_POS,
         String::Encoding enc = String::UTF8) = 0;
+
+    virtual void copy(
+        Ptr target,
+        Size targetStart = 0,
+        Size sourceStart = 0,
+        Size sourceEnd = NO_POS) = 0;
 
 #ifdef LIBJ_USE_EXCEPTION
     UByte readUInt8(Size offset) const {

@@ -26,6 +26,7 @@ include_directories(
     deps/libj/include
     deps/libj/deps/boost-svn
     deps/libuv/include
+    deps/openssl/include
 )
 
 link_directories(
@@ -34,6 +35,7 @@ link_directories(
 
 set(libnode-src
     src/buffer.cpp
+    src/crypto/hash.cpp
     src/events/event_emitter.cpp
     src/fs.cpp
     src/fs/stats.cpp
@@ -48,21 +50,22 @@ set(libnode-src
     src/url.cpp
 )
 
-if(APPLE)
-set(libnode-deps
+set(libnode-deps-common
     j
     parser-http
     parser-url
     pthread
+    ssl
     uv
+)
+
+if(APPLE)
+set(libnode-deps
+    ${libnode-deps-common}
 )
 else(APPLE)
 set(libnode-deps
-    j
-    parser-http
-    parser-url
-    pthread
-    uv
+    ${libnode-deps-common}
     rt
 )
 endif(APPLE)

@@ -7,8 +7,15 @@ namespace node {
 
 class BufferImpl : public Buffer {
  public:
-    static Ptr create(Size size) {
-        Ptr p(new BufferImpl(size));
+    static Ptr create(Size length) {
+        Ptr p(new BufferImpl(length));
+        return p;
+    }
+
+    static Ptr create(const UByte* data, Size length) {
+        Ptr p(new BufferImpl(length));
+        for (Size i = 0; i < length; i++)
+            p->setUInt8(i, data[i]);
         return p;
     }
 
@@ -20,14 +27,32 @@ class BufferImpl : public Buffer {
         // TODO(KotaHanda): implement
     }
 
-    virtual JsArrayBuffer::Ptr slice(Size begin) const {
-        Ptr p(new BufferImpl(buffer_->slice(begin)));
+    virtual Value slice(Size begin, Size end) const {
+        Value val = buffer_->slice(begin, end);
+        JsArrayBuffer::Ptr buf = toPtr<JsArrayBuffer>(val);
+        Ptr p(new BufferImpl(buf));
         return p;
     }
 
-    virtual JsArrayBuffer::Ptr slice(Size begin, Size end) const {
-        Ptr p(new BufferImpl(buffer_->slice(begin, end)));
-        return p;
+    virtual void copy(
+        Ptr target,
+        Size targetStart,
+        Size sourceStart,
+        Size sourceEnd) {
+        Size sourceLen = 0;
+        if (sourceStart < sourceEnd && sourceEnd < length()) {
+            sourceLen = sourceEnd - sourceStart;
+        }
+        Size copyLen = 0;
+        if (sourceLen && targetStart < target->length()) {
+            Size max = target->length() - targetStart;
+            copyLen = sourceLen < max ? sourceLen : max;
+        }
+        for (Size i = 0; i < copyLen; i++) {
+            UByte value;
+            getUInt8(sourceStart + i, &value);
+            target->setUInt8(i, value);
+        }
     }
 
  private:
@@ -40,8 +65,12 @@ class BufferImpl : public Buffer {
     LIBJ_JS_ARRAY_BUFFER_IMPL(buffer_);
 };
 
-Buffer::Ptr Buffer::create(Size size) {
-    return BufferImpl::create(size);
+Buffer::Ptr Buffer::create(Size length) {
+    return BufferImpl::create(length);
+}
+
+Buffer::Ptr Buffer::create(const UByte* data, Size length) {
+    return BufferImpl::create(data, length);
 }
 
 }  // namespace node
