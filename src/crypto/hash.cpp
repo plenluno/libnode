@@ -22,7 +22,9 @@ class HashImpl : public Hash {
         const void* dat = 0;
         Size len = 0;
         if (data.instanceof(Type<Buffer>::id())) {
-            dat = toCPtr<Buffer>(data)->data();
+            Buffer::CPtr buf = toCPtr<Buffer>(data);
+            dat = buf->data();
+            len = buf->length();
         }
         if (updatable_ && dat) {
             switch (algorithm_) {
