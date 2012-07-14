@@ -1,5 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <string>
+
 #include "libnode/buffer.h"
 
 namespace libj {
@@ -17,6 +19,18 @@ class BufferImpl : public Buffer {
         for (Size i = 0; i < length; i++)
             p->setUInt8(i, data[i]);
         return p;
+    }
+
+    static Ptr create(String::CPtr str, String::Encoding enc) {
+        if (enc == String::UTF8) {
+            std::string str8 = str->toStdString();
+            Size length = str8.length();
+            return create(
+                reinterpret_cast<const UByte*>(str8.c_str()), length);
+        } else {
+            LIBJ_NULL_PTR(Buffer, nullp);
+            return nullp;
+        }
     }
 
     void write(
@@ -71,6 +85,10 @@ Buffer::Ptr Buffer::create(Size length) {
 
 Buffer::Ptr Buffer::create(const UByte* data, Size length) {
     return BufferImpl::create(data, length);
+}
+
+Buffer::Ptr Buffer::create(String::CPtr str, String::Encoding enc) {
+    return BufferImpl::create(str, enc);
 }
 
 }  // namespace node
