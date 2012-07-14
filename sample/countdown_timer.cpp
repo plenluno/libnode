@@ -2,9 +2,8 @@
 
 #include <libj/console.h>
 #include <libj/string.h>
-
-#include "libnode/node.h"
-#include "libnode/timer.h"
+#include <libnode/node.h>
+#include <libnode/timer.h>
 
 namespace libj {
 namespace node {

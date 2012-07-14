@@ -3,12 +3,9 @@
 #include <libj/console.h>
 #include <libj/json.h>
 #include <libj/status.h>
-
-#include "libnode/http/server.h"
-#include "libnode/http/server_request.h"
-#include "libnode/http/server_response.h"
-#include "libnode/node.h"
-#include "libnode/timer.h"
+#include <libnode/http.h>
+#include <libnode/node.h>
+#include <libnode/timer.h>
 
 namespace libj {
 namespace node {
@@ -109,6 +106,9 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
             ->concat(req->method()));
         console::log(String::create("version: HTTP/")
             ->concat(req->httpVersion()));
+        console::log(String::create("address: ")
+            ->concat(json::stringify(
+                req->connection()->address())));
         console::log(String::create("remote address: ")
             ->concat(req->connection()->remoteAddress()));
         return Status::OK;
