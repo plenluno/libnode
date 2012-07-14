@@ -3,23 +3,19 @@
 #ifndef LIBNODE_HTTP_SERVER_RESPONSE_H_
 #define LIBNODE_HTTP_SERVER_RESPONSE_H_
 
-#include "libnode/events/event_emitter.h"
+#include "libnode/stream/writable_stream.h"
 
 namespace libj {
 namespace node {
 namespace http {
 
-class ServerResponse : LIBNODE_EVENT_EMITTER(ServerResponse)
+class ServerResponse : LIBNODE_WRITABLE_STREAM(ServerResponse)
  public:
-    static const String::CPtr EVENT_CLOSE;
-
     virtual Boolean writeHead(Int statusCode) = 0;
     virtual Int statusCode() const = 0;
     virtual void setHeader(String::CPtr name, String::CPtr value) = 0;
     virtual String::CPtr getHeader(String::CPtr name) const = 0;
     virtual void removeHeader(String::CPtr name) = 0;
-    virtual void write(Object::CPtr chunk) = 0;
-    virtual void end() = 0;
 };
 
 }  // namespace http

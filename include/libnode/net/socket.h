@@ -3,37 +3,29 @@
 #ifndef LIBNODE_NET_SOCKET_H_
 #define LIBNODE_NET_SOCKET_H_
 
-#include "libnode/events/event_emitter.h"
+#include "libnode/stream/duplex_stream.h"
 
 namespace libj {
 namespace node {
 namespace net {
 
-class Socket : LIBNODE_EVENT_EMITTER(Socket)
+class Socket : LIBNODE_DUPLEX_STREAM(Socket)
  public:
     static const String::CPtr EVENT_CONNECT;
-    static const String::CPtr EVENT_DATA;
-    static const String::CPtr EVENT_END;
     static const String::CPtr EVENT_TIMEOUT;
-    static const String::CPtr EVENT_DRAIN;
-    static const String::CPtr EVENT_ERROR;
-    static const String::CPtr EVENT_CLOSE;
 
     static Ptr create();
 
 #if 0
     virtual void connect(Int port) = 0;
     virtual void connect(String::CPtr path) = 0;
-    virtual String::CPtr address() const = 0;
 #endif
+    virtual JsObject::Ptr address() = 0;
     virtual String::CPtr remoteAddress() = 0;
-#if 0
-    virtual Int remotePort() const = 0;
-    virtual Int bytesRead() const = 0;
-    virtual Int bytesWritten() const = 0;
-    virtual void write(Object::CPtr chunk) = 0;
-    virtual void end() = 0;
-#endif
+    virtual Int remotePort() = 0;
+    virtual Boolean setNoDelay(Boolean noDelay = true) = 0;
+    virtual Boolean setKeepAlive(
+        Boolean enable = false, Int initialDelay = 0) = 0;
 };
 
 }  // namespace net

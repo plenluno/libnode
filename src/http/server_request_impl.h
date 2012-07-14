@@ -60,6 +60,16 @@ class ServerRequestImpl : public ServerRequest {
         put(HTTP_VERSION, httpVersion);
     }
 
+    Boolean destroy() {
+        // TODO(plenluno): implement
+        return false;
+    }
+
+    Boolean readable() const {
+        // TODO(plenluno): implement
+        return true;
+    }
+
  private:
     ServerContext* context_;
 

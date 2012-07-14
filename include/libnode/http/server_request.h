@@ -3,18 +3,15 @@
 #ifndef LIBNODE_HTTP_SERVER_REQUEST_H_
 #define LIBNODE_HTTP_SERVER_REQUEST_H_
 
+#include "libnode/stream/readable_stream.h"
 #include "libnode/net/socket.h"
 
 namespace libj {
 namespace node {
 namespace http {
 
-class ServerRequest : LIBNODE_EVENT_EMITTER(ServerRequest)
+class ServerRequest : LIBNODE_READABLE_STREAM(ServerRequest)
  public:
-    static const String::CPtr EVENT_DATA;
-    static const String::CPtr EVENT_END;
-    static const String::CPtr EVENT_CLOSE;
-
     virtual String::CPtr method() const = 0;
     virtual String::CPtr url() const = 0;
     virtual JsObject::CPtr headers() const = 0;

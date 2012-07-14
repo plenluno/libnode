@@ -71,7 +71,7 @@ class ServerResponseImpl : public ServerResponse {
         getHeaders()->remove(name);
     }
 
-    void write(Object::CPtr chunk) {
+    void write(String::CPtr chunk, String::Encoding enc) {
         body_->append(chunk);
     }
 
@@ -118,7 +118,26 @@ class ServerResponseImpl : public ServerResponse {
         strncpy(resBuf_.base, r.c_str(), len);
     }
 
-    void end();
+    void write(Buffer::CPtr buf) {
+        // TODO(plenluno): implement
+    }
+
+    Boolean end();
+
+    Boolean destroy() {
+        // TODO(plenluno): implement
+        return false;
+    }
+
+    Boolean destroySoon() {
+        // TODO(plenluno): implement
+        return false;
+    }
+
+    Boolean writable() const {
+        // TODO(plenluno): implement
+        return true;
+    }
 
  private:
     static void onClose(uv_handle_t* handle);

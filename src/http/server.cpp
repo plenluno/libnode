@@ -65,7 +65,7 @@ class ServerImpl : public Server {
 
         ServerImpl* server = static_cast<ServerImpl*>(stream->data);
         ServerContext* context = new ServerContext(server);
-        uv_tcp_t* tcp = context->socket->getTcp();
+        uv_tcp_t* tcp = context->socket->getUvTcp();
 
         if (uv_accept(stream, reinterpret_cast<uv_stream_t*>(tcp)))
             return;
