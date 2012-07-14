@@ -6,6 +6,8 @@
 #include <libj/js_function.h>
 #include <libj/string.h>
 
+#include "libnode/fs/stats.h"
+
 namespace libj {
 namespace node {
 namespace fs {
