@@ -23,8 +23,8 @@ class ServerImpl : public Server {
         return p;
     }
 
-    bool listen(Int port, String::CPtr hostName) {
-        if (isOpen_ || !hostName)
+    Boolean listen(Int port, String::CPtr hostName, Int backlog) {
+        if (isOpen_ || !hostName || backlog <= 0)
             return false;
         std::string addr;
         for (Size i = 0; i < hostName->length(); i++)
@@ -35,7 +35,7 @@ class ServerImpl : public Server {
                     uv_ip4_addr(addr.c_str(), port))) &&
                   !uv_listen(
                     reinterpret_cast<uv_stream_t*>(&server_),
-                    128,
+                    backlog,
                     ServerImpl::onConnection);
         return isOpen_;
     }
