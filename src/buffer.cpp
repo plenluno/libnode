@@ -14,10 +14,11 @@ class BufferImpl : public Buffer {
         return p;
     }
 
-    static Ptr create(const UByte* data, Size length) {
+    static Ptr create(const void* data, Size length) {
         Ptr p(new BufferImpl(length));
+        const UByte* d = static_cast<const UByte*>(data);
         for (Size i = 0; i < length; i++)
-            p->setUInt8(i, data[i]);
+            p->setUInt8(i, d[i]);
         return p;
     }
 
@@ -33,12 +34,23 @@ class BufferImpl : public Buffer {
         }
     }
 
-    void write(
-        String::CPtr str,
-        Size offset = 0,
-        Size length = NO_POS,
-        String::Encoding enc = String::UTF8) {
-        // TODO(KotaHanda): implement
+    Int write(
+        String::CPtr str, Size offset, Size length, String::Encoding enc) {
+        if (offset > this->length()) {
+            return -1;
+        } else if (enc == String::UTF8) {
+            std::string str8 = str->toStdString();
+            const UByte* data = reinterpret_cast<const UByte*>(str8.c_str());
+            Size len = this->length() - offset;
+            len = len < length ? len : length;
+            len = len < str->length() ? len : str->length();
+            for (Size i = 0; i < len; i++) {
+                setUInt8(i + offset, data[i]);
+            }
+            return len;
+        } else {
+            return -1;
+        }
     }
 
     virtual Value slice(Size begin, Size end) const {
@@ -83,7 +95,7 @@ Buffer::Ptr Buffer::create(Size length) {
     return BufferImpl::create(length);
 }
 
-Buffer::Ptr Buffer::create(const UByte* data, Size length) {
+Buffer::Ptr Buffer::create(const void* data, Size length) {
     return BufferImpl::create(data, length);
 }
 

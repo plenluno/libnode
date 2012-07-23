@@ -24,7 +24,6 @@ class ServerContext {
     }
 
     http_parser parser;
-    uv_write_t write;
     void* server;
     net::SocketImpl::Ptr socket;
     ServerRequestImpl::Ptr request;
