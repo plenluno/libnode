@@ -256,7 +256,8 @@ class SocketImpl : public Socket {
     }
 
     static void onWriteClose(uv_handle_t* handle) {
-        SocketWriteContext* context = static_cast<SocketWriteContext*>(handle->data);
+        SocketWriteContext* context =
+            static_cast<SocketWriteContext*>(handle->data);
         assert(context);
         if (context->callback) {
             JsArray::Ptr args = JsArray::create();
