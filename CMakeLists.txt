@@ -43,6 +43,8 @@ set(libnode-src
     src/http/server_request.cpp
     src/http/server_response.cpp
     src/http/status.cpp
+    src/net/server.cpp
+    src/net/socket.cpp
     src/node.cpp
     src/stream.cpp
     src/timer.cpp

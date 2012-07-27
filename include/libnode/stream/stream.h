@@ -19,6 +19,13 @@ class Stream : LIBNODE_EVENT_EMITTER(Stream)
 #define LIBNODE_STREAM(T) public libj::node::Stream { \
     LIBJ_MUTABLE_DECLS(T, libj::node::Stream)
 
+#define LIBNODE_STREAM_IMPL(S) \
+    LIBNODE_EVENT_EMITTER_IMPL(S); \
+public: \
+    virtual Boolean destroy() { \
+        return S->destroy(); \
+    }
+
 }  // namespace node
 }  // namespace libj
 

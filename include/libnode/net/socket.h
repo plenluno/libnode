@@ -28,6 +28,30 @@ class Socket : LIBNODE_DUPLEX_STREAM(Socket)
         Boolean enable = false, Int initialDelay = 0) = 0;
 };
 
+#define LIBNODE_SOCKET(T) \
+    public libj::node::net::Socket { \
+    LIBJ_MUTABLE_DECLS(T, libj::node::net::Socket)
+
+#define LIBNODE_SOCKET_IMPL(S) \
+    LIBNODE_DUPLEX_STREAM_IMPL(S); \
+public: \
+    virtual JsObject::Ptr address() { \
+        return S->address(); \
+    } \
+    virtual String::CPtr remoteAddress() { \
+        return S->remoteAddress(); \
+    } \
+    virtual Int remotePort() { \
+        return S->remotePort(); \
+    } \
+    virtual Boolean setNoDelay(Boolean noDelay = true) { \
+        return S->setNoDelay(noDelay); \
+    } \
+    virtual Boolean setKeepAlive( \
+        Boolean enable = false, Int initialDelay = 0) { \
+        return S->setKeepAlive(enable, initialDelay); \
+    }
+
 }  // namespace net
 }  // namespace node
 }  // namespace libj

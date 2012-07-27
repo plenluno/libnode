@@ -8,27 +8,36 @@
 
 #include "./server_request_impl.h"
 #include "./server_response_impl.h"
+#include "../net/server_impl.h"
 #include "../net/socket_impl.h"
 
 namespace libj {
 namespace node {
 namespace http {
 
+class ServerImpl;
+
 class ServerContext {
  public:
-    ServerContext(void* srv)
+    ServerContext(
+        ServerImpl* srv,
+        net::SocketImpl::Ptr sock)
         : server(srv)
-        , socket(net::SocketImpl::create())
+        , socket(sock)
         , request(LIBJ_NULL(ServerRequestImpl))
         , response(LIBJ_NULL(ServerResponseImpl)) {
+        ServerRequestImpl::Ptr req(new ServerRequestImpl(this));
+        ServerResponseImpl::Ptr res(new ServerResponseImpl(this));
+        request = req;
+        response = res;
+        parser.data = this;
     }
 
-    http_parser parser;
-    uv_write_t write;
-    void* server;
+    ServerImpl* server;
     net::SocketImpl::Ptr socket;
     ServerRequestImpl::Ptr request;
     ServerResponseImpl::Ptr response;
+    http_parser parser;
 };
 
 }  // namespace http

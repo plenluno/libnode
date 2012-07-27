@@ -1,5 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <assert.h>
 #include <uv.h>
 #include <string>
 
@@ -24,36 +25,30 @@ class ServerImpl : public Server {
     }
 
     Boolean listen(Int port, String::CPtr hostName, Int backlog) {
-        if (isOpen_ || !hostName || backlog <= 0)
-            return false;
-        std::string addr;
-        for (Size i = 0; i < hostName->length(); i++)
-            addr += static_cast<char>(hostName->charAt(i));
-        server_.data = this;
-        isOpen_ = !(uv_tcp_bind(
-                    &server_,
-                    uv_ip4_addr(addr.c_str(), port))) &&
-                  !uv_listen(
-                    reinterpret_cast<uv_stream_t*>(&server_),
-                    backlog,
-                    ServerImpl::onConnection);
-        return isOpen_;
+        server_->on(
+            net::Server::EVENT_LISTENING,
+            OnListening::create());
+        server_->on(
+            net::Server::EVENT_CONNECTION,
+            OnConnection::create(this));
+        return server_->listen(port, hostName, backlog);
     }
 
     void close() {
-        if (isOpen_) {
-            uv_close(
-                reinterpret_cast<uv_handle_t*>(&server_),
-                ServerImpl::onClose);
-            isOpen_ = false;
-        }
+        server_->close();
     }
 
  private:
     static http_parser_settings settings;
 
-    static void onConnection(uv_stream_t* stream, int status) {
-        if (!settings.on_url) {
+    class OnListening : LIBJ_JS_FUNCTION(OnListening)
+     public:
+        static Ptr create() {
+            Ptr p(new OnListening());
+            return p;
+        }
+
+        Value operator()(JsArray::Ptr args) {
             settings.on_url = ServerImpl::onUrl;
             settings.on_header_field = ServerImpl::onHeaderField;
             settings.on_header_value = ServerImpl::onHeaderValue;
@@ -61,76 +56,65 @@ class ServerImpl : public Server {
             settings.on_message_begin = ServerImpl::onMessageBegin;
             settings.on_body = ServerImpl::onBody;
             settings.on_message_complete = ServerImpl::onMessageComplete;
+            return Status::OK;
+        }
+    };
+
+    class OnConnection : LIBJ_JS_FUNCTION(OnConnection)
+     public:
+        static Ptr create(ServerImpl* srv) {
+            Ptr p(new OnConnection(srv));
+            return p;
         }
 
-        ServerImpl* server = static_cast<ServerImpl*>(stream->data);
-        ServerContext* context = new ServerContext(server);
-        uv_tcp_t* tcp = context->socket->getUvTcp();
-
-        if (uv_accept(stream, reinterpret_cast<uv_stream_t*>(tcp)))
-            return;
-
-        http_parser_init(&context->parser, HTTP_REQUEST);
-
-        tcp->data = context;
-        context->parser.data = context;
-
-        uv_read_start(
-            reinterpret_cast<uv_stream_t*>(tcp),
-            ServerImpl::onAlloc,
-            ServerImpl::onRead);
-
-        JsArray::Ptr args = JsArray::create();
-        args->add(context->socket);
-        server->emit(EVENT_CONNECTION, args);
-    }
-
-    static uv_buf_t onAlloc(uv_handle_t* handle, size_t suggestedSize) {
-        uv_buf_t buf;
-        buf.base = static_cast<char*>(malloc(suggestedSize));
-        buf.len = suggestedSize;
-        return buf;
-    }
-
-    static void onClose(uv_handle_t* handle) {
-    }
-
-    static void onRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf) {
-        ServerContext* context = static_cast<ServerContext*>(stream->data);
-        if (!context->request) {
-            ServerRequestImpl::Ptr p(new ServerRequestImpl(context));
-            context->request = p;
-        }
-        if (!context->response) {
-            ServerResponseImpl::Ptr p(new ServerResponseImpl(context));
-            context->response = p;
+        Value operator()(JsArray::Ptr args) {
+            net::SocketImpl::Ptr socket = toPtr<net::SocketImpl>(args->get(0));
+            assert(socket);
+            ServerContext* context = new ServerContext(server_, socket);
+            http_parser_init(&context->parser, HTTP_REQUEST);
+            socket->on(net::Socket::EVENT_DATA, OnData::create(context));
+            return Status::OK;
         }
 
-        if (nread >= 0) {
-            size_t parsed = http_parser_execute(
-                                &context->parser,
+     private:
+        ServerImpl* server_;
+
+        OnConnection(ServerImpl* srv) : server_(srv) {}
+    };
+
+    class OnData : LIBJ_JS_FUNCTION(OnData)
+     public:
+        static Ptr create(ServerContext* ctxt) {
+            Ptr p(new OnData(ctxt));
+            return p;
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            Buffer::Ptr buf = toPtr<Buffer>(args->get(0));
+            assert(buf);
+            size_t numRead = buf->length();
+            size_t numParsed = http_parser_execute(
+                                &context_->parser,
                                 &settings,
-                                buf.base,
-                                nread);
-            if (parsed < static_cast<size_t>(nread)) {
+                                static_cast<const char*>(buf->data()),
+                                numRead);
+            if (numParsed < numRead) {
                 // parse error
-                uv_close(
-                    reinterpret_cast<uv_handle_t*>(stream),
-                    ServerImpl::onClose);
+                context_->socket->destroy();  // TODO(plenluno): uv_close
             }
-        } else {
-            // uv_err_t err = uv_last_error(uv_default_loop());
-            // assert(err.code == UV_EOF);
-            uv_close(
-                reinterpret_cast<uv_handle_t*>(stream),
-                ServerImpl::onClose);
+            return Status::OK;
         }
-        free(buf.base);
-    }
+
+     private:
+        ServerContext* context_;
+
+        OnData(ServerContext* ctxt) : context_(ctxt) {}
+    };
 
     static int onUrl(http_parser* parser, const char* at, size_t length) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
-        context->request->setUrl(String::create(at, String::ASCII, length));
+        String::CPtr url = String::create(at, String::ASCII, length);
+        context->request->setUrl(url);
         return 0;
     }
 
@@ -163,6 +147,7 @@ class ServerImpl : public Server {
         static const String::CPtr dot = String::create(".");
 
         ServerContext* context = static_cast<ServerContext*>(parser->data);
+        assert(context);
         switch (parser->method) {
         case HTTP_DELETE:
             context->request->setMethod(methodDelete);
@@ -204,8 +189,8 @@ class ServerImpl : public Server {
         ServerResponse::Ptr res(context->response);
         args->add(req);
         args->add(res);
-        ServerImpl* server = static_cast<ServerImpl*>(context->server);
-        server->emit(Server::EVENT_REQUEST, args);
+        assert(context->server);
+        context->server->emit(Server::EVENT_REQUEST, args);
         return 0;
     }
 
@@ -234,15 +219,12 @@ class ServerImpl : public Server {
     }
 
  private:
-    uv_tcp_t server_;
     EventEmitter::Ptr ee_;
-    bool isOpen_;
+    net::ServerImpl::Ptr server_;
 
     ServerImpl()
         : ee_(EventEmitter::create())
-        , isOpen_(false) {
-        uv_tcp_init(uv_default_loop(), &server_);
-    }
+        , server_(net::Server::create()) {}
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };

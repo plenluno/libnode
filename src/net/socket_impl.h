@@ -3,6 +3,7 @@
 #ifndef SRC_NET_SOCKET_IMPL_H_
 #define SRC_NET_SOCKET_IMPL_H_
 
+#include <assert.h>
 #include <uv.h>
 #include <vector>
 
@@ -16,11 +17,13 @@ class SocketWriteContext {
  public:
     uv_write_t uvWrite;
     uv_buf_t uvBuf;
+    int status;
     Buffer::CPtr buffer;
     JsFunction::Ptr callback;
 
     SocketWriteContext()
-        : buffer(LIBJ_NULL(Buffer))
+        : status(0)
+        , buffer(LIBJ_NULL(Buffer))
         , callback(LIBJ_NULL(JsFunction)) {
         uvWrite.data = this;
         uvBuf.base = NULL;
@@ -34,6 +37,11 @@ class SocketWriteContext {
 class SocketImpl : public Socket {
  public:
     typedef LIBJ_PTR(SocketImpl) Ptr;
+
+    Boolean instanceof(libj::TypeId id) const {
+        return id == libj::Type<SocketImpl>::id()
+            || Socket::instanceof(id);
+    }
 
     static Ptr create() {
         Ptr p(new SocketImpl());
@@ -247,6 +255,20 @@ class SocketImpl : public Socket {
     static void afterWrite(uv_write_t* write, int status) {
         SocketWriteContext* context =
             static_cast<SocketWriteContext*>(write->data);
+        context->status = status;
+        write->handle->data = context;
+        uv_close(reinterpret_cast<uv_handle_t*>(write->handle), onWriteClose);
+    }
+
+    static void onWriteClose(uv_handle_t* handle) {
+        SocketWriteContext* context =
+            static_cast<SocketWriteContext*>(handle->data);
+        assert(context);
+        if (context->callback) {
+            JsArray::Ptr args = JsArray::create();
+            args->add(static_cast<Int>(context->status));
+            (*context->callback)(args);
+        }
         delete context;
     }
 
@@ -282,6 +304,7 @@ class SocketImpl : public Socket {
         , pendingWriteReqs_(0)
         , ee_(events::EventEmitter::create()) {
         uv_tcp_init(uv_default_loop(), &tcp_);
+        tcp_.data = this;
     }
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);

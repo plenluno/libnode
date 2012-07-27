@@ -1,7 +1,5 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include <assert.h>
-
 #include "./server_context.h"
 #include "./server_response_impl.h"
 
@@ -19,40 +17,33 @@ ServerResponseImpl::ServerResponseImpl(ServerContext* context)
     , status_(LIBJ_NULL(http::Status))
     , res_(StringBuffer::create())
     , body_(StringBuffer::create())
-    , ee_(EventEmitter::create()) {
-    resBuf_.base = 0;
-}
+    , ee_(EventEmitter::create()) {}
 
-ServerResponseImpl::~ServerResponseImpl() {
-    free(resBuf_.base);
-}
+class AfterSocketWrite : LIBJ_JS_FUNCTION(AfterSocketWrite)
+ public:
+    static Ptr create(ServerContext* context) {
+        Ptr p(new AfterSocketWrite(context));
+        return p;
+    }
+
+    Value operator()(JsArray::Ptr args) {
+        context_->socket->end();
+        if (context_)
+            delete context_;
+        return Status::OK;
+    }
+
+ private:
+    ServerContext* context_;
+
+    AfterSocketWrite(ServerContext* context) : context_(context) {}
+};
 
 Boolean ServerResponseImpl::end() {
     makeResponse();
-    makeResBuf();
-    uv_write_t* write = &context_->write;
-    uv_tcp_t* tcp = context_->socket->getUvTcp();
-    uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(tcp);
-    assert(write && stream);
-
-    write->data = context_;
-    int err = uv_write(
-        write,
-        stream,
-        &resBuf_,
-        1,
-        ServerResponseImpl::afterWrite);
-    if (err) {
-        delete context_;
-    }
-
+    AfterSocketWrite::Ptr cb = AfterSocketWrite::create(context_);
+    context_->socket->write(res_->toString(), String::UTF8, cb);
     return true;
-}
-
-void ServerResponseImpl::onClose(uv_handle_t* handle) {
-    ServerContext* context = static_cast<ServerContext*>(handle->data);
-    if (context)
-        delete context;
 }
 
 }  // namespace http

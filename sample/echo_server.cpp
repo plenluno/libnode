@@ -45,8 +45,8 @@ class Send : LIBJ_JS_FUNCTION(Send)
     Value operator()(JsArray::Ptr args) {
         res_->end();
         req_->removeAllListeners();
-        srv_->removeAllListeners();
         // only one reply
+        srv_->removeAllListeners();
         srv_->close();
         return Status::OK;
     }
