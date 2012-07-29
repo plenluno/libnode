@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <uv.h>
+#include <cstring>
 #include <vector>
 
 #include "libnode/net/socket.h"
