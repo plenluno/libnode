@@ -46,6 +46,7 @@ set(libnode-src
     src/net/server.cpp
     src/net/socket.cpp
     src/node.cpp
+    src/path.cpp
     src/stream.cpp
     src/timer.cpp
     src/url.cpp
@@ -143,6 +144,7 @@ if(LIBNODE_USE_GTEST)
         gtest/gtest_event_emitter.cpp
         gtest/gtest_http_server.cpp
         gtest/gtest_http_status.cpp
+        gtest/gtest_path.cpp
         gtest/gtest_url.cpp
         gtest/gtest_url_parser.cpp
         ${libnode-src}
