@@ -52,7 +52,6 @@ String::CPtr normalize(String::CPtr path) {
             endsWithSep = true;
             i = idx + 1;
         }
-
     }
 
     StringBuffer::Ptr normal = StringBuffer::create();
@@ -142,7 +141,7 @@ String::CPtr dirname(String::CPtr path) {
         assert(path->charAt(sepPos) == '/');
         if (sepPos) {
             return path->substring(0, sepPos);
-        } else { // path[0] is '/'
+        } else {  // path[0] is '/'
             return sep();
         }
     }
