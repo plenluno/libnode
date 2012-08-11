@@ -23,7 +23,7 @@ class BufferImpl : public Buffer {
     }
 
     static Ptr create(String::CPtr str, String::Encoding enc) {
-        if (enc == String::UTF8) {
+        if (enc == String::ASCII || enc == String::UTF8) {
             std::string str8 = str->toStdString();
             Size length = str8.length();
             return create(
@@ -38,7 +38,7 @@ class BufferImpl : public Buffer {
         String::CPtr str, Size offset, Size length, String::Encoding enc) {
         if (offset > this->length()) {
             return -1;
-        } else if (enc == String::UTF8) {
+        } else if (enc == String::ASCII || enc == String::UTF8) {
             std::string str8 = str->toStdString();
             const UByte* data = reinterpret_cast<const UByte*>(str8.c_str());
             Size len = this->length() - offset;
