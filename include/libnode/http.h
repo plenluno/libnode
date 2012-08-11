@@ -8,4 +8,15 @@
 #include "libnode/http/server_response.h"
 #include "libnode/http/status.h"
 
+namespace libj {
+namespace node {
+namespace http {
+
+Server::Ptr createServer();
+Server::Ptr createServer(JsFunction::Ptr requestListener);
+
+}  // namespace http
+}  // namespace node
+}  // namespace libj
+
 #endif  // LIBNODE_HTTP_H_

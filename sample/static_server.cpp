@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
     }
 
     node::OnRequest::Ptr requestHandler(new node::OnRequest());
-    http::Server::Ptr server = http::Server::create(requestHandler);
+    http::Server::Ptr server = http::createServer(requestHandler);
     server->listen(10001);
     node::run();
     return 0;

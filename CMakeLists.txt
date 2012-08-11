@@ -39,6 +39,7 @@ set(libnode-src
     src/events/event_emitter.cpp
     src/fs.cpp
     src/fs/stats.cpp
+    src/http.cpp
     src/http/server.cpp
     src/http/server_request.cpp
     src/http/server_response.cpp
