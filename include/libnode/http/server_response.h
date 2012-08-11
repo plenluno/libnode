@@ -12,6 +12,7 @@ namespace http {
 class ServerResponse : LIBNODE_WRITABLE_STREAM(ServerResponse)
  public:
     virtual Boolean writeHead(Int statusCode) = 0;
+    virtual Boolean writeHead(Int statusCode, String::CPtr reasonPhrase) = 0;
     virtual Int statusCode() const = 0;
     virtual void setHeader(String::CPtr name, String::CPtr value) = 0;
     virtual String::CPtr getHeader(String::CPtr name) const = 0;

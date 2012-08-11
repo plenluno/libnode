@@ -1,5 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <assert.h>
+
 #include "./server_context.h"
 #include "./server_request_impl.h"
 
@@ -21,7 +23,18 @@ ServerRequestImpl::ServerRequestImpl(ServerContext* context)
     , ee_(EventEmitter::create()) {
 }
 
+Boolean ServerRequestImpl::destroy() {
+    assert(context_);
+    return context_->socket->destroy();
+}
+
+Boolean ServerRequestImpl::readable() const {
+    assert(context_);
+    return context_->socket->readable();
+}
+
 net::Socket::Ptr ServerRequestImpl::connection() const {
+    assert(context_);
     return context_->socket;
 }
 

@@ -17,7 +17,6 @@ class Server : LIBNODE_EVENT_EMITTER(Server)
     static const String::CPtr EVENT_CLOSE;
 
     static Ptr create();
-    static Ptr create(JsFunction::Ptr requestListener);
 
     virtual Boolean listen(
         Int port,

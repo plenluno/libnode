@@ -18,19 +18,16 @@ class ServerImpl : public Server {
         return p;
     }
 
-    static Ptr create(JsFunction::Ptr requestListener) {
-        Ptr p = create();
-        p->on(EVENT_REQUEST, requestListener);
-        return p;
-    }
-
     Boolean listen(Int port, String::CPtr hostName, Int backlog) {
         server_->on(
+            net::Server::EVENT_CLOSE,
+            OnServerClose::create(this));
+        server_->on(
             net::Server::EVENT_LISTENING,
-            OnListening::create());
+            OnServerListening::create());
         server_->on(
             net::Server::EVENT_CONNECTION,
-            OnConnection::create(this));
+            OnServerConnection::create(this));
         return server_->listen(port, hostName, backlog);
     }
 
@@ -41,10 +38,28 @@ class ServerImpl : public Server {
  private:
     static http_parser_settings settings;
 
-    class OnListening : LIBJ_JS_FUNCTION(OnListening)
+    class OnServerClose : LIBJ_JS_FUNCTION(OnServerClose)
+     public:
+        static Ptr create(ServerImpl* srv) {
+            Ptr p(new OnServerClose(srv));
+            return p;
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            server_->emit(EVENT_CLOSE, JsArray::create());
+            return Status::OK;
+        }
+
+     private:
+        ServerImpl* server_;
+
+        OnServerClose(ServerImpl* srv) : server_(srv) {}
+    };
+
+    class OnServerListening : LIBJ_JS_FUNCTION(OnServerListening)
      public:
         static Ptr create() {
-            Ptr p(new OnListening());
+            Ptr p(new OnServerListening());
             return p;
         }
 
@@ -60,10 +75,10 @@ class ServerImpl : public Server {
         }
     };
 
-    class OnConnection : LIBJ_JS_FUNCTION(OnConnection)
+    class OnServerConnection : LIBJ_JS_FUNCTION(OnServerConnection)
      public:
         static Ptr create(ServerImpl* srv) {
-            Ptr p(new OnConnection(srv));
+            Ptr p(new OnServerConnection(srv));
             return p;
         }
 
@@ -72,20 +87,26 @@ class ServerImpl : public Server {
             assert(socket);
             ServerContext* context = new ServerContext(server_, socket);
             http_parser_init(&context->parser, HTTP_REQUEST);
-            socket->on(net::Socket::EVENT_DATA, OnData::create(context));
+            socket->on(
+                net::Socket::EVENT_DATA,
+                OnSocketData::create(context));
+            socket->on(
+                net::Socket::EVENT_CLOSE,
+                OnSocketClose::create(context));
+            server_->emit(EVENT_CONNECTION, args);
             return Status::OK;
         }
 
      private:
         ServerImpl* server_;
 
-        OnConnection(ServerImpl* srv) : server_(srv) {}
+        OnServerConnection(ServerImpl* srv) : server_(srv) {}
     };
 
-    class OnData : LIBJ_JS_FUNCTION(OnData)
+    class OnSocketData : LIBJ_JS_FUNCTION(OnSocketData)
      public:
         static Ptr create(ServerContext* ctxt) {
-            Ptr p(new OnData(ctxt));
+            Ptr p(new OnSocketData(ctxt));
             return p;
         }
 
@@ -98,9 +119,12 @@ class ServerImpl : public Server {
                                 &settings,
                                 static_cast<const char*>(buf->data()),
                                 numRead);
+            // parse error
             if (numParsed < numRead) {
-                // parse error
-                context_->socket->destroy();  // TODO(plenluno): uv_close
+                JsArray::Ptr emptyArgs = JsArray::create();
+                context_->request->emit(ServerRequest::EVENT_CLOSE, emptyArgs);
+                context_->response->emit(ServerRequest::EVENT_CLOSE, emptyArgs);
+                context_->socket->destroy();
             }
             return Status::OK;
         }
@@ -108,7 +132,26 @@ class ServerImpl : public Server {
      private:
         ServerContext* context_;
 
-        OnData(ServerContext* ctxt) : context_(ctxt) {}
+        OnSocketData(ServerContext* ctxt) : context_(ctxt) {}
+    };
+
+    class OnSocketClose : LIBJ_JS_FUNCTION(OnSocketClose)
+     public:
+        static Ptr create(ServerContext* ctxt) {
+            Ptr p(new OnSocketClose(ctxt));
+            return p;
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            if (context_)
+                delete context_;
+            return Status::OK;
+        }
+
+     private:
+        ServerContext* context_;
+
+        OnSocketClose(ServerContext* ctxt) : context_(ctxt) {}
     };
 
     static int onUrl(http_parser* parser, const char* at, size_t length) {
@@ -239,10 +282,6 @@ const String::CPtr Server::EVENT_CLOSE = String::create("close");
 
 Server::Ptr Server::create() {
     return ServerImpl::create();
-}
-
-Server::Ptr Server::create(JsFunction::Ptr requestListener) {
-    return ServerImpl::create(requestListener);
 }
 
 }  // namespace http

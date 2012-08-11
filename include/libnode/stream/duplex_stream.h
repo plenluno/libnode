@@ -24,20 +24,11 @@ class DuplexStream : LIBNODE_STREAM(DuplexStream)
     // stream.resume()
     // stream.pipe(destination, [options])
 
-    virtual void write(Buffer::CPtr buf) = 0;
-    virtual void write(
-        String::CPtr str, String::Encoding enc = String::UTF8) = 0;
+    virtual Boolean write(Buffer::CPtr buf) = 0;
+    virtual Boolean write(
+        String::CPtr str,
+        String::Encoding enc = String::UTF8) = 0;
     virtual Boolean end() = 0;
-
-    Boolean end(String::CPtr str) {
-        write(str);
-        return end();
-    }
-
-    Boolean end(Buffer::CPtr buf) {
-        write(buf);
-        return end();
-    }
 };
 
 #define LIBNODE_DUPLEX_STREAM(T) public libj::node::DuplexStream { \
@@ -52,12 +43,13 @@ public: \
     virtual Boolean writable() const { \
         return S->writable(); \
     } \
-    virtual void write(Buffer::CPtr buf) { \
+    virtual Boolean write(Buffer::CPtr buf) { \
         return S->write(buf); \
     } \
-    virtual void write( \
-        String::CPtr str, String::Encoding enc = String::UTF8) { \
-        S->write(str, enc); \
+    virtual Boolean write( \
+        String::CPtr str, \
+        String::Encoding enc = String::UTF8) { \
+        return S->write(str, enc); \
     } \
     virtual Boolean end() { \
         return S->end(); \

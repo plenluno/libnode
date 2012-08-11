@@ -6,6 +6,7 @@
 #include <libj/string_buffer.h>
 #include <string.h>
 #include <uv.h>
+#include <list>
 #include <string>
 
 #include "libnode/http/server_response.h"
@@ -27,6 +28,16 @@ class ServerResponseImpl : public ServerResponse {
 
     Boolean writeHead(Int statusCode) {
         status_ = http::Status::create(statusCode);
+        if (status_) {
+            put(STATUS_CODE, statusCode);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    Boolean writeHead(Int statusCode, String::CPtr reasonPhrase) {
+        status_ = http::Status::create(statusCode, reasonPhrase);
         if (status_) {
             put(STATUS_CODE, statusCode);
             return true;
@@ -71,70 +82,89 @@ class ServerResponseImpl : public ServerResponse {
         getHeaders()->remove(name);
     }
 
-    void write(String::CPtr chunk, String::Encoding enc) {
-        body_->append(chunk);
+    Boolean write(Buffer::CPtr buf) {
+        if (hasFlag(FINISHED))
+            return false;
+        if (!hasFlag(HEADER_SENT))
+            makeHeader();
+        output_.push_back(buf);
+        return flush();
     }
 
-    void makeResponse() {
-        res_->append(String::create("HTTP/1.1 "));
-        if (status_) {
-            res_->append(String::valueOf(status_->code()));
-            res_->append(String::create(" "));
-            res_->append(status_->toString());
-            res_->append(String::create("\r\n"));
-        } else {
-            res_->append(String::create("200 OK\r\n"));
-        }
-        Int len = body_->length();
-        setHeader(
-            String::create("Content-Length"),
-            String::valueOf(len));
-        String::CPtr colon = String::create(": ");
-        String::CPtr nl = String::create("\r\n");
+    Boolean write(String::CPtr str, String::Encoding enc) {
+        Buffer::Ptr buf = Buffer::create(str, enc);
+        return write(buf);
+    }
+
+    Boolean end();
+
+    Boolean destroy();
+
+    Boolean destroySoon();
+
+    Boolean writable() const;
+
+ private:
+    Boolean flush();
+
+    void makeHeader() {
+        static const String::CPtr http11 = String::create("HTTP/1.1 ");
+        static const String::CPtr ws = String::create(" ");
+        static const String::CPtr nl = String::create("\r\n");
+        static const String::CPtr colon = String::create(": ");
+
+        if (hasFlag(HEADER_MADE)) return;
+
+        StringBuffer::Ptr header = StringBuffer::create();
+        header->append(http11);
+        if (!status_)
+            status_ = http::Status::create(200);
+        header->append(String::valueOf(status_->code()));
+        header->append(ws);
+        header->append(status_->toString());
+        header->append(nl);
+
         JsObject::Ptr headers = getHeaders();
         Set::CPtr ks = headers->keySet();
         Iterator::Ptr itr = ks->iterator();
         while (itr->hasNext()) {
             String::CPtr name = toCPtr<String>(itr->next());
             String::CPtr value = toCPtr<String>(headers->get(name));
-            res_->append(name);
-            res_->append(colon);
-            res_->append(value);
-            res_->append(nl);
+            header->append(name);
+            header->append(colon);
+            header->append(value);
+            header->append(nl);
         }
-        res_->append(nl);
-        res_->append(body_);
-    }
-
-    void write(Buffer::CPtr buf) {
-        // TODO(plenluno): implement
-    }
-
-    Boolean end();
-
-    Boolean destroy() {
-        // TODO(plenluno): implement
-        return false;
-    }
-
-    Boolean destroySoon() {
-        // TODO(plenluno): implement
-        return false;
-    }
-
-    Boolean writable() const {
-        // TODO(plenluno): implement
-        return true;
+        header->append(nl);
+        output_.push_front(Buffer::create(header->toString(), String::ASCII));
+        setFlag(HEADER_MADE);
     }
 
  private:
+    enum Flag {
+        HEADER_MADE = 1 << 0,
+        HEADER_SENT = 1 << 1,
+        FINISHED    = 1 << 2,
+    };
+
+    void setFlag(Flag flag) {
+        flags_ |= flag;
+    }
+
+    void unsetFlag(Flag flag) {
+        flags_ &= ~flag;
+    }
+
+    Boolean hasFlag(Flag flag) const {
+        return flags_ & flag;
+    }
+
+ private:
+    UInt flags_;
     ServerContext* context_;
 
     http::Status::CPtr status_;
-
-    // TODO(plenluno): introduce Buffer
-    StringBuffer::Ptr res_;
-    StringBuffer::Ptr body_;
+    std::list<Buffer::CPtr> output_;
 
     EventEmitter::Ptr ee_;
 

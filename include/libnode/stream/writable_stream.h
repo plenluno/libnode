@@ -16,22 +16,13 @@ class WritableStream : LIBNODE_STREAM(WritableStream)
 
     virtual Boolean writable() const = 0;
 
-    virtual void write(Buffer::CPtr buf) = 0;
-    virtual void write(
-        String::CPtr str, String::Encoding enc = String::UTF8) = 0;
+    virtual Boolean write(Buffer::CPtr buf) = 0;
+    virtual Boolean write(
+        String::CPtr str,
+        String::Encoding enc = String::UTF8) = 0;
     virtual Boolean end() = 0;
 
     virtual Boolean destroySoon() = 0;
-
-    Boolean end(String::CPtr str) {
-        write(str);
-        return end();
-    }
-
-    Boolean end(Buffer::CPtr buf) {
-        write(buf);
-        return end();
-    }
 };
 
 #define LIBNODE_WRITABLE_STREAM(T) public libj::node::WritableStream { \

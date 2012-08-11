@@ -1,5 +1,8 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <assert.h>
+#include <list>
+
 #include "./server_context.h"
 #include "./server_response_impl.h"
 
@@ -13,36 +16,47 @@ const String::CPtr ServerResponseImpl::STATUS_CODE =
     String::create("statusCode");
 
 ServerResponseImpl::ServerResponseImpl(ServerContext* context)
-    : context_(context)
+    : flags_(0)
+    , context_(context)
     , status_(LIBJ_NULL(http::Status))
-    , res_(StringBuffer::create())
-    , body_(StringBuffer::create())
     , ee_(EventEmitter::create()) {}
 
-class AfterSocketWrite : LIBJ_JS_FUNCTION(AfterSocketWrite)
- public:
-    static Ptr create(ServerContext* context) {
-        Ptr p(new AfterSocketWrite(context));
-        return p;
+Boolean ServerResponseImpl::destroy() {
+    assert(context_);
+    return context_->socket->destroy();
+}
+
+Boolean ServerResponseImpl::destroySoon() {
+    assert(context_);
+    return context_->socket->destroySoon();
+}
+
+Boolean ServerResponseImpl::writable() const {
+    assert(context_);
+    return context_->socket->writable();
+}
+
+Boolean ServerResponseImpl::flush() {
+    std::list<Buffer::CPtr>::const_iterator ci;
+    for (ci = output_.begin(); ci != output_.end(); ci++) {
+        context_->socket->write(*ci);
     }
+    output_.clear();
 
-    Value operator()(JsArray::Ptr args) {
-        context_->socket->end();
-        if (context_)
-            delete context_;
-        return Status::OK;
-    }
-
- private:
-    ServerContext* context_;
-
-    AfterSocketWrite(ServerContext* context) : context_(context) {}
-};
+    assert(hasFlag(HEADER_MADE));
+    setFlag(HEADER_SENT);
+    return true;
+}
 
 Boolean ServerResponseImpl::end() {
-    makeResponse();
-    AfterSocketWrite::Ptr cb = AfterSocketWrite::create(context_);
-    context_->socket->write(res_->toString(), String::UTF8, cb);
+    if (hasFlag(FINISHED))
+        return false;
+    if (!hasFlag(HEADER_SENT)) {
+        makeHeader();
+        flush();
+    }
+    context_->socket->end();
+    setFlag(FINISHED);
     return true;
 }
 
