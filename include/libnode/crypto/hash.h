@@ -21,7 +21,7 @@ class Hash : LIBJ_JS_OBJECT(Hash)
 
     static Ptr create(Algorithm algo);
 
-    virtual Boolean update(const Value& data);
+    virtual Boolean update(const Value& data) = 0;
     virtual Value digest() = 0;
 };
 

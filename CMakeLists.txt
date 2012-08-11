@@ -35,6 +35,7 @@ link_directories(
 
 set(libnode-src
     src/buffer.cpp
+    src/crypto.cpp
     src/crypto/hash.cpp
     src/events/event_emitter.cpp
     src/fs.cpp
@@ -48,17 +49,18 @@ set(libnode-src
     src/net/socket.cpp
     src/node.cpp
     src/path.cpp
+    src/querystring.cpp
     src/stream.cpp
     src/timer.cpp
     src/url.cpp
 )
 
 set(libnode-deps-common
+    crypto
     j
     parser-http
     parser-url
     pthread
-    ssl
     uv
 )
 
@@ -146,6 +148,7 @@ if(LIBNODE_USE_GTEST)
         gtest/gtest_http_server.cpp
         gtest/gtest_http_status.cpp
         gtest/gtest_path.cpp
+        gtest/gtest_querystring.cpp
         gtest/gtest_url.cpp
         gtest/gtest_url_parser.cpp
         ${libnode-src}

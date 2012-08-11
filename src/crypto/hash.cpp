@@ -138,6 +138,10 @@ class HashImpl : public Hash {
     LIBJ_JS_OBJECT_IMPL(obj_);
 };
 
+Hash::Ptr Hash::create(Algorithm algo) {
+    return HashImpl::create(algo);
+}
+
 }  // namespace crypto
 }  // namespace node
 }  // namespace libj
