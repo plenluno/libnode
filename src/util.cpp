@@ -98,7 +98,9 @@ String::CPtr percentEncode(String::CPtr str, String::Encoding enc) {
     Size len = buf->length() * 3 + 1;
     char* encoded = new char[len];
     percentEncode(encoded, len, static_cast<const char*>(buf->data()));
-    return String::create(encoded, String::ASCII);
+    String::CPtr res = String::create(encoded, String::ASCII);
+    delete [] encoded;
+    return res;
 }
 
 String::CPtr percentDecode(String::CPtr str, String::Encoding enc) {
@@ -109,7 +111,9 @@ String::CPtr percentDecode(String::CPtr str, String::Encoding enc) {
     Size len = buf->length() + 1;
     char* decoded = new char[len];
     percentDecode(decoded, len, static_cast<const char*>(buf->data()));
-    return String::create(decoded, enc);
+    String::CPtr res = String::create(decoded, enc);
+    delete [] decoded;
+    return res;
 }
 
 }  // namespace util
