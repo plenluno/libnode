@@ -51,6 +51,7 @@ set(libnode-src
     src/path.cpp
     src/querystring.cpp
     src/stream.cpp
+    src/string_decoder.cpp
     src/timer.cpp
     src/url.cpp
     src/util.cpp
