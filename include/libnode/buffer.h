@@ -20,13 +20,15 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
     static Size byteLength(
         String::CPtr str, String::Encoding enc = String::UTF8);
 
+    static Ptr concat(JsArray::CPtr list, Size total = NO_POS);
+
     virtual Int write(
         String::CPtr str,
         Size offset = 0,
         Size length = NO_POS,
         String::Encoding enc = String::UTF8) = 0;
 
-    virtual void copy(
+    virtual Size copy(
         Ptr target,
         Size targetStart = 0,
         Size sourceStart = 0,

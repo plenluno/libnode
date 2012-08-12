@@ -72,13 +72,15 @@ class BufferImpl : public Buffer {
         return p;
     }
 
-    virtual void copy(
+    virtual Size copy(
         Ptr target,
         Size targetStart,
         Size sourceStart,
         Size sourceEnd) const {
+        if (sourceEnd > length())
+            sourceEnd = length();
         Size sourceLen = 0;
-        if (sourceStart < sourceEnd && sourceEnd < length()) {
+        if (sourceStart < sourceEnd) {
             sourceLen = sourceEnd - sourceStart;
         }
         Size copyLen = 0;
@@ -89,8 +91,9 @@ class BufferImpl : public Buffer {
         for (Size i = 0; i < copyLen; i++) {
             UByte value;
             getUInt8(sourceStart + i, &value);
-            target->setUInt8(i, value);
+            target->setUInt8(targetStart + i, value);
         }
+        return copyLen;
     }
 
     virtual String::CPtr toString(
@@ -139,6 +142,24 @@ Size Buffer::byteLength(String::CPtr str, String::Encoding enc) {
     } else {
         return 0;
     }
+}
+
+Buffer::Ptr Buffer::concat(JsArray::CPtr list, Size total) {
+    Size len = list->length();
+    Size sum = 0;
+    for (Size i = 0; i < len; i++) {
+        Buffer::CPtr b = toCPtr<Buffer>(list->get(i));
+        if (b) sum += b->length();
+    }
+    Size bufLen = sum < total ? sum : total;
+
+    Buffer::Ptr buf = Buffer::create(bufLen);
+    Size offset = 0;
+    for (Size i = 0; i < len; i++) {
+        Buffer::CPtr b = toCPtr<Buffer>(list->get(i));
+        if (b) offset += b->copy(buf, offset);
+    }
+    return buf;
 }
 
 }  // namespace node

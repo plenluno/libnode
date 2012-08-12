@@ -15,9 +15,8 @@ TEST(GTestBuffer, TestCreate2) {
     Buffer::Ptr buf = Buffer::create("abc", 3);
     ASSERT_TRUE(buf);
     ASSERT_EQ(buf->length(), 3);
-    Byte b = 0;
-    ASSERT_TRUE(buf->readInt8(&b, 2));
-    ASSERT_EQ(b, 'c');
+    ASSERT_EQ(buf->toString()->compareTo(
+        String::create("abc")), 0);
 }
 
 TEST(GTestBuffer, TestCreate3) {
@@ -27,9 +26,8 @@ TEST(GTestBuffer, TestCreate3) {
     Buffer::Ptr buf = Buffer::create(ary);
     ASSERT_TRUE(buf);
     ASSERT_EQ(buf->length(), 2);
-    UByte b = 0;
-    ASSERT_TRUE(buf->readUInt8(&b, 1));
-    ASSERT_EQ(b, '1');
+    ASSERT_EQ(buf->toString()->compareTo(
+        String::create("01")), 0);
 }
 
 TEST(GTestBuffer, TestCreate4) {
@@ -44,6 +42,7 @@ TEST(GTestBuffer, TestCreate4) {
     Buffer::Ptr buf = Buffer::create(str, String::UTF8);
     ASSERT_TRUE(buf);
     ASSERT_EQ(buf->length(), 9);
+    ASSERT_EQ(buf->toString()->compareTo(str), 0);
     UByte b = 0;
     ASSERT_TRUE(buf->readUInt8(&b, 8));
     ASSERT_EQ(b, 0x86);
@@ -60,7 +59,33 @@ TEST(GTestBuffer, TestByteLength) {
     ASSERT_EQ(Buffer::byteLength(str), 9);
 }
 
-TEST(GTestBuffer, TestWrite) {
+TEST(GTestBuffer, TestCopy) {
+    Buffer::Ptr buf1 = Buffer::create("abcde", 5);
+    Buffer::Ptr buf2 = Buffer::create("xyz", 3);
+    Buffer::Ptr buf = Buffer::create(5);
+    ASSERT_EQ(buf1->copy(buf, 0, 1, 4), 3);
+    ASSERT_EQ(buf2->copy(buf, 3), 2);
+    ASSERT_EQ(buf->length(), 5);
+    String::CPtr str = buf->toString();
+    ASSERT_EQ(str->compareTo(
+        String::create("bcdxy")), 0);
+}
+
+TEST(GTestBuffer, TestConcat) {
+    Buffer::Ptr buf1 = Buffer::create("abc", 3);
+    Buffer::Ptr buf2(LIBJ_NULL(Buffer));
+    Buffer::Ptr buf3 = Buffer::create("xyz", 3);
+    JsArray::Ptr ary = JsArray::create();
+    ary->add(buf1);
+    ary->add(buf2);
+    ary->add(buf3);
+    Buffer::Ptr buf = Buffer::concat(ary, 5);
+    ASSERT_EQ(buf->length(), 5);
+    String::CPtr str = buf->toString();
+    ASSERT_EQ(str->compareTo(String::create("abcxy")), 0);
+}
+
+TEST(GTestBuffer, TestWriteRead) {
     Buffer::Ptr buf = Buffer::create(2);
     Byte wb = 15;
     ASSERT_TRUE(buf->writeInt8(wb, 1));
