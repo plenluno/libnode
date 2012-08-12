@@ -7,6 +7,7 @@
 #include <libj/string_buffer.h>
 
 #include "libnode/querystring.h"
+#include "libnode/util.h"
 
 namespace libj {
 namespace node {
@@ -19,7 +20,7 @@ static String::CPtr toString(Value val) {
         toCPtr<Undefined>(val)) {
         return String::create();
     } else {
-        return String::valueOf(val);
+        return util::percentEncode(String::valueOf(val));
     }
 }
 
@@ -47,12 +48,12 @@ String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
                 if (i) {
                     res->append(strSep);
                 }
-                res->append(key);
+                res->append(toString(key));
                 res->append(strEq);
                 res->append(toString(ary->get(i)));
             }
         } else {
-            res->append(key);
+            res->append(toString(key));
             res->append(strEq);
             res->append(toString(val));
         }
@@ -102,7 +103,9 @@ JsObject::Ptr parse(String::CPtr query, Char sep, Char eq) {
                 key = query->substring(keyStart, i);
                 val = String::create();
             }
-            addPair(obj, key, val);
+            addPair(obj,
+                util::percentDecode(key),
+                util::percentDecode(val));
             keyStart = i + 1;
             key = null;
             val = null;
@@ -114,7 +117,9 @@ JsObject::Ptr parse(String::CPtr query, Char sep, Char eq) {
         key = query->substring(keyStart);
         val = String::create();
     }
-    addPair(obj, key, val);
+    addPair(obj,
+        util::percentDecode(key),
+        util::percentDecode(val));
     return obj;
 }
 

@@ -53,6 +53,7 @@ set(libnode-src
     src/stream.cpp
     src/timer.cpp
     src/url.cpp
+    src/util.cpp
 )
 
 set(libnode-deps-common
@@ -151,6 +152,7 @@ if(LIBNODE_USE_GTEST)
         gtest/gtest_querystring.cpp
         gtest/gtest_url.cpp
         gtest/gtest_url_parser.cpp
+        gtest/gtest_util.cpp
         ${libnode-src}
     )
     target_link_libraries(libnode-gtest

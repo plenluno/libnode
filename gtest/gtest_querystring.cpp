@@ -35,10 +35,10 @@ TEST(GTestQueryString, TestParse) {
     ASSERT_EQ(json::stringify(obj)->compareTo(String::create(
         "{\"\":[\"x\",\"\"],\"y\":\"\"}")), 0);
 
-    query = String::create("foo=bar&baz=qux&baz=quux&corge");
+    query = String::create("%20=%20");
     obj = querystring::parse(query);
     ASSERT_EQ(json::stringify(obj)->compareTo(String::create(
-        "{\"baz\":[\"qux\",\"quux\"],\"corge\":\"\",\"foo\":\"bar\"}")), 0);
+        "{\" \":\" \"}")), 0);
 }
 
 TEST(GTestQueryString, TestStringify) {
@@ -95,6 +95,11 @@ TEST(GTestQueryString, TestStringify) {
     query = querystring::stringify(obj);
     ASSERT_EQ(query->compareTo(
         String::create("undefined=xyz&undefined=123")), 0);
+
+    obj = JsObject::create();
+    obj->put(String::create(" "), String::create(" "));
+    query = querystring::stringify(obj);
+    ASSERT_EQ(query->compareTo(String::create("%20=%20")), 0);
 }
 
 }  // namespace node
