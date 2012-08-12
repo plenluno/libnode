@@ -22,6 +22,18 @@ class BufferImpl : public Buffer {
         return p;
     }
 
+    static Ptr create(JsTypedArray<UByte>::CPtr array) {
+        Size length = array->length();
+        Ptr p(new BufferImpl(length));
+        for (Size i = 0; i < length; i++) {
+            Value v = array->get(i);
+            UByte b;
+            to<UByte>(v, &b);
+            p->setUInt8(i, b);
+        }
+        return p;
+    }
+
     static Ptr create(String::CPtr str, String::Encoding enc) {
         if (enc == String::ASCII || enc == String::UTF8) {
             std::string str8 = str->toStdString();
@@ -64,7 +76,7 @@ class BufferImpl : public Buffer {
         Ptr target,
         Size targetStart,
         Size sourceStart,
-        Size sourceEnd) {
+        Size sourceEnd) const {
         Size sourceLen = 0;
         if (sourceStart < sourceEnd && sourceEnd < length()) {
             sourceLen = sourceEnd - sourceStart;
@@ -78,6 +90,20 @@ class BufferImpl : public Buffer {
             UByte value;
             getUInt8(sourceStart + i, &value);
             target->setUInt8(i, value);
+        }
+    }
+
+    virtual String::CPtr toString(
+        String::Encoding enc,
+        Size start,
+        Size end) const {
+        if (start == 0 && end >= length()) {
+            return String::create(data(), enc);
+        } else {
+            Size len = end - start;
+            Buffer::Ptr buf = Buffer::create(len);
+            copy(buf, 0, start, end);
+            return String::create(buf->data(), enc);
         }
     }
 
@@ -99,8 +125,20 @@ Buffer::Ptr Buffer::create(const void* data, Size length) {
     return BufferImpl::create(data, length);
 }
 
+Buffer::Ptr Buffer::create(JsTypedArray<UByte>::CPtr array) {
+    return BufferImpl::create(array);
+}
+
 Buffer::Ptr Buffer::create(String::CPtr str, String::Encoding enc) {
     return BufferImpl::create(str, enc);
+}
+
+Size Buffer::byteLength(String::CPtr str, String::Encoding enc) {
+    if (str) {
+        return create(str, enc)->length();
+    } else {
+        return 0;
+    }
 }
 
 }  // namespace node

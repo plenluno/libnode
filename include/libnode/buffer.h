@@ -16,6 +16,8 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
     static Ptr create(JsTypedArray<UByte>::CPtr array);
     static Ptr create(String::CPtr str, String::Encoding enc = String::UTF8);
 
+    static Size byteLength(String::CPtr str, String::Encoding enc = String::UTF8);
+
     virtual Int write(
         String::CPtr str,
         Size offset = 0,
@@ -26,7 +28,14 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
         Ptr target,
         Size targetStart = 0,
         Size sourceStart = 0,
-        Size sourceEnd = NO_POS) = 0;
+        Size sourceEnd = NO_POS) const = 0;
+
+    virtual String::CPtr toString() const = 0;
+    virtual String::CPtr toString(
+        String::Encoding enc,
+        Size start = 0,
+        Size end = NO_POS) const = 0;
+
 
 #ifdef LIBJ_USE_EXCEPTION
     UByte readUInt8(Size offset) const {
