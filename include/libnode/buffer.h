@@ -14,9 +14,11 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
     static Ptr create(Size length = 0);
     static Ptr create(const void* data, Size length);
     static Ptr create(JsTypedArray<UByte>::CPtr array);
-    static Ptr create(String::CPtr str, String::Encoding enc = String::UTF8);
+    static Ptr create(
+        String::CPtr str, String::Encoding enc = String::UTF8);
 
-    static Size byteLength(String::CPtr str, String::Encoding enc = String::UTF8);
+    static Size byteLength(
+        String::CPtr str, String::Encoding enc = String::UTF8);
 
     virtual Int write(
         String::CPtr str,

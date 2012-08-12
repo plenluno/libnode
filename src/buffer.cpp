@@ -102,7 +102,7 @@ class BufferImpl : public Buffer {
         } else {
             Size len = end - start;
             Buffer::Ptr buf = Buffer::create(len);
-            copy(buf, 0, start, end);
+            this->copy(buf, 0, start, end);
             return String::create(buf->data(), enc);
         }
     }
