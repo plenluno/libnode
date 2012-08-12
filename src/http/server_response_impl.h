@@ -87,7 +87,7 @@ class ServerResponseImpl : public ServerResponse {
             return false;
         if (!hasFlag(HEADER_SENT))
             makeHeader();
-        output_.push_back(buf);
+        output_->add(buf);
         return flush();
     }
 
@@ -136,7 +136,7 @@ class ServerResponseImpl : public ServerResponse {
             header->append(nl);
         }
         header->append(nl);
-        output_.push_front(Buffer::create(header->toString(), String::ASCII));
+        output_->add(0, Buffer::create(header->toString(), String::ASCII));
         setFlag(HEADER_MADE);
     }
 
@@ -164,7 +164,7 @@ class ServerResponseImpl : public ServerResponse {
     ServerContext* context_;
 
     http::Status::CPtr status_;
-    std::list<Buffer::CPtr> output_;
+    JsArray::Ptr output_;
 
     EventEmitter::Ptr ee_;
 

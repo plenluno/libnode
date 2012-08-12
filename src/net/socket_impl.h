@@ -347,8 +347,8 @@ class SocketImpl : public Socket {
         , ee_(events::EventEmitter::create()) {
         uv_tcp_init(uv_default_loop(), &tcp_);
         tcp_.data = this;
-        setFlag(READABLE);
-        setFlag(WRITABLE);
+        // setFlag(READABLE);
+        // setFlag(WRITABLE);
     }
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);

@@ -19,6 +19,7 @@ ServerResponseImpl::ServerResponseImpl(ServerContext* context)
     : flags_(0)
     , context_(context)
     , status_(LIBJ_NULL(http::Status))
+    , output_(JsArray::create())
     , ee_(EventEmitter::create()) {}
 
 Boolean ServerResponseImpl::destroy() {
@@ -37,11 +38,9 @@ Boolean ServerResponseImpl::writable() const {
 }
 
 Boolean ServerResponseImpl::flush() {
-    std::list<Buffer::CPtr>::const_iterator ci;
-    for (ci = output_.begin(); ci != output_.end(); ci++) {
-        context_->socket->write(*ci);
-    }
-    output_.clear();
+    Buffer::Ptr buf = Buffer::concat(output_);
+    context_->socket->write(buf);
+    output_->clear();
 
     assert(hasFlag(HEADER_MADE));
     setFlag(HEADER_SENT);
