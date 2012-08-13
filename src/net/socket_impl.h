@@ -20,13 +20,11 @@ class SocketWriteContext {
  public:
     uv_write_t uvWrite;
     uv_buf_t uvBuf;
-    int status;
     Buffer::CPtr buffer;
     JsFunction::Ptr callback;
 
     SocketWriteContext()
-        : status(0)
-        , buffer(LIBJ_NULL(Buffer))
+        : buffer(LIBJ_NULL(Buffer))
         , callback(LIBJ_NULL(JsFunction)) {
         uvWrite.data = this;
         uvBuf.base = NULL;
@@ -285,18 +283,10 @@ class SocketImpl : public Socket {
     static void afterWrite(uv_write_t* write, int status) {
         SocketWriteContext* context =
             static_cast<SocketWriteContext*>(write->data);
-        context->status = status;
-        write->handle->data = context;
-        uv_close(reinterpret_cast<uv_handle_t*>(write->handle), onWriteClose);
-    }
-
-    static void onWriteClose(uv_handle_t* handle) {
-        SocketWriteContext* context =
-            static_cast<SocketWriteContext*>(handle->data);
         assert(context);
         if (context->callback) {
             JsArray::Ptr args = JsArray::create();
-            args->add(static_cast<Int>(context->status));
+            args->add(static_cast<Int>(status));
             (*context->callback)(args);
         }
         delete context;
@@ -348,7 +338,7 @@ class SocketImpl : public Socket {
         uv_tcp_init(uv_default_loop(), &tcp_);
         tcp_.data = this;
         // setFlag(READABLE);
-        // setFlag(WRITABLE);
+        setFlag(WRITABLE);
     }
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
