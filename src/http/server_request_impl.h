@@ -56,6 +56,16 @@ class ServerRequestImpl : public ServerRequest {
         headers->put(name->toLowerCase(), value);
     }
 
+    String::CPtr getHeader(String::CPtr name) const {
+        JsObject::Ptr headers = getPtr<JsObject>(HEADERS);
+        if (headers) {
+            return headers->getCPtr<String>(name);
+        } else {
+            String::CPtr nullp(LIBJ_NULL(String));
+            return nullp;
+        }
+    }
+
     void setHttpVersion(String::CPtr httpVersion) {
         put(HTTP_VERSION, httpVersion);
     }
