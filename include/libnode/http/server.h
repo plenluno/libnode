@@ -15,6 +15,7 @@ class Server : LIBNODE_EVENT_EMITTER(Server)
     static const String::CPtr EVENT_REQUEST;
     static const String::CPtr EVENT_CONNECTION;
     static const String::CPtr EVENT_CLOSE;
+    static const String::CPtr EVENT_UPGRADE;
 
     static Ptr create();
 

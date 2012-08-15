@@ -106,21 +106,30 @@ class ServerImpl : public Server {
     class OnSocketData : LIBJ_JS_FUNCTION(OnSocketData)
      public:
         static Ptr create(ServerContext* ctxt) {
+            assert(ctxt);
             Ptr p(new OnSocketData(ctxt));
             return p;
         }
 
         Value operator()(JsArray::Ptr args) {
+            http_parser* httpParser = &context_->parser;
             Buffer::Ptr buf = toPtr<Buffer>(args->get(0));
             assert(buf);
             size_t numRead = buf->length();
             size_t numParsed = http_parser_execute(
-                                &context_->parser,
+                                httpParser,
                                 &settings,
                                 static_cast<const char*>(buf->data()),
                                 numRead);
-            // parse error
-            if (numParsed < numRead) {
+            if (httpParser->upgrade) {
+                context_->socket->removeAllListeners();
+                JsArray::Ptr args = JsArray::create();
+                args->add(context_->request);
+                args->add(context_->socket);
+                args->add(buf->slice(numParsed));
+                context_->server->emit(EVENT_UPGRADE, args);
+                delete context_;
+            } else if (numParsed < numRead) {  // parse error
                 JsArray::Ptr emptyArgs = JsArray::create();
                 context_->request->emit(ServerRequest::EVENT_CLOSE, emptyArgs);
                 context_->response->emit(ServerRequest::EVENT_CLOSE, emptyArgs);
@@ -138,13 +147,13 @@ class ServerImpl : public Server {
     class OnSocketClose : LIBJ_JS_FUNCTION(OnSocketClose)
      public:
         static Ptr create(ServerContext* ctxt) {
+            assert(ctxt);
             Ptr p(new OnSocketClose(ctxt));
             return p;
         }
 
         Value operator()(JsArray::Ptr args) {
-            if (context_)
-                delete context_;
+            delete context_;
             return Status::OK;
         }
 
@@ -279,6 +288,7 @@ const String::CPtr Server::IN_ADDR_ANY = String::create("0.0.0.0");
 const String::CPtr Server::EVENT_REQUEST = String::create("request");
 const String::CPtr Server::EVENT_CONNECTION = String::create("connection");
 const String::CPtr Server::EVENT_CLOSE = String::create("close");
+const String::CPtr Server::EVENT_UPGRADE = String::create("upgrade");
 
 Server::Ptr Server::create() {
     return ServerImpl::create();
