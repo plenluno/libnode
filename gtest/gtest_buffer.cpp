@@ -43,9 +43,7 @@ TEST(GTestBuffer, TestCreate4) {
     ASSERT_TRUE(buf);
     ASSERT_EQ(buf->length(), 9);
     ASSERT_EQ(buf->toString()->compareTo(str), 0);
-    UByte b = 0;
-    ASSERT_TRUE(buf->readUInt8(&b, 8));
-    ASSERT_EQ(b, 0x86);
+    ASSERT_EQ(0x86, buf->get(8));
 }
 
 TEST(GTestBuffer, TestByteLength) {
@@ -90,7 +88,7 @@ TEST(GTestBuffer, TestWriteRead) {
     Byte wb = 15;
     ASSERT_TRUE(buf->writeInt8(wb, 1));
     Byte rb = 0;
-    ASSERT_TRUE(buf->readInt8(&rb, 1));
+    ASSERT_TRUE(buf->readInt8(1, &rb));
     ASSERT_EQ(wb, rb);
 }
 

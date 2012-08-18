@@ -136,6 +136,10 @@ Buffer::Ptr Buffer::create(String::CPtr str, String::Encoding enc) {
     return BufferImpl::create(str, enc);
 }
 
+Boolean Buffer::isBuffer(const Value& val) {
+    return val.instanceof(Type<Buffer>::id());
+}
+
 Size Buffer::byteLength(String::CPtr str, String::Encoding enc) {
     if (str) {
         return create(str, enc)->length();

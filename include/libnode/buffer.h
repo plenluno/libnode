@@ -17,6 +17,8 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
     static Ptr create(
         String::CPtr str, String::Encoding enc = String::UTF8);
 
+    static Boolean isBuffer(const Value& val);
+
     static Size byteLength(
         String::CPtr str, String::Encoding enc = String::UTF8);
 
@@ -40,6 +42,14 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
         Size start = 0,
         Size end = NO_POS) const = 0;
 
+    virtual Int get(Size offset) {
+        UByte b;
+        if (readUInt8(offset, &b)) {
+            return b;
+        } else {
+            return -1;
+        }
+    }
 
 #ifdef LIBJ_USE_EXCEPTION
     UByte readUInt8(Size offset) const {
@@ -99,59 +109,59 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
     }
 #endif  // LIBJ_USE_EXCEPTION
 
-    Boolean readUInt8(UByte* value, Size offset) const {
+    Boolean readUInt8(Size offset, UByte* value) const {
         return getUInt8(offset, value);
     }
 
-    Boolean readUInt16LE(UShort* value, Size offset) const {
+    Boolean readUInt16LE(Size offset, UShort* value) const {
         return getUInt16(offset, value, true);
     }
 
-    Boolean readUInt16BE(UShort* value, Size offset) const {
+    Boolean readUInt16BE(Size offset, UShort* value) const {
         return getUInt16(offset, value, false);
     }
 
-    Boolean readUInt32LE(UInt* value, Size offset) const {
+    Boolean readUInt32LE(Size offset, UInt* value) const {
         return getUInt32(offset, value, true);
     }
 
-    Boolean readUInt32BE(UInt* value, Size offset) const {
+    Boolean readUInt32BE(Size offset, UInt* value) const {
         return getUInt32(offset, value, false);
     }
 
-    Boolean readInt8(Byte* value, Size offset) const {
+    Boolean readInt8(Size offset, Byte* value) const {
         return getInt8(offset, value);
     }
 
-    Boolean readInt16LE(Short* value, Size offset) const {
+    Boolean readInt16LE(Size offset, Short* value) const {
         return getInt16(offset, value, true);
     }
 
-    Boolean readInt16BE(Short* value, Size offset) const {
+    Boolean readInt16BE(Size offset, Short* value) const {
         return getInt16(offset, value, false);
     }
 
-    Boolean readInt32LE(Int* value, Size offset) const {
+    Boolean readInt32LE(Size offset, Int* value) const {
         return getInt32(offset, value, true);
     }
 
-    Boolean readInt32BE(Int* value, Size offset) const {
+    Boolean readInt32BE(Size offset, Int* value) const {
         return getInt32(offset, value, false);
     }
 
-    Boolean readFloatLE(Float* value, Size offset) const {
+    Boolean readFloatLE(Size offset, Float* value) const {
         return getFloat32(offset, value, true);
     }
 
-    Boolean readFloatBE(Float* value, Size offset) const {
+    Boolean readFloatBE(Size offset, Float* value) const {
         return getFloat32(offset, value, false);
     }
 
-    Boolean readDoubleLE(Double* value, Size offset) const {
+    Boolean readDoubleLE(Size offset, Double* value) const {
         return getFloat64(offset, value, true);
     }
 
-    Boolean readDoubleBE(Double* value, Size offset) const {
+    Boolean readDoubleBE(Size offset, Double* value) const {
         return getFloat64(offset, value, false);
     }
 
