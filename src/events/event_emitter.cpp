@@ -1,6 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <libj/null.h>
+#include <libj/status.h>
 
 #include "libnode/events/event_emitter.h"
 
@@ -9,9 +10,59 @@ namespace node {
 namespace events {
 
 class EventEmitterImpl : public EventEmitter {
+ private:
+    class Once : LIBJ_JS_FUNCTION(Once)
+     public:
+        static Ptr create(
+            String::CPtr event,
+            JsFunction::Ptr listener,
+            EventEmitterImpl* ee) {
+            Ptr p(new Once(event, listener, ee));
+            p->setSelf(p);
+            return p;
+        }
+
+        Value operator()(ArrayList::Ptr args) {
+            (*listener_)(args);
+            Ptr self = unsetSelf();
+            ee_->removeListener(event_, self);
+            return Status::OK;
+        }
+
+     private:
+        String::CPtr event_;
+        JsFunction::Ptr listener_;
+        EventEmitterImpl* ee_;
+        Once::Ptr self_;
+
+        Once(
+            String::CPtr event,
+            JsFunction::Ptr listener,
+            EventEmitterImpl* ee)
+            : event_(event)
+            , listener_(listener)
+            , ee_(ee) {}
+
+        void setSelf(Once::Ptr self) {
+            self_ = self;
+        }
+
+        Ptr unsetSelf() {
+            Ptr nullp(LIBJ_NULL(Once));
+            Ptr self;
+            self = self_;
+            self_ = nullp;
+            return self;
+        }
+    };
+
  public:
     void on(String::CPtr event, JsFunction::Ptr listener) {
         addListener(event, listener);
+    }
+
+    void once(String::CPtr event, JsFunction::Ptr listener) {
+        addListener(event, Once::create(event, listener, this));
     }
 
     void addListener(String::CPtr event, JsFunction::Ptr listener) {
@@ -24,14 +75,12 @@ class EventEmitterImpl : public EventEmitter {
             a = toPtr<JsArray>(v);
         }
         a->add(listener);
+        emit(EVENT_NEW_LISTENER, JsArray::create());
     }
 
     void removeListener(String::CPtr event, JsFunction::CPtr listener) {
-        Value v = listeners_->get(event);
-        if (!v.instanceof(Type<Null>::id())) {
-            JsArray::Ptr a = toPtr<JsArray>(v);
-            while (a->remove(listener)) {}
-        }
+        JsArray::Ptr a = listeners(event);
+        a->remove(listener);
     }
 
     void removeAllListeners() {
@@ -39,27 +88,27 @@ class EventEmitterImpl : public EventEmitter {
     }
 
     void removeAllListeners(String::CPtr event) {
-        Value v = listeners_->get(event);
-        if (!v.instanceof(Type<Null>::id())) {
-            JsArray::Ptr a = toPtr<JsArray>(v);
-            a->clear();
-        }
+        listeners_->remove(event);
     }
 
     void emit(String::CPtr event, JsArray::Ptr args) {
-        Value v = listeners_->get(event);
-        if (!v.instanceof(Type<Null>::id())) {
-            JsArray::Ptr a = toPtr<JsArray>(v);
-            Size n = a->size();
-            for (Size i = 0; i < n; i++) {
-                JsFunction::Ptr f = toPtr<JsFunction>(a->get(i));
-                (*f)(args);
-            }
+        JsArray::Ptr a = listeners(event);
+        Size n = a->size();
+        for (Size i = 0; i < n; i++) {
+            JsFunction::Ptr f = toPtr<JsFunction>(a->get(i));
+            (*f)(args);
         }
     }
 
-    Value listeners(String::CPtr event) {
-        return listeners_->get(event);
+    JsArray::Ptr listeners(String::CPtr event) {
+        Value v = listeners_->get(event);
+        if (v.instanceof(Type<Null>::id())) {
+            JsArray::Ptr a = JsArray::create();
+            listeners_->put(event, a);
+            return a;
+        } else {
+            return toPtr<JsArray>(v);
+        }
     }
 
     static Ptr create() {
@@ -75,6 +124,9 @@ class EventEmitterImpl : public EventEmitter {
 
     LIBJ_JS_OBJECT_IMPL(listeners_);
 };
+
+const String::CPtr EventEmitter::EVENT_NEW_LISTENER =
+    String::create("newListener");
 
 EventEmitter::Ptr EventEmitter::create() {
     return EventEmitterImpl::create();

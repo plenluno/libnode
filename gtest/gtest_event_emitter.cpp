@@ -58,10 +58,10 @@ class Sub : LIBJ_JS_FUNCTION(Sub)
 
 TEST(GTestEventEmitter, TestCreate) {
     EventEmitter::Ptr ee = EventEmitter::create();
-    ASSERT_TRUE(ee ? true : false);
+    ASSERT_TRUE(ee);
 }
 
-TEST(GTestEventEmitter, TestAddAndGetListeners) {
+TEST(GTestEventEmitter, TestOnAndAddListener) {
     EventEmitter::Ptr ee = EventEmitter::create();
     String::CPtr event = String::create("event");
     JsFunction::Ptr add = Add::create();
@@ -69,18 +69,15 @@ TEST(GTestEventEmitter, TestAddAndGetListeners) {
     ee->on(event, add);
     ee->addListener(String::create("event"), sub);
 
-    Value v = ee->listeners(event);
-    ASSERT_TRUE(v.instanceof(Type<JsArray>::id()));
+    JsArray::Ptr a = ee->listeners(event);
+    ASSERT_EQ(2, a->size());
 
-    JsArray::Ptr a = toPtr<JsArray>(v);
-    ASSERT_EQ(a->size(), 2);
-
-    v = a->get(0);
+    Value v = a->get(0);
     JsFunction::Ptr f1 = toPtr<JsFunction>(v);
-    ASSERT_TRUE(f1 == add || f1 == sub);
+    ASSERT_TRUE(f1 == add);
     v = a->get(1);
     JsFunction::Ptr f2 = toPtr<JsFunction>(v);
-    ASSERT_TRUE(f1 != f2 && (f1 == add || f1 == sub));
+    ASSERT_TRUE(f2 == sub);
 }
 
 TEST(GTestEventEmitter, TestEmit) {
@@ -103,6 +100,56 @@ TEST(GTestEventEmitter, TestEmit) {
     to<Int>(v1, &i1);
     ASSERT_TRUE(i0 == 2 || i0 == 8);
     ASSERT_TRUE(i0 != i1 && (i1 == 2 || i1 == 8));
+}
+
+TEST(GTestEventEmitter, TestRemoveListener) {
+    EventEmitter::Ptr ee = EventEmitter::create();
+    String::CPtr event = String::create("event");
+    JsFunction::Ptr add = Add::create();
+    JsFunction::Ptr sub = Sub::create();
+    ee->once(event, add);
+    ee->on(event, sub);
+    ASSERT_EQ(2, ee->listeners(event)->length());
+
+    ee->removeListener(event, add);
+
+    ASSERT_EQ(1, ee->listeners(event)->length());
+    Value v = ee->listeners(event)->get(0);
+    JsFunction::Ptr f = toPtr<JsFunction>(v);
+    ASSERT_TRUE(f == sub);
+}
+
+TEST(GTestEventEmitter, TestRemoveAllListener) {
+    EventEmitter::Ptr ee = EventEmitter::create();
+    String::CPtr event = String::create("event");
+    JsFunction::Ptr add = Add::create();
+    JsFunction::Ptr sub = Sub::create();
+    ee->once(event, add);
+    ee->on(event, sub);
+    ASSERT_EQ(2, ee->listeners(event)->length());
+
+    ee->removeAllListeners(event);
+    ASSERT_TRUE(ee->listeners(event)->isEmpty());
+}
+
+TEST(GTestEventEmitter, TestOnce) {
+    EventEmitter::Ptr ee = EventEmitter::create();
+    String::CPtr event = String::create("event");
+    JsFunction::Ptr add = Add::create();
+    JsFunction::Ptr sub = Sub::create();
+    ee->once(event, add);
+    ee->on(event, sub);
+    ASSERT_EQ(2, ee->listeners(event)->length());
+
+    JsArray::Ptr args = JsArray::create();
+    args->add(5);
+    args->add(3);
+    ee->emit(event, args);
+
+    ASSERT_EQ(1, ee->listeners(event)->length());
+    Value v = ee->listeners(event)->get(0);
+    JsFunction::Ptr f = toPtr<JsFunction>(v);
+    ASSERT_TRUE(f == sub);
 }
 
 }  // namespace events

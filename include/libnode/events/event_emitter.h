@@ -14,9 +14,13 @@ namespace events {
 
 class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
  public:
+    static const String::CPtr EVENT_NEW_LISTENER;
+
     static Ptr create();
 
     virtual void on(
+        String::CPtr event, JsFunction::Ptr listener) = 0;
+    virtual void once(
         String::CPtr event, JsFunction::Ptr listener) = 0;
     virtual void addListener(
         String::CPtr event, JsFunction::Ptr listener) = 0;
@@ -25,7 +29,7 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
     virtual void removeAllListeners() = 0;
     virtual void removeAllListeners(String::CPtr event) = 0;
     virtual void emit(String::CPtr event, JsArray::Ptr args) = 0;
-    virtual Value listeners(String::CPtr event) = 0;
+    virtual JsArray::Ptr listeners(String::CPtr event) = 0;
 };
 
 #define LIBNODE_EVENT_EMITTER(T) \
@@ -37,6 +41,9 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
 public: \
     void on(String::CPtr event, JsFunction::Ptr listener) { \
         EE->on(event, listener); \
+    } \
+    void once(String::CPtr event, JsFunction::Ptr listener) { \
+        EE->once(event, listener); \
     } \
     void addListener(String::CPtr event, JsFunction::Ptr listener) { \
         EE->addListener(event, listener); \
@@ -53,7 +60,7 @@ public: \
     void emit(String::CPtr event, JsArray::Ptr args) { \
         EE->emit(event, args); \
     } \
-    Value listeners(String::CPtr event) { \
+    JsArray::Ptr listeners(String::CPtr event) { \
         return EE->listeners(event); \
     }
 
