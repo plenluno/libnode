@@ -74,10 +74,10 @@ TEST(GTestEventEmitter, TestOnAndAddListener) {
 
     Value v = a->get(0);
     JsFunction::Ptr f1 = toPtr<JsFunction>(v);
-    ASSERT_TRUE(f1 == add);
+    ASSERT_EQ(add, f1);
     v = a->get(1);
     JsFunction::Ptr f2 = toPtr<JsFunction>(v);
-    ASSERT_TRUE(f2 == sub);
+    ASSERT_EQ(sub, f2);
 }
 
 TEST(GTestEventEmitter, TestEmit) {
@@ -98,8 +98,8 @@ TEST(GTestEventEmitter, TestEmit) {
     Int i0, i1;
     to<Int>(v0, &i0);
     to<Int>(v1, &i1);
-    ASSERT_TRUE(i0 == 2 || i0 == 8);
-    ASSERT_TRUE(i0 != i1 && (i1 == 2 || i1 == 8));
+    ASSERT_EQ(8, i0);
+    ASSERT_EQ(2, i1);
 }
 
 TEST(GTestEventEmitter, TestRemoveListener) {
@@ -116,7 +116,10 @@ TEST(GTestEventEmitter, TestRemoveListener) {
     ASSERT_EQ(1, ee->listeners(event)->length());
     Value v = ee->listeners(event)->get(0);
     JsFunction::Ptr f = toPtr<JsFunction>(v);
-    ASSERT_TRUE(f == sub);
+    ASSERT_EQ(sub, f);
+
+    ee->removeListener(event, sub);
+    ASSERT_TRUE(ee->listeners(event)->isEmpty());
 }
 
 TEST(GTestEventEmitter, TestRemoveAllListener) {
@@ -141,15 +144,24 @@ TEST(GTestEventEmitter, TestOnce) {
     ee->on(event, sub);
     ASSERT_EQ(2, ee->listeners(event)->length());
 
+    results->clear();
     JsArray::Ptr args = JsArray::create();
-    args->add(5);
+    args->add(6);
     args->add(3);
     ee->emit(event, args);
 
     ASSERT_EQ(1, ee->listeners(event)->length());
     Value v = ee->listeners(event)->get(0);
     JsFunction::Ptr f = toPtr<JsFunction>(v);
-    ASSERT_TRUE(f == sub);
+    ASSERT_EQ(sub, f);
+
+    Value v0 = results->get(0);
+    Value v1 = results->get(1);
+    Int i0, i1;
+    to<Int>(v0, &i0);
+    to<Int>(v1, &i1);
+    ASSERT_EQ(9, i0);
+    ASSERT_EQ(3, i1);
 }
 
 }  // namespace events

@@ -18,22 +18,23 @@ class EventEmitterImpl : public EventEmitter {
             JsFunction::Ptr listener,
             EventEmitterImpl* ee) {
             Ptr p(new Once(event, listener, ee));
-            p->setSelf(p);
             return p;
         }
 
         Value operator()(JsArray::Ptr args) {
             (*listener_)(args);
-            Ptr self = unsetSelf();
-            ee_->removeListener(event_, self);
+            ee_->removeListener(event_, listener_);
             return Status::OK;
+        }
+
+        JsFunction::Ptr listener() {
+            return listener_;
         }
 
      private:
         String::CPtr event_;
         JsFunction::Ptr listener_;
         EventEmitterImpl* ee_;
-        Once::Ptr self_;
 
         Once(
             String::CPtr event,
@@ -42,16 +43,6 @@ class EventEmitterImpl : public EventEmitter {
             : event_(event)
             , listener_(listener)
             , ee_(ee) {}
-
-        void setSelf(Once::Ptr self) {
-            self_ = self;
-        }
-
-        Ptr unsetSelf() {
-            Ptr self = self_;
-            self_ = null();
-            return self;
-        }
     };
 
  public:
@@ -78,7 +69,23 @@ class EventEmitterImpl : public EventEmitter {
 
     void removeListener(String::CPtr event, JsFunction::CPtr listener) {
         JsArray::Ptr a = listeners(event);
-        a->remove(listener);
+        Size n = a->size();
+        for (Size i = 0; i < n; i++) {
+            Value v = a->get(i);
+            if (v.instanceof(Type<Once>::id())) {
+                Once::Ptr once = toPtr<Once>(v);
+                if (once->listener()->equals(listener)) {
+                    a->remove(i);
+                    break;
+                }
+            } else {
+                JsFunction::Ptr func = toPtr<JsFunction>(v);
+                if (func->equals(listener)) {
+                    a->remove(i);
+                    break;
+                }
+            }
+        }
     }
 
     void removeAllListeners() {
@@ -91,9 +98,11 @@ class EventEmitterImpl : public EventEmitter {
 
     void emit(String::CPtr event, JsArray::Ptr args) {
         JsArray::Ptr a = listeners(event);
-        Size n = a->size();
-        for (Size i = 0; i < n; i++) {
-            JsFunction::Ptr f = toPtr<JsFunction>(a->get(i));
+        Size i = 0;
+        while (i < a->size()) {
+            Value v = a->get(i);
+            if (!v.instanceof(Type<Once>::id())) i++;
+            JsFunction::Ptr f = toPtr<JsFunction>(v);
             (*f)(args);
         }
     }
