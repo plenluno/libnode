@@ -9,29 +9,29 @@ namespace node {
 TEST(GTestUtil, TestPercentEncode) {
     String::CPtr str = String::create();
     String::CPtr encoded = util::percentEncode(str);
-    ASSERT_EQ(encoded->compareTo(String::create()), 0);
+    ASSERT_TRUE(encoded->equals(String::create()));
 
     str = String::create(" ");
     encoded = util::percentEncode(str);
-    ASSERT_EQ(encoded->compareTo(String::create("%20")), 0);
+    ASSERT_TRUE(encoded->equals(String::create("%20")));
 
     str = String::create("[\"123\"]");
     encoded = util::percentEncode(str);
-    ASSERT_EQ(encoded->compareTo(String::create("%5B%22123%22%5D")), 0);
+    ASSERT_TRUE(encoded->equals(String::create("%5B%22123%22%5D")));
 }
 
 TEST(GTestUtil, TestPercentDecode) {
     String::CPtr str = String::create();
     String::CPtr decoded = util::percentDecode(str);
-    ASSERT_EQ(decoded->compareTo(String::create()), 0);
+    ASSERT_TRUE(decoded->equals(String::create()));
 
     str = String::create("%20");
     decoded = util::percentDecode(str);
-    ASSERT_EQ(decoded->compareTo(String::create(" ")), 0);
+    ASSERT_TRUE(decoded->equals(String::create(" ")));
 
     str = String::create("%5B%22123%22%5D");
     decoded = util::percentDecode(str);
-    ASSERT_EQ(decoded->compareTo(String::create("[\"123\"]")), 0);
+    ASSERT_TRUE(decoded->equals(String::create("[\"123\"]")));
 }
 
 

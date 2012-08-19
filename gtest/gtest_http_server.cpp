@@ -8,7 +8,7 @@ namespace node {
 
 TEST(GTestHttpServer, TestCreate) {
     http::Server::Ptr srv = http::Server::create();
-    ASSERT_TRUE(srv ? true : false);
+    ASSERT_TRUE(srv);
 }
 
 }  // namespace node

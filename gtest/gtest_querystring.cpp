@@ -13,79 +13,80 @@ namespace node {
 TEST(GTestQueryString, TestParse) {
     String::CPtr query = String::create();
     JsObject::Ptr obj = querystring::parse(query);
-    ASSERT_EQ(json::stringify(obj)->compareTo(String::create("{}")), 0);
+    ASSERT_TRUE(json::stringify(obj)->equals(
+        String::create("{}")));
 
     query = String::create(" ");
     obj = querystring::parse(query);
-    ASSERT_EQ(json::stringify(obj)->compareTo(String::create(
-        "{\" \":\"\"}")), 0);
+    ASSERT_TRUE(json::stringify(obj)->equals(
+        String::create("{\" \":\"\"}")));
 
     query = String::create("&");
     obj = querystring::parse(query);
-    ASSERT_EQ(json::stringify(obj)->compareTo(String::create(
-        "{\"\":[\"\",\"\"]}")), 0);
+    ASSERT_TRUE(json::stringify(obj)->equals(
+        String::create("{\"\":[\"\",\"\"]}")));
 
     query = String::create("=");
     obj = querystring::parse(query);
-    ASSERT_EQ(json::stringify(obj)->compareTo(String::create(
-        "{\"\":\"\"}")), 0);
+    ASSERT_TRUE(json::stringify(obj)->equals(
+        String::create("{\"\":\"\"}")));
 
     query = String::create("=x&y&");
     obj = querystring::parse(query);
-    ASSERT_EQ(json::stringify(obj)->compareTo(String::create(
-        "{\"\":[\"x\",\"\"],\"y\":\"\"}")), 0);
+    ASSERT_TRUE(json::stringify(obj)->equals(
+        String::create("{\"\":[\"x\",\"\"],\"y\":\"\"}")));
 
     query = String::create("%20=%20");
     obj = querystring::parse(query);
-    ASSERT_EQ(json::stringify(obj)->compareTo(String::create(
-        "{\" \":\" \"}")), 0);
+    ASSERT_TRUE(json::stringify(obj)->equals(
+        String::create("{\" \":\" \"}")));
 }
 
 TEST(GTestQueryString, TestStringify) {
     JsObject::Ptr obj = JsObject::create();
     String::CPtr query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create()), 0);
+    ASSERT_TRUE(query->equals(String::create()));
 
     obj = JsObject::create();
     obj->put(String::create("a"), String::create("b"));
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create("a=b")), 0);
+    ASSERT_TRUE(query->equals(String::create("a=b")));
 
     obj = JsObject::create();
     obj->put(String::create("a"), String::create("b"));
     obj->put(String::create("x"), 1);
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create("a=b&x=1")), 0);
+    ASSERT_TRUE(query->equals(String::create("a=b&x=1")));
 
     obj = JsObject::create();
     obj->put(String::create("a"), JsObject::create());
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create("a=")), 0);
+    ASSERT_TRUE(query->equals(String::create("a=")));
 
     obj = JsObject::create();
     obj->put(String::create("a"), JsArray::create());
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create()), 0);
+    ASSERT_TRUE(query->equals(String::create()));
 
     obj = JsObject::create();
     obj->put(String::create("a"), Null::instance());
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create("a=")), 0);
+    ASSERT_TRUE(query->equals(String::create("a=")));
 
     obj = JsObject::create();
     obj->put(String::create("a"), Undefined::instance());
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create("a=")), 0);
+    ASSERT_TRUE(query->equals(String::create("a=")));
 
     obj = JsObject::create();
     obj->put(String::create(), String::create());
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create("=")), 0);
+    ASSERT_TRUE(query->equals(String::create("=")));
 
     obj = JsObject::create();
     obj->put(Null::instance(), Null::instance());
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create("null=")), 0);
+    ASSERT_TRUE(query->equals(String::create("null=")));
 
     obj = JsObject::create();
     JsArray::Ptr ary = JsArray::create();
@@ -93,13 +94,13 @@ TEST(GTestQueryString, TestStringify) {
     ary->add(123);
     obj->put(Undefined::instance(), ary);
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(
-        String::create("undefined=xyz&undefined=123")), 0);
+    ASSERT_TRUE(query->equals(
+        String::create("undefined=xyz&undefined=123")));
 
     obj = JsObject::create();
     obj->put(String::create(" "), String::create(" "));
     query = querystring::stringify(obj);
-    ASSERT_EQ(query->compareTo(String::create("%20=%20")), 0);
+    ASSERT_TRUE(query->equals(String::create("%20=%20")));
 }
 
 }  // namespace node
