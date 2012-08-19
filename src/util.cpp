@@ -2,7 +2,7 @@
 
 #include <libj/error.h>
 #include <libj/js_array.h>
-#include <libj/js_regexp.h> 
+#include <libj/js_regexp.h>
 #include <libnode/buffer.h>
 
 #include "libnode/util.h"
