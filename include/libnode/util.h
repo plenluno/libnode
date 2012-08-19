@@ -9,6 +9,10 @@ namespace libj {
 namespace node {
 namespace util {
 
+Boolean isArray(const Value& val);
+Boolean isError(const Value& val);
+Boolean isRegExp(const Value& val);
+
 String::CPtr percentEncode(
     String::CPtr str, String::Encoding enc = String::UTF8);
 String::CPtr percentDecode(

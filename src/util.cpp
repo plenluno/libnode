@@ -1,5 +1,8 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <libj/error.h>
+#include <libj/js_array.h>
+#include <libj/js_regexp.h> 
 #include <libnode/buffer.h>
 
 #include "libnode/util.h"
@@ -7,6 +10,18 @@
 namespace libj {
 namespace node {
 namespace util {
+
+Boolean isArray(const Value& val) {
+    return val.instanceof(Type<JsArray>::id());
+}
+
+Boolean isError(const Value& val) {
+    return val.instanceof(Type<Error>::id());
+}
+
+Boolean isRegExp(const Value& val) {
+    return val.instanceof(Type<JsRegExp>::id());
+}
 
 #define ASCII_ALPHA1_START  (0x41)  // A
 #define ASCII_ALPHA1_END    (0x5A)  // Z
