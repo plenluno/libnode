@@ -88,7 +88,7 @@ JsObject::Ptr parse(String::CPtr query, Char sep, Char eq) {
 
     Size keyStart = 0;
     Size valStart = 0;
-    String::CPtr null(LIBJ_NULL(String));
+    String::CPtr null = String::null();
     String::CPtr key = null;
     String::CPtr val = null;
     Size len = query->length();

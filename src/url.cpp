@@ -27,8 +27,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
     static const String::CPtr question = String::create("?");
 
     if (!urlStr) {
-        LIBJ_NULL_PTR(JsObject, nullp);
-        return nullp;
+        return JsObject::null();
     }
 
     struct parsed_url* url = parse_url(urlStr->toStdString().c_str());
@@ -38,7 +37,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
     if (url->scheme) {
         obj->put(PROTOCOL, String::create(url->scheme)->toLowerCase());
     }
-    LIBJ_NULL_CPTR(String, port);
+    String::CPtr port = String::null();
     if (url->port) {
         port = String::create(url->port);
         obj->put(PORT, port);
@@ -52,7 +51,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
             obj->put(HOST, hostname);
         }
     }
-    LIBJ_NULL_CPTR(String, query);
+    String::CPtr query = String::null();
     if (url->query) {
         query = String::create(url->query);
         obj->put(QUERY, query);

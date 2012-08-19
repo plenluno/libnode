@@ -26,7 +26,7 @@ class WritableStream : LIBNODE_STREAM(WritableStream)
 };
 
 #define LIBNODE_WRITABLE_STREAM(T) public libj::node::WritableStream { \
-    LIBJ_MUTABLE_DECLS(T, libj::node::WritableStream)
+    LIBJ_MUTABLE_DEFS(T, libj::node::WritableStream)
 
 }  // namespace node
 }  // namespace libj

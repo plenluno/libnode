@@ -9,7 +9,7 @@ namespace libj {
 namespace node {
 
 TEST(GTestPath, TestNormalize) {
-    String::CPtr null(LIBJ_NULL(String));
+    String::CPtr null = String::null();
     String::CPtr normal = path::normalize(null);
     ASSERT_EQ(normal->compareTo(String::create()), 0);
 
@@ -75,7 +75,7 @@ TEST(GTestPath, TestNormalize) {
 }
 
 TEST(GTestPath, TestJoin) {
-    JsArray::Ptr null(LIBJ_NULL(JsArray));
+    JsArray::Ptr null = JsArray::null();
     String::CPtr joined = path::join(null);
     ASSERT_EQ(joined->compareTo(String::create(".")), 0);
 
@@ -105,7 +105,7 @@ TEST(GTestPath, TestResolve) {
     getcwd(dir, kMax);
     String::CPtr current = String::create(dir);
 
-    JsArray::Ptr null(LIBJ_NULL(JsArray));
+    JsArray::Ptr null = JsArray::null();
     String::CPtr resolved = path::resolve(null);
     ASSERT_EQ(resolved->compareTo(current), 0);
 
@@ -134,7 +134,7 @@ TEST(GTestPath, TestResolve) {
 }
 
 TEST(GTestPath, TestDirname) {
-    String::CPtr null(LIBJ_NULL(String));
+    String::CPtr null = String::null();
     String::CPtr dir = path::dirname(null);
     ASSERT_EQ(dir->compareTo(String::create(".")), 0);
 
@@ -176,7 +176,7 @@ TEST(GTestPath, TestDirname) {
 }
 
 TEST(GTestPath, TestBasename) {
-    String::CPtr null(LIBJ_NULL(String));
+    String::CPtr null = String::null();
     String::CPtr base = path::basename(null);
     ASSERT_EQ(base->compareTo(String::create()), 0);
 
@@ -209,7 +209,7 @@ TEST(GTestPath, TestBasename) {
 }
 
 TEST(GTestPath, TestExtname) {
-    String::CPtr null(LIBJ_NULL(String));
+    String::CPtr null = String::null();
     String::CPtr ext = path::extname(null);
     ASSERT_EQ(ext->compareTo(String::create()), 0);
 

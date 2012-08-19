@@ -34,7 +34,7 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
 
 #define LIBNODE_EVENT_EMITTER(T) \
     public libj::node::events::EventEmitter { \
-    LIBJ_MUTABLE_DECLS(T, libj::node::events::EventEmitter)
+    LIBJ_MUTABLE_DEFS(T, libj::node::events::EventEmitter)
 
 #define LIBNODE_EVENT_EMITTER_IMPL(EE) \
     LIBJ_JS_OBJECT_IMPL(EE); \

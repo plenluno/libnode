@@ -73,8 +73,7 @@ class ServerResponseImpl : public ServerResponse {
             Value v = headers->get(name);
             return toCPtr<String>(v);
         } else {
-            LIBJ_NULL_CPTR(String, nullp);
-            return nullp;
+            return String::null();
         }
     }
 

@@ -58,8 +58,7 @@ class StatusImpl : public Status {
  public:
     static CPtr create(Int code) {
         if (code < 100 || code >= 600) {
-            LIBJ_NULL_CPTR(Status, nullp);
-            return nullp;
+            return null();
         }
 
         String::CPtr msg;
@@ -185,8 +184,7 @@ class StatusImpl : public Status {
             msg = MSG_HTTP_VERSION_NOT_SUPPORTED;
             break;
         default:
-            LIBJ_NULL_CPTR(String, nullp);
-            msg = nullp;
+            msg = String::null();
         }
         CPtr p(new StatusImpl(code, msg));
         return p;
@@ -194,8 +192,7 @@ class StatusImpl : public Status {
 
     static CPtr create(Int code, String::CPtr msg) {
         if (code < 100 || code >= 600) {
-            LIBJ_NULL_CPTR(Status, nullp);
-            return nullp;
+            return null();
         } else {
             CPtr p(new StatusImpl(code, msg));
             return p;

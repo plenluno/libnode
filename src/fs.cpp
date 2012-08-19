@@ -44,7 +44,7 @@ class ReadContext : public Context {
         : Context(cb)
         , buffer(new char[len])
         , length(len)
-        , res(LIBJ_NULL(Buffer))
+        , res(Buffer::null())
         , offset(0) {
         req->data = this;
     }
@@ -272,8 +272,7 @@ class AfterReadInReadFile : LIBJ_JS_FUNCTION(AfterReadInReadFile)
             a->add(args->get(2));
         }
         (*callback_)(a);
-        LIBJ_NULL_PTR(JsFunction, nullp);
-        close(fd_, nullp);
+        close(fd_, JsFunction::null());
         return 0;
     }
 };

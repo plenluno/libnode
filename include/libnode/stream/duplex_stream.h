@@ -32,7 +32,7 @@ class DuplexStream : LIBNODE_STREAM(DuplexStream)
 };
 
 #define LIBNODE_DUPLEX_STREAM(T) public libj::node::DuplexStream { \
-    LIBJ_MUTABLE_DECLS(T, libj::node::DuplexStream)
+    LIBJ_MUTABLE_DEFS(T, libj::node::DuplexStream)
 
 #define LIBNODE_DUPLEX_STREAM_IMPL(S) \
     LIBNODE_STREAM_IMPL(S); \

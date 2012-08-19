@@ -18,7 +18,7 @@ const String::CPtr ServerResponseImpl::STATUS_CODE =
 ServerResponseImpl::ServerResponseImpl(ServerContext* context)
     : flags_(0)
     , context_(context)
-    , status_(LIBJ_NULL(http::Status))
+    , status_(http::Status::null())
     , output_(JsArray::create())
     , ee_(EventEmitter::create()) {}
 

@@ -17,7 +17,7 @@ class Stream : LIBNODE_EVENT_EMITTER(Stream)
 };
 
 #define LIBNODE_STREAM(T) public libj::node::Stream { \
-    LIBJ_MUTABLE_DECLS(T, libj::node::Stream)
+    LIBJ_MUTABLE_DEFS(T, libj::node::Stream)
 
 #define LIBNODE_STREAM_IMPL(S) \
     LIBNODE_EVENT_EMITTER_IMPL(S); \

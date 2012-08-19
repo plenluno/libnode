@@ -30,7 +30,7 @@ class Socket : LIBNODE_DUPLEX_STREAM(Socket)
 
 #define LIBNODE_SOCKET(T) \
     public libj::node::net::Socket { \
-    LIBJ_MUTABLE_DECLS(T, libj::node::net::Socket)
+    LIBJ_MUTABLE_DEFS(T, libj::node::net::Socket)
 
 #define LIBNODE_SOCKET_IMPL(S) \
     LIBNODE_DUPLEX_STREAM_IMPL(S); \

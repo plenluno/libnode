@@ -281,8 +281,8 @@ class ServerImpl : public Server {
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
 
-LIBJ_NULL_CPTR(String, ServerImpl::headerName);
 http_parser_settings ServerImpl::settings = {};
+String::CPtr ServerImpl::headerName = String::null();
 
 const String::CPtr Server::IN_ADDR_ANY = String::create("0.0.0.0");
 const String::CPtr Server::EVENT_REQUEST = String::create("request");

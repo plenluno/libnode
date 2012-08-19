@@ -24,8 +24,8 @@ class SocketWriteContext {
     JsFunction::Ptr callback;
 
     SocketWriteContext()
-        : buffer(LIBJ_NULL(Buffer))
-        , callback(LIBJ_NULL(JsFunction)) {
+        : buffer(Buffer::null())
+        , callback(JsFunction::null()) {
         uvWrite.data = this;
         uvBuf.base = NULL;
     }
@@ -102,8 +102,7 @@ class SocketImpl : public Socket {
             }
             return res;
         }
-        LIBJ_NULL_PTR(JsObject, nullp);
-        return nullp;
+        return JsObject::null();
     }
 
     String::CPtr remoteAddress() {
@@ -133,8 +132,7 @@ class SocketImpl : public Socket {
                 break;
             }
         }
-        LIBJ_NULL_CPTR(String, nullp);
-        return nullp;
+        return String::null();
     }
 
     Int remotePort() {
@@ -170,14 +168,12 @@ class SocketImpl : public Socket {
     }
 
     Boolean write(Buffer::CPtr buf) {
-        LIBJ_NULL_PTR(JsFunction, nullp);
-        return write(buf, nullp);
+        return write(buf, JsFunction::null());
     }
 
     Boolean write(String::CPtr str, String::Encoding enc) {
         Buffer::Ptr buf = Buffer::create(str, enc);
-        LIBJ_NULL_PTR(JsFunction, nullp);
-        return write(buf, nullp);
+        return write(buf, JsFunction::null());
     }
 
     Boolean write(String::CPtr str, String::Encoding enc, JsFunction::Ptr cb) {

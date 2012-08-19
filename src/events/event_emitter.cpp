@@ -22,7 +22,7 @@ class EventEmitterImpl : public EventEmitter {
             return p;
         }
 
-        Value operator()(ArrayList::Ptr args) {
+        Value operator()(JsArray::Ptr args) {
             (*listener_)(args);
             Ptr self = unsetSelf();
             ee_->removeListener(event_, self);
@@ -48,10 +48,8 @@ class EventEmitterImpl : public EventEmitter {
         }
 
         Ptr unsetSelf() {
-            Ptr nullp(LIBJ_NULL(Once));
-            Ptr self;
-            self = self_;
-            self_ = nullp;
+            Ptr self = self_;
+            self_ = null();
             return self;
         }
     };

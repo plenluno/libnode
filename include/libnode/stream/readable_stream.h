@@ -22,7 +22,7 @@ class ReadableStream : LIBNODE_STREAM(ReadableStream)
 };
 
 #define LIBNODE_READABLE_STREAM(T) public libj::node::ReadableStream { \
-    LIBJ_MUTABLE_DECLS(T, libj::node::ReadableStream)
+    LIBJ_MUTABLE_DEFS(T, libj::node::ReadableStream)
 
 }  // namespace node
 }  // namespace libj

@@ -61,8 +61,7 @@ class ServerRequestImpl : public ServerRequest {
         if (headers) {
             return headers->getCPtr<String>(name);
         } else {
-            String::CPtr nullp(LIBJ_NULL(String));
-            return nullp;
+            return String::null();
         }
     }
 

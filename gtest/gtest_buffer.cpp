@@ -71,7 +71,7 @@ TEST(GTestBuffer, TestCopy) {
 
 TEST(GTestBuffer, TestConcat) {
     Buffer::Ptr buf1 = Buffer::create("abc", 3);
-    Buffer::Ptr buf2(LIBJ_NULL(Buffer));
+    Buffer::Ptr buf2 = Buffer::null();
     Buffer::Ptr buf3 = Buffer::create("xyz", 3);
     JsArray::Ptr ary = JsArray::create();
     ary->add(buf1);

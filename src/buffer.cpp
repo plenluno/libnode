@@ -41,8 +41,7 @@ class BufferImpl : public Buffer {
             return create(
                 reinterpret_cast<const UByte*>(str8.c_str()), length);
         } else {
-            LIBJ_NULL_PTR(Buffer, nullp);
-            return nullp;
+            return null();
         }
     }
 
