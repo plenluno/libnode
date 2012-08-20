@@ -140,7 +140,7 @@ static void after(uv_fs_t* req) {
                 break;
             case UV_FS_READ:
                 args->add(static_cast<Size>(req->result));
-                args->add(getBuffer(req)->toString());
+                args->add(getBuffer(req));
                 break;
             case UV_FS_STAT:
                 args->add(getStats(req));
@@ -332,7 +332,6 @@ class AfterStatInReadFile : LIBJ_JS_FUNCTION(AfterStatInReadFile)
             Stats::CPtr stats = toCPtr<Stats>(args->get(1));
             Long size = -1;
             to<Long>(stats->get(STAT_SIZE), &size);
-            size = ((size + (1 << 12) - 1) >> 12) << 12;
             Buffer::Ptr res = Buffer::create(size);
             AfterOpenInReadFile::Ptr cb(
                 new AfterOpenInReadFile(res, size, callback_));
