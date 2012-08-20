@@ -67,14 +67,14 @@ set(libnode-deps-common
 )
 
 if(APPLE)
-set(libnode-deps
-    ${libnode-deps-common}
-)
+    set(libnode-deps
+        ${libnode-deps-common}
+    )
 else(APPLE)
-set(libnode-deps
-    ${libnode-deps-common}
-    rt
-)
+    set(libnode-deps
+        ${libnode-deps-common}
+        rt
+    )
 endif(APPLE)
 
 # url_parser
@@ -105,8 +105,9 @@ add_library(node STATIC
 target_link_libraries(node
     ${libnode-deps}
 )
-set_target_properties(node
-    PROPERTIES COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions")
+set_target_properties(node PROPERTIES
+    COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+)
 
 # echo server
 add_executable(echo-server
@@ -116,8 +117,16 @@ target_link_libraries(echo-server
     node
     ${libnode-deps}
 )
-set_target_properties(echo-server
-    PROPERTIES COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions")
+if(APPLE)
+    set_target_properties(echo-server PROPERTIES
+        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+        LINK_FLAGS "-framework CoreServices"
+    )
+else(APPLE)
+    set_target_properties(echo-server PROPERTIES
+        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+    )
+endif(APPLE)
 
 # static server
 add_executable(static-server
@@ -127,8 +136,16 @@ target_link_libraries(static-server
     node
     ${libnode-deps}
 )
-set_target_properties(static-server
-    PROPERTIES COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions")
+if(APPLE)
+    set_target_properties(static-server PROPERTIES
+        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+        LINK_FLAGS "-framework CoreServices"
+    )
+else(APPLE)
+    set_target_properties(echo-server PROPERTIES
+        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+    )
+endif(APPLE)
 
 # countdown timer
 add_executable(countdown-timer
@@ -138,8 +155,16 @@ target_link_libraries(countdown-timer
     node
     ${libnode-deps}
 )
-set_target_properties(countdown-timer
-    PROPERTIES COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions")
+if(APPLE)
+    set_target_properties(countdown-timer PROPERTIES
+        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+        LINK_FLAGS "-framework CoreServices"
+    )
+else(APPLE)
+    set_target_properties(echo-server PROPERTIES
+        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+    )
+endif(APPLE)
 
 # gtest
 if(LIBNODE_USE_GTEST)
@@ -160,6 +185,14 @@ if(LIBNODE_USE_GTEST)
         gtest
         ${libnode-deps}
     )
-    set_target_properties(libnode-gtest
-        PROPERTIES COMPILE_FLAGS "-Wall -DLIBJ_GTEST_BUILD_ERRORS")
+    if(APPLE)
+        set_target_properties(libnode-gtest PROPERTIES
+            COMPILE_FLAGS "-Wall -DLIBJ_GTEST_BUILD_ERRORS"
+            LINK_FLAGS "-framework CoreServices"
+        )
+    else(APPLE)
+        set_target_properties(libnode-gtest PROPERTIES
+            COMPILE_FLAGS "-Wall -DLIBJ_GTEST_BUILD_ERRORS"
+        )
+    endif(APPLE)
 endif(LIBNODE_USE_GTEST)

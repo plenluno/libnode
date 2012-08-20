@@ -33,7 +33,6 @@ namespace {
             uv_timer_stop(&context->timer);
             timers.erase(id);
             delete context;
-            uv_unref(uv_default_loop());
         }
     }
 
