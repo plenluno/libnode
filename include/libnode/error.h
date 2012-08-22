@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_UV_ERROR_H_
-#define LIBNODE_UV_ERROR_H_
+#ifndef LIBNODE_ERROR_H_
+#define LIBNODE_ERROR_H_
 
 #include <libj/error.h>
 #include <uv.h>
@@ -27,4 +27,4 @@ class Error : LIBJ_ERROR(Error)
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_UV_ERROR_H_
+#endif  // LIBNODE_ERROR_H_

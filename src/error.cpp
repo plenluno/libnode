@@ -16,7 +16,7 @@ namespace node {
 
 class ErrorImpl : public Error {
  private:
- 	UV_ERRNO_MAP(LIBNODE_UV_ERR_MSG_DECL_GEN)
+    UV_ERRNO_MAP(LIBNODE_UV_ERR_MSG_DECL_GEN)
 
  private:
     libj::Status::CPtr status_;
@@ -66,7 +66,7 @@ Error::CPtr Error::create(Int code, String::CPtr msg) {
 }
 
 Error::CPtr Error::valueOf(uv_err_code code) {
-	return create(UV_ERR_OK + code);
+    return create(UV_ERR_OK + code);
 }
 
 }  // namespace node
