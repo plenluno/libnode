@@ -16,7 +16,7 @@ Boolean isArray(const Value& val) {
 }
 
 Boolean isError(const Value& val) {
-    return val.instanceof(Type<Error>::id());
+    return val.instanceof(Type<libj::Error>::id());
 }
 
 Boolean isRegExp(const Value& val) {
