@@ -37,6 +37,7 @@ set(libnode-src
     src/buffer.cpp
     src/crypto.cpp
     src/crypto/hash.cpp
+    src/error.cpp
     src/events/event_emitter.cpp
     src/fs.cpp
     src/fs/stats.cpp
@@ -171,6 +172,7 @@ if(LIBNODE_USE_GTEST)
     add_executable(libnode-gtest
         gtest/gtest_main.cpp
         gtest/gtest_buffer.cpp
+        gtest/gtest_error.cpp
         gtest/gtest_event_emitter.cpp
         gtest/gtest_http_server.cpp
         gtest/gtest_http_status.cpp
