@@ -17,13 +17,13 @@ TEST(GTestHttpStatus, TestCreate) {
 TEST(GTestHttpStatus, TestMessage) {
     String::CPtr notFound = String::create("Not Found");
     Status::CPtr s = Status::create(Status::NOT_FOUND);
-    ASSERT_EQ(0, s->message()->compareTo(notFound));
+    ASSERT_TRUE(s->message()->equals(notFound));
 }
 
 TEST(GTestHttpStatus, TestToString) {
     String::CPtr notFound = String::create("Not Found");
     Status::CPtr s = Status::create(Status::NOT_FOUND);
-    ASSERT_EQ(0, s->toString()->compareTo(notFound));
+    ASSERT_TRUE(s->toString()->equals(notFound));
 }
 
 TEST(GTestHttpStatus, TestInstanceOf) {
