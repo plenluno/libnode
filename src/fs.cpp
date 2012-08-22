@@ -6,6 +6,7 @@
 #include <string>
 
 #include "libnode/buffer.h"
+#include "libnode/error.h"
 #include "libnode/fs.h"
 #include "./fs/stats_impl.h"
 
@@ -23,7 +24,7 @@ class Context {
     Context(Function::Ptr cb)
         : req(new uv_fs_t)
         , callback(cb) {
-        req->errorno = 0;
+        req->errorno = UV_UNKNOWN;
         req->data = this;
     }
 
@@ -89,7 +90,7 @@ static void onError(uv_fs_t* req) {
     Context* context = static_cast<Context*>(req->data);
     if (context->callback) {
         JsArray::Ptr args = JsArray::create();
-        args->add(req->errorno);
+        args->add(Error::valueOf(static_cast<uv_err_code>(req->errorno)));
         (*(context->callback))(args);
     }
     delete context;
@@ -133,7 +134,7 @@ static void after(uv_fs_t* req) {
         Context* context = static_cast<Context*>(req->data);
         if (context->callback) {
             JsArray::Ptr args = JsArray::create();
-            args->add(0);
+            args->add(Error::null());
             switch (req->fs_type) {
             case UV_FS_OPEN:
                 args->add(static_cast<uv_file>(req->result));
@@ -161,15 +162,15 @@ void open(String::CPtr path, Flag flag, JsFunction::Ptr callback) {
     Context* context = new Context(callback);
     context->path = path->toStdString();
     uv_fs_t* req = context->req;
-    int err = uv_fs_open(
+    int r = uv_fs_open(
         uv_default_loop(),
         req,
         context->path.c_str(),
         convertFlag(flag),
         438,
         after);
-    if (err) {
-        req->errorno = err;
+    if (r < 0) {
+        req->errorno = r;
         onError(req);
     }
 }
@@ -182,13 +183,13 @@ void close(const Value& fd, JsFunction::Ptr callback) {
         onError(req);
         return;
     }
-    int err = uv_fs_close(
+    int r = uv_fs_close(
         uv_default_loop(),
         req,
         context->file,
         after);
-    if (err) {
-        req->errorno = err;
+    if (r < 0) {
+        req->errorno = r;
         onError(req);
     }
 }
@@ -219,7 +220,7 @@ void read(
     context->res = buf;
     context->offset = offset;
 
-    int err = uv_fs_read(
+    int r = uv_fs_read(
         uv_default_loop(),
         req,
         context->file,
@@ -227,8 +228,8 @@ void read(
         len,
         position,
         after);
-    if (err) {
-        req->errorno = err;
+    if (r < 0) {
+        req->errorno = r;
         onError(req);
     }
 }
@@ -240,13 +241,13 @@ void stat(String::CPtr path, JsFunction::Ptr callback) {
     if (path)
         context->path = path->toStdString();
     uv_fs_t* req = context->req;
-    int err = uv_fs_stat(
+    int r = uv_fs_stat(
         uv_default_loop(),
         req,
         context->path.c_str(),
         after);
-    if (err) {
-        req->errorno = err;
+    if (r < 0) {
+        req->errorno = r;
         onError(req);
     }
 }
@@ -264,8 +265,7 @@ class AfterReadInReadFile : LIBJ_JS_FUNCTION(AfterReadInReadFile)
         , callback_(callback) {}
 
     Value operator()(JsArray::Ptr args) {
-        Int err = -1;
-        to<Int>(args->get(0), &err);
+        Error::CPtr err = args->getCPtr<Error>(0);
         JsArray::Ptr a = JsArray::create();
         a->add(err);
         if (!err) {
@@ -293,8 +293,7 @@ class AfterOpenInReadFile : LIBJ_JS_FUNCTION(AfterOpenInReadFile)
         , callback_(callback) {}
 
     Value operator()(JsArray::Ptr args) {
-        Int err = -1;
-        to<Int>(args->get(0), &err);
+        Error::CPtr err = args->getCPtr<Error>(0);
         if (err) {
             JsArray::Ptr a = JsArray::create();
             a->add(err);
@@ -322,8 +321,7 @@ class AfterStatInReadFile : LIBJ_JS_FUNCTION(AfterStatInReadFile)
         , callback_(callback) {}
 
     Value operator()(JsArray::Ptr args) {
-        Int err = -1;
-        to<Int>(args->get(0), &err);
+        Error::CPtr err = args->getCPtr<Error>(0);
         if (err) {
             JsArray::Ptr a = JsArray::create();
             a->add(err);
