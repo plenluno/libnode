@@ -8,9 +8,18 @@ namespace libj {
 namespace node {
 
 TEST(GTestError, TestCreate) {
-    Error::CPtr e = Error::create(Error::UV_ERR_EOF);
+    Error::CPtr e;
+    e = Error::create(Error::UV_ERR_UNKNOWN);
     ASSERT_TRUE(e);
+    e = Error::create(Error::UV_ERR_ENODEV);
+    ASSERT_TRUE(e);
+    e = Error::create(Error::UV_ERR_UNKNOWN - 1);
+    ASSERT_FALSE(e);
+    e = Error::create(Error::END_OF_CODE);
+    ASSERT_FALSE(e);
     e = Error::create(Status::OK);
+    ASSERT_FALSE(e);
+    e = Error::create(libj::Error::ANY);
     ASSERT_FALSE(e);
 }
 

@@ -1,10 +1,14 @@
 
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include "libj/error.h"
 #include "libnode/error.h"
 
 namespace libj {
 namespace node {
+
+#define LIBNODE_UV_ERR_CASE_GEN(VAL, NAME, S) \
+    case UV_ERR_##NAME:
 
 #define LIBNODE_UV_ERR_MSG_DECL_GEN(VAL, NAME, S) \
     static const String::CPtr MSG_UV_ERR_##NAME;
@@ -24,29 +28,29 @@ class ErrorImpl : public Error {
     ErrorImpl(Int code, String::CPtr msg)
         : status_(libj::Status::create(code, msg)) {}
 
+    ErrorImpl(libj::Error::CPtr err) : status_(err) {}
+
  public:
     static CPtr create(Int code) {
-        if (code < UV_ERR_UNKNOWN || code >= END_OF_CODE) {
-            return null();
-        }
-
         String::CPtr msg;
         switch (code) {
             UV_ERRNO_MAP(LIBNODE_UV_ERR_MSG_CASE_GEN)
         default:
-            msg = String::null();
+            return null();
         }
         CPtr p(new ErrorImpl(code, msg));
         return p;
     }
 
     static CPtr create(Int code, String::CPtr msg) {
-        if (code < UV_ERR_UNKNOWN || code >= END_OF_CODE) {
+        switch (code) {
+            UV_ERRNO_MAP(LIBNODE_UV_ERR_CASE_GEN)
+            break;
+        default:
             return null();
-        } else {
-            CPtr p(new ErrorImpl(code, msg));
-            return p;
         }
+        CPtr p(new ErrorImpl(code, msg));
+        return p;
     }
 
     LIBJ_STATUS_IMPL(status_);
