@@ -20,6 +20,12 @@ TEST(GTestHttpStatus, TestMessage) {
     ASSERT_TRUE(s->message()->equals(notFound));
 }
 
+TEST(GTestHttpStatus, TestMessage2) {
+    String::CPtr str404 = String::create("404");
+    Status::CPtr s = Status::create(Status::NOT_FOUND, str404);
+    ASSERT_TRUE(s->message()->equals(str404));
+}
+
 TEST(GTestHttpStatus, TestToString) {
     String::CPtr notFound = String::create("Not Found");
     Status::CPtr s = Status::create(Status::NOT_FOUND);

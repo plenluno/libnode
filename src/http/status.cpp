@@ -48,6 +48,9 @@ namespace http {
     GEN(GATEWAY_TIMEOUT, "Gateway Timeout") \
     GEN(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported")
 
+#define LIBNODE_HTTP_STATUS_CASE_GEN(NAME, MESSAGE) \
+    case NAME:
+
 #define LIBNODE_HTTP_STATUS_MSG_DECL_GEN(NAME, MESSAGE) \
     static const String::CPtr MSG_##NAME;
 
@@ -68,27 +71,25 @@ class StatusImpl : public Status {
 
  public:
     static CPtr create(Int code) {
-        if (code < 100 || code >= 600) {
-            return null();
-        }
-
         String::CPtr msg;
         switch (code) {
             LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_CASE_GEN)
         default:
-            msg = String::null();
+            return null();
         }
         CPtr p(new StatusImpl(code, msg));
         return p;
     }
 
     static CPtr create(Int code, String::CPtr msg) {
-        if (code < 100 || code >= 600) {
+        switch (code) {
+            LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_CASE_GEN)
+            break;
+        default:
             return null();
-        } else {
-            CPtr p(new StatusImpl(code, msg));
-            return p;
         }
+        CPtr p(new StatusImpl(code, msg));
+        return p;
     }
 
     LIBJ_STATUS_IMPL(status_);
