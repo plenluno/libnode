@@ -102,15 +102,18 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
         OnEnd::Ptr onEnd(new OnEnd(srv_, req, res, onData));
         req->on(http::ServerRequest::EVENT_DATA, onData);
         req->on(http::ServerRequest::EVENT_END, onEnd);
-        console::log(String::create("method: ")
-            ->concat(req->method()));
-        console::log(String::create("version: HTTP/")
-            ->concat(req->httpVersion()));
-        console::log(String::create("address: ")
-            ->concat(json::stringify(
-                req->connection()->address())));
-        console::log(String::create("remote address: ")
-            ->concat(req->connection()->remoteAddress()));
+        console::log(
+            String::create("method: ")->concat(req->method()));
+        console::log(
+            String::create("url: ")->concat(req->url()));
+        console::log(
+            String::create("version: HTTP/")->concat(req->httpVersion()));
+        console::log(
+            String::create("address: ")->concat(
+                json::stringify(req->connection()->address())));
+        console::log(
+            String::create("remote address: ")->concat(
+                req->connection()->remoteAddress()));
         return Status::OK;
     }
 };
