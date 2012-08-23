@@ -36,7 +36,9 @@ namespace {
         if (itr != timers.end()) {
             TimerContext* context = itr->second;
             uv_timer_stop(&context->timer);
-            uv_close(reinterpret_cast<uv_handle_t*>(&context->timer), onTimerClose);
+            uv_close(
+                reinterpret_cast<uv_handle_t*>(&context->timer),
+                onTimerClose);
             timers.erase(id);
         }
     }
