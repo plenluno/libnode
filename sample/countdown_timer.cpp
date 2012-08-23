@@ -8,20 +8,25 @@
 namespace libj {
 namespace node {
 
-Int count = 100;
-
 class OnInterval : LIBJ_JS_FUNCTION(OnInterval)
  private:
     Value id_;
+    Int count_;
 
  public:
+    OnInterval() : count_(100) {}
+
     void setId(Value id) {
         id_ = id;
     }
 
+    void setCount(Int cnt) {
+        count_ = cnt;
+    }
+
     Value operator()(JsArray::Ptr args) {
-        if (count) {
-            console::log(String::valueOf(count--));
+        if (count_) {
+            console::log(String::valueOf(count_--));
         } else {
             clearInterval(id_);
         }
@@ -35,10 +40,17 @@ class OnInterval : LIBJ_JS_FUNCTION(OnInterval)
 int main() {
     namespace node = libj::node;
 
-    node::OnInterval::Ptr onInterval(new node::OnInterval);
-    libj::JsArray::Ptr args = libj::JsArray::create();
-    libj::Value id = node::setInterval(onInterval, 100, args);
+    node::OnInterval::Ptr onInterval(new node::OnInterval);;
+    libj::Value id = node::setInterval(
+        onInterval, 200, libj::JsArray::null());
     onInterval->setId(id);
+    onInterval->setCount(75);
+
+    node::OnInterval::Ptr onInterval2(new node::OnInterval);
+    libj::Value id2 = node::setInterval(
+        onInterval2, 150, libj::JsArray::null());
+    onInterval2->setId(id2);
+    onInterval2->setCount(100);
 
     node::run();
     return 0;
