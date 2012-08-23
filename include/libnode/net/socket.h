@@ -16,10 +16,10 @@ class Socket : LIBNODE_DUPLEX_STREAM(Socket)
 
     static Ptr create();
 
-#if 0
-    virtual void connect(Int port) = 0;
-    virtual void connect(String::CPtr path) = 0;
-#endif
+    // TODO(plenluno): implement
+    // virtual void connect(Int port) = 0;
+    // virtual void connect(String::CPtr path) = 0;
+
     virtual JsObject::Ptr address() = 0;
     virtual String::CPtr remoteAddress() = 0;
     virtual Int remotePort() = 0;
