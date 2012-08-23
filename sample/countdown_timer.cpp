@@ -40,7 +40,7 @@ class OnInterval : LIBJ_JS_FUNCTION(OnInterval)
 int main() {
     namespace node = libj::node;
 
-    node::OnInterval::Ptr onInterval(new node::OnInterval);;
+    node::OnInterval::Ptr onInterval(new node::OnInterval);
     libj::Value id = node::setInterval(
         onInterval, 200, libj::JsArray::null());
     onInterval->setId(id);
