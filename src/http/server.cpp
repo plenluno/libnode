@@ -47,7 +47,7 @@ class ServerImpl : public Server {
 
         Value operator()(JsArray::Ptr args) {
             server_->emit(EVENT_CLOSE, JsArray::create());
-            return Status::OK;
+            return libj::Status::OK;
         }
 
      private:
@@ -71,7 +71,7 @@ class ServerImpl : public Server {
             settings.on_message_begin = ServerImpl::onMessageBegin;
             settings.on_body = ServerImpl::onBody;
             settings.on_message_complete = ServerImpl::onMessageComplete;
-            return Status::OK;
+            return libj::Status::OK;
         }
     };
 
@@ -94,7 +94,7 @@ class ServerImpl : public Server {
                 net::Socket::EVENT_CLOSE,
                 OnSocketClose::create(context));
             server_->emit(EVENT_CONNECTION, args);
-            return Status::OK;
+            return libj::Status::OK;
         }
 
      private:
@@ -130,12 +130,10 @@ class ServerImpl : public Server {
                 context_->server->emit(EVENT_UPGRADE, args);
                 delete context_;
             } else if (numParsed < numRead) {  // parse error
-                JsArray::Ptr emptyArgs = JsArray::create();
-                context_->request->emit(ServerRequest::EVENT_CLOSE, emptyArgs);
-                context_->response->emit(ServerRequest::EVENT_CLOSE, emptyArgs);
-                context_->socket->destroy();
+                context_->socket->destroy(
+                    libj::Error::create(libj::Error::ILLEGAL_REQUEST));
             }
-            return Status::OK;
+            return libj::Status::OK;
         }
 
      private:
@@ -153,8 +151,11 @@ class ServerImpl : public Server {
         }
 
         Value operator()(JsArray::Ptr args) {
+            JsArray::Ptr noArgs = JsArray::create();
+            context_->request->emit(ServerRequest::EVENT_CLOSE, noArgs);
+            context_->response->emit(ServerRequest::EVENT_CLOSE, noArgs);
             delete context_;
-            return Status::OK;
+            return libj::Status::OK;
         }
 
      private:

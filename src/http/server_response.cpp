@@ -50,11 +50,14 @@ Boolean ServerResponseImpl::flush() {
 Boolean ServerResponseImpl::end() {
     if (hasFlag(FINISHED))
         return false;
+
     if (!hasFlag(HEADER_SENT)) {
         makeHeader();
         flush();
     }
+    removeAllListeners(EVENT_CLOSE);
     context_->socket->end();
+
     setFlag(FINISHED);
     return true;
 }

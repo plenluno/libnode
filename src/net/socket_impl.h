@@ -8,6 +8,7 @@
 #include <cstring>
 #include <vector>
 
+#include "libnode/error.h"
 #include "libnode/net/socket.h"
 
 namespace libj {
@@ -20,11 +21,13 @@ class SocketWriteContext {
  public:
     uv_write_t uvWrite;
     uv_buf_t uvBuf;
+    SocketImpl* socket;
     Buffer::CPtr buffer;
     JsFunction::Ptr callback;
 
-    SocketWriteContext()
-        : buffer(Buffer::null())
+    SocketWriteContext(SocketImpl* sock)
+        : socket(sock)
+        , buffer(Buffer::null())
         , callback(JsFunction::null()) {
         uvWrite.data = this;
         uvBuf.base = NULL;
@@ -40,7 +43,8 @@ class SocketShutdownContext {
     uv_shutdown_t uvShutdown;
     SocketImpl* socket;
 
-    SocketShutdownContext(SocketImpl* sock) : socket(sock) {
+    SocketShutdownContext(SocketImpl* sock)
+        : socket(sock) {
         uvShutdown.data = this;
     }
 };
@@ -59,7 +63,7 @@ class SocketImpl : public Socket {
         return p;
     }
 
-    uv_tcp_t* getUvTcp() { return &tcp_; }
+    uv_tcp_t* getUvTcp() { return tcp_; }
 
     JsObject::Ptr address() {
         static const String::CPtr strPort = String::create("port");
@@ -71,7 +75,7 @@ class SocketImpl : public Socket {
         struct sockaddr_storage addr;
         int len = sizeof(addr);
         if (!uv_tcp_getsockname(
-                &tcp_,
+                tcp_,
                 reinterpret_cast<struct sockaddr*>(&addr),
                 &len)) {
             JsObject::Ptr res = JsObject::create();
@@ -109,7 +113,7 @@ class SocketImpl : public Socket {
         struct sockaddr_storage addr;
         int len = sizeof(addr);
         if (!uv_tcp_getpeername(
-                &tcp_,
+                tcp_,
                 reinterpret_cast<struct sockaddr*>(&addr),
                 &len)) {
             char ip[INET6_ADDRSTRLEN];
@@ -139,7 +143,7 @@ class SocketImpl : public Socket {
         struct sockaddr_storage addr;
         int len = sizeof(addr);
         if (!uv_tcp_getpeername(
-                &tcp_,
+                tcp_,
                 reinterpret_cast<struct sockaddr*>(&addr),
                 &len)) {
             switch (addr.ss_family) {
@@ -155,7 +159,7 @@ class SocketImpl : public Socket {
     }
 
     Boolean setNoDelay(Boolean noDelay) {
-        return !uv_tcp_nodelay(&tcp_, noDelay ? 1 : 0);
+        return !uv_tcp_nodelay(tcp_, noDelay ? 1 : 0);
     }
 
     Boolean setKeepAlive(Boolean enable, Int initialDelay) {
@@ -163,7 +167,7 @@ class SocketImpl : public Socket {
             return false;
         } else {
             return !uv_tcp_keepalive(
-                &tcp_, enable ? 1 : 0, initialDelay / 1000);
+                tcp_, enable ? 1 : 0, initialDelay / 1000);
         }
     }
 
@@ -182,10 +186,12 @@ class SocketImpl : public Socket {
     }
 
     Boolean write(Buffer::CPtr buf, JsFunction::Ptr cb) {
-        SocketWriteContext* context = new SocketWriteContext();
+        if (!tcp_) return false;
+
+        SocketWriteContext* context = new SocketWriteContext(this);
         context->buffer = buf;
         context->callback = cb;
-        uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(&tcp_);
+        uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(tcp_);
         Int len = buf->length();
         context->uvBuf.base = static_cast<char*>(malloc(len));
         context->uvBuf.len = len;
@@ -211,12 +217,13 @@ class SocketImpl : public Socket {
         } else {
             unsetFlag(WRITABLE);
         }
+
         if (!hasFlag(READABLE)) {
             return destroySoon();
         } else {
             setFlag(SHUTDOWN);
             SocketShutdownContext* context = new SocketShutdownContext(this);
-            uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(&tcp_);
+            uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(tcp_);
             uv_shutdown(
                 &(context->uvShutdown),
                 stream,
@@ -226,18 +233,23 @@ class SocketImpl : public Socket {
     }
 
     Boolean destroy() {
-        return destroy(false);
+        return destroy(Error::null());
+    }
+
+    Boolean destroy(libj::Error::CPtr err) {
+        return destroy(err, JsFunction::null());
     }
 
     Boolean destroySoon() {
         if (hasFlag(DESTROYED))
             return false;
+
         unsetFlag(WRITABLE);
         setFlag(DESTROY_SOON);
         if (pendingWriteReqs_) {
             return true;
         } else {
-            return destroy(false);
+            return destroy();
         }
     }
 
@@ -250,27 +262,31 @@ class SocketImpl : public Socket {
     }
 
  private:
-    Boolean destroy(Boolean hadError) {
+    Boolean destroy(libj::Error::CPtr err, JsFunction::Ptr cb) {
         if (hasFlag(DESTROYED))
             return false;
-        // connectQueueCleanUp();
+
         unsetFlag(READABLE);
         unsetFlag(WRITABLE);
-        // timers.unenroll
-        if (hadError)
+
+        if (err)
             setFlag(HAD_ERROR);
-        uv_handle_t* handle = reinterpret_cast<uv_handle_t*>(&tcp_);
-        assert(handle->data == this);
-        uv_close(handle, afterClose);
-        // fireErrorCallbacks
+        if (tcp_) {
+            uv_handle_t* handle = reinterpret_cast<uv_handle_t*>(tcp_);
+            assert(handle->data == this);
+            uv_close(handle, afterClose);
+        }
+
         setFlag(DESTROYED);
-        // emitCloseIfDrained
         return true;
     }
 
     static void afterClose(uv_handle_t* handle) {
         SocketImpl* socket = static_cast<SocketImpl*>(handle->data);
-        assert(socket);
+        assert(socket && socket->tcp_);
+        delete socket->tcp_;
+        socket->tcp_ = NULL;
+
         JsArray::Ptr args = JsArray::create();
         args->add(socket->hasFlag(HAD_ERROR));
         socket->emit(Socket::EVENT_CLOSE, args);
@@ -280,11 +296,21 @@ class SocketImpl : public Socket {
         SocketWriteContext* context =
             static_cast<SocketWriteContext*>(write->data);
         assert(context);
-        if (context->callback) {
-            JsArray::Ptr args = JsArray::create();
-            args->add(static_cast<Int>(status));
-            (*context->callback)(args);
+        SocketImpl* socket = context->socket;
+        assert(socket);
+
+        if (socket->hasFlag(DESTROYED)) return;
+
+        if (status) {
+            uv_err_t err = uv_last_error(uv_default_loop());
+            socket->destroy(Error::valueOf(err.code));
+            return;
         }
+
+        if (context->callback) {
+            (*context->callback)(JsArray::create());
+        }
+
         delete context;
     }
 
@@ -294,7 +320,7 @@ class SocketImpl : public Socket {
         assert(context && context->socket);
         SocketImpl* socket = context->socket;
         if (!socket->hasFlag(DESTROYED) && !socket->hasFlag(READABLE)) {
-            socket->destroy(false);
+            socket->destroy();
         }
         delete context;
     }
@@ -323,18 +349,24 @@ class SocketImpl : public Socket {
 
  private:
     UInt flags_;
-    uv_tcp_t tcp_;
+    uv_tcp_t* tcp_;
     UInt pendingWriteReqs_;
     EventEmitter::Ptr ee_;
 
     SocketImpl()
         : flags_(0)
+        , tcp_(new uv_tcp_t)
         , pendingWriteReqs_(0)
         , ee_(events::EventEmitter::create()) {
-        uv_tcp_init(uv_default_loop(), &tcp_);
-        tcp_.data = this;
+        uv_tcp_init(uv_default_loop(), tcp_);
+        tcp_->data = this;
         // setFlag(READABLE);
         setFlag(WRITABLE);
+    }
+
+ public:
+    ~SocketImpl() {
+        delete tcp_;
     }
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
