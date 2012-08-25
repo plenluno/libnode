@@ -83,6 +83,14 @@ class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
     }
 };
 
+class OnClose :  LIBJ_JS_FUNCTION(OnClose)
+ public:
+    Value operator()(JsArray::Ptr args) {
+        console::log(String::create("event 'close'"));
+        return Status::OK;
+    }
+};
+
 class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
  private:
     http::Server::Ptr srv_;
@@ -100,8 +108,11 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
             toPtr<http::ServerResponse>(args->get(1));
         OnData::Ptr onData(new OnData());
         OnEnd::Ptr onEnd(new OnEnd(srv_, req, res, onData));
+        OnClose::Ptr onClose(new OnClose());
         req->on(http::ServerRequest::EVENT_DATA, onData);
         req->on(http::ServerRequest::EVENT_END, onEnd);
+        req->on(http::ServerRequest::EVENT_CLOSE, onClose);
+        res->on(http::ServerResponse::EVENT_CLOSE, onClose);
         console::log(
             String::create("method: ")->concat(req->method()));
         console::log(

@@ -27,7 +27,7 @@ class ServerContext {
         , request(LIBJ_NULL(ServerRequestImpl))
         , response(LIBJ_NULL(ServerResponseImpl)) {
         ServerRequestImpl::Ptr req(new ServerRequestImpl(this));
-        ServerResponseImpl::Ptr res(new ServerResponseImpl(this));
+        ServerResponseImpl::Ptr res(new ServerResponseImpl(sock));
         request = req;
         response = res;
         parser.data = this;

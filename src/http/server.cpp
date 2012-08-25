@@ -151,10 +151,13 @@ class ServerImpl : public Server {
         }
 
         Value operator()(JsArray::Ptr args) {
-            JsArray::Ptr noArgs = JsArray::create();
-            context_->request->emit(ServerRequest::EVENT_CLOSE, noArgs);
-            context_->response->emit(ServerRequest::EVENT_CLOSE, noArgs);
-            delete context_;
+            if (context_) {
+                JsArray::Ptr noArgs = JsArray::create();
+                context_->request->emit(ServerRequest::EVENT_CLOSE, noArgs);
+                context_->response->emit(ServerResponse::EVENT_CLOSE, noArgs);
+                delete context_;
+                context_ = NULL;
+            }
             return libj::Status::OK;
         }
 

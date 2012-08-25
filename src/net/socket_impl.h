@@ -204,10 +204,8 @@ class SocketImpl : public Socket {
             stream,
             &(context->uvBuf),
             1,
-            SocketImpl::afterWrite);
-        if (err) {
-            delete context;
-        }
+            afterWrite);
+        assert(!err);
         return true;
     }
 
@@ -224,10 +222,11 @@ class SocketImpl : public Socket {
             setFlag(SHUTDOWN);
             SocketShutdownContext* context = new SocketShutdownContext(this);
             uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(tcp_);
-            uv_shutdown(
+            int err = uv_shutdown(
                 &(context->uvShutdown),
                 stream,
                 afterShutdown);
+            assert(!err);
             return true;
         }
     }
@@ -295,9 +294,10 @@ class SocketImpl : public Socket {
     static void afterWrite(uv_write_t* write, int status) {
         SocketWriteContext* context =
             static_cast<SocketWriteContext*>(write->data);
-        assert(context);
+        assert(context && context->socket);
         SocketImpl* socket = context->socket;
-        assert(socket);
+        JsFunction::Ptr callback = context->callback;
+        delete context;
 
         if (socket->hasFlag(DESTROYED)) return;
 
@@ -307,11 +307,9 @@ class SocketImpl : public Socket {
             return;
         }
 
-        if (context->callback) {
-            (*context->callback)(JsArray::create());
+        if (callback) {
+            (*callback)(JsArray::create());
         }
-
-        delete context;
     }
 
     static void afterShutdown(uv_shutdown_t* req, int status) {
@@ -319,10 +317,11 @@ class SocketImpl : public Socket {
             static_cast<SocketShutdownContext*>(req->data);
         assert(context && context->socket);
         SocketImpl* socket = context->socket;
+        delete context;
+
         if (!socket->hasFlag(DESTROYED) && !socket->hasFlag(READABLE)) {
             socket->destroy();
         }
-        delete context;
     }
 
  private:

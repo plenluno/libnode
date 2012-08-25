@@ -37,24 +37,22 @@ class ServerImpl : public Server {
     }
 
     static void onRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf) {
+        SocketImpl* sock = static_cast<SocketImpl*>(stream->data);
         if (nread >= 0) {
-            SocketImpl* sock = static_cast<SocketImpl*>(stream->data);
             Buffer::Ptr buffer = Buffer::create(buf.base, nread);
             JsArray::Ptr args = JsArray::create();
             args->add(buffer);
             sock->emit(EVENT_DATA, args);
         } else {
-            // uv_err_t err = uv_last_error(uv_default_loop());
-            // emit(EVENT_ERROR, ...);
-            uv_close(reinterpret_cast<uv_handle_t*>(stream), onClose);
+            uv_err_t err = uv_last_error(uv_default_loop());
+            sock->destroy(Error::valueOf(err.code));
         }
         free(buf.base);
     }
 
     static void onClose(uv_handle_t* handle) {
         ServerImpl* srv = static_cast<ServerImpl*>(handle->data);
-        JsArray::Ptr args = JsArray::create();
-        srv->emit(EVENT_CLOSE, args);
+        srv->emit(EVENT_CLOSE, JsArray::create());
     }
 
     uv_tcp_t* getUvTcp() {

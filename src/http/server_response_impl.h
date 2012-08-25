@@ -11,20 +11,46 @@
 
 #include "libnode/http/server_response.h"
 #include "libnode/http/status.h"
+#include "../net/socket_impl.h"
 
 namespace libj {
 namespace node {
 namespace http {
-
-class ServerContext;
 
 class ServerResponseImpl : public ServerResponse {
  private:
     static const String::CPtr HEADERS;
     static const String::CPtr STATUS_CODE;
 
+    class SocketEnd : LIBJ_JS_FUNCTION(SocketEnd)
+     public:
+        static Ptr create(
+            ServerResponseImpl* res,
+            net::SocketImpl::Ptr sock) {
+            Ptr p(new SocketEnd(res, sock));
+            return p;
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            response_->removeAllListeners(EVENT_CLOSE);
+            socket_->end();
+            return libj::Status::OK;
+        }
+
+     private:
+        ServerResponseImpl* response_;
+        net::SocketImpl::Ptr socket_;
+
+        SocketEnd(
+            ServerResponseImpl* res,
+            net::SocketImpl::Ptr sock)
+            : response_(res)
+            , socket_(sock) {}
+    };
+
  public:
     typedef LIBJ_PTR(ServerResponseImpl) Ptr;
+    typedef LIBJ_CPTR(ServerResponseImpl) CPtr;
 
     Boolean writeHead(Int statusCode) {
         status_ = http::Status::create(statusCode);
@@ -87,7 +113,7 @@ class ServerResponseImpl : public ServerResponse {
         if (!hasFlag(HEADER_SENT))
             makeHeader();
         output_->add(buf);
-        return flush();
+        return flush(JsFunction::null());
     }
 
     Boolean write(String::CPtr str, String::Encoding enc) {
@@ -95,16 +121,60 @@ class ServerResponseImpl : public ServerResponse {
         return write(buf);
     }
 
-    Boolean end();
+    Boolean end() {
+        if (hasFlag(FINISHED)) return false;
 
-    Boolean destroy();
+        if (!socket_) {
+            setFlag(FINISHED);
+            return false;
+        }
 
-    Boolean destroySoon();
+        if (!hasFlag(HEADER_SENT)) makeHeader();
 
-    Boolean writable() const;
+        // force a flush even if there is no data to be sent
+        // cause event 'close' if the socket has been already closed
+        flush(SocketEnd::create(this, socket_));
+
+        setFlag(FINISHED);
+        return true;
+    }
+
+    Boolean destroy() {
+        if (socket_) {
+            return socket_->destroy();
+        } else {
+            return false;
+        }
+    }
+
+    Boolean destroySoon() {
+        if (socket_) {
+            return socket_->destroySoon();
+        } else {
+            return false;
+        }
+    }
+
+    Boolean writable() const {
+        if (socket_) {
+            return socket_->writable();
+        } else {
+            return false;
+        }
+    }
 
  private:
-    Boolean flush();
+    Boolean flush(JsFunction::Ptr cb) {
+        if (!socket_) return false;
+
+        Buffer::Ptr buf = Buffer::concat(output_);
+        socket_->write(buf, cb);
+        output_->clear();
+
+        assert(hasFlag(HEADER_MADE));
+        setFlag(HEADER_SENT);
+        return true;
+    }
 
     void makeHeader() {
         static const String::CPtr http11 = String::create("HTTP/1.1 ");
@@ -160,7 +230,7 @@ class ServerResponseImpl : public ServerResponse {
 
  private:
     UInt flags_;
-    ServerContext* context_;
+    net::SocketImpl::Ptr socket_;
 
     http::Status::CPtr status_;
     JsArray::Ptr output_;
@@ -168,7 +238,12 @@ class ServerResponseImpl : public ServerResponse {
     EventEmitter::Ptr ee_;
 
  public:
-    ServerResponseImpl(ServerContext* context);
+    ServerResponseImpl(net::SocketImpl::Ptr sock)
+        : flags_(0)
+        , socket_(sock)
+        , status_(http::Status::null())
+        , output_(JsArray::create())
+        , ee_(EventEmitter::create()) {}
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
