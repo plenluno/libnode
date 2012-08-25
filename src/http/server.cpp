@@ -1,15 +1,37 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <assert.h>
+#include <http_parser.h>
 #include <uv.h>
-#include <string>
 
 #include "libnode/http/server.h"
-#include "./server_context.h"
+#include "./server_request_impl.h"
+#include "./server_response_impl.h"
+#include "../net/server_impl.h"
+#include "../net/socket_impl.h"
 
 namespace libj {
 namespace node {
 namespace http {
+
+class ServerImpl;
+
+class ServerContext {
+ public:
+    ServerContext(
+        ServerImpl* srv,
+        net::SocketImpl::Ptr sock)
+        : server(srv)
+        , request(ServerRequestImpl::create(sock))
+        , response(ServerResponseImpl::create(sock)) {
+        parser.data = this;
+    }
+
+    ServerImpl* server;
+    ServerRequestImpl::Ptr request;
+    ServerResponseImpl::Ptr response;
+    http_parser parser;
+};
 
 class ServerImpl : public Server {
  public:
@@ -121,16 +143,19 @@ class ServerImpl : public Server {
                                 &settings,
                                 static_cast<const char*>(buf->data()),
                                 numRead);
+            ServerRequestImpl::Ptr request = context_->request;
+            net::SocketImpl::Ptr socket =
+                LIBJ_STATIC_PTR_CAST(net::SocketImpl)(request->connection());
             if (httpParser->upgrade) {
-                context_->socket->removeAllListeners();
+                socket->removeAllListeners();
                 JsArray::Ptr args = JsArray::create();
-                args->add(context_->request);
-                args->add(context_->socket);
+                args->add(request);
+                args->add(socket);
                 args->add(buf->slice(numParsed));
                 context_->server->emit(EVENT_UPGRADE, args);
                 delete context_;
             } else if (numParsed < numRead) {  // parse error
-                context_->socket->destroy(
+                socket->destroy(
                     libj::Error::create(libj::Error::ILLEGAL_REQUEST));
             }
             return libj::Status::OK;

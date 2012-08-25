@@ -4,12 +4,11 @@
 #define SRC_HTTP_SERVER_REQUEST_IMPL_H_
 
 #include "libnode/http/server_request.h"
+#include "../net/socket_impl.h"
 
 namespace libj {
 namespace node {
 namespace http {
-
-class ServerContext;
 
 class ServerRequestImpl : public ServerRequest {
  private:
@@ -20,6 +19,12 @@ class ServerRequestImpl : public ServerRequest {
 
  public:
     typedef LIBJ_PTR(ServerRequestImpl) Ptr;
+    typedef LIBJ_CPTR(ServerRequestImpl) CPtr;
+
+    static Ptr create(net::SocketImpl::Ptr sock) {
+        Ptr p(new ServerRequestImpl(sock));
+        return p;
+    }
 
     String::CPtr method() const {
         return getCPtr<String>(METHOD);
@@ -37,7 +42,9 @@ class ServerRequestImpl : public ServerRequest {
         return getCPtr<String>(HTTP_VERSION);
     }
 
-    net::Socket::Ptr connection() const;
+    net::Socket::Ptr connection() const {
+        return socket_;
+    }
 
     void setMethod(String::CPtr method) {
         put(METHOD, method);
@@ -69,17 +76,32 @@ class ServerRequestImpl : public ServerRequest {
         put(HTTP_VERSION, httpVersion);
     }
 
-    Boolean destroy();
+    Boolean destroy() {
+        if (socket_) {
+            return socket_->destroy();
+        } else {
+            return false;
+        }
+    }
 
-    Boolean readable() const;
+    Boolean readable() const {
+        if (socket_) {
+            return socket_->readable();
+        } else {
+            return false;
+        }
+    }
 
  private:
-    ServerContext* context_;
+    net::SocketImpl::Ptr socket_;
 
     EventEmitter::Ptr ee_;
 
  public:
-    ServerRequestImpl(ServerContext* context);
+    ServerRequestImpl(net::SocketImpl::Ptr sock)
+        : socket_(sock)
+        , ee_(EventEmitter::create()) {
+    }
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };

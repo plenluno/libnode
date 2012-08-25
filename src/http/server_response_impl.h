@@ -52,6 +52,11 @@ class ServerResponseImpl : public ServerResponse {
     typedef LIBJ_PTR(ServerResponseImpl) Ptr;
     typedef LIBJ_CPTR(ServerResponseImpl) CPtr;
 
+    static Ptr create(net::SocketImpl::Ptr sock) {
+        Ptr p(new ServerResponseImpl(sock));
+        return p;
+    }
+
     Boolean writeHead(Int statusCode) {
         status_ = http::Status::create(statusCode);
         if (status_) {
