@@ -107,7 +107,7 @@ target_link_libraries(node
     ${libnode-deps}
 )
 set_target_properties(node PROPERTIES
-    COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+    COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions -D_FILE_OFFSET_BITS=64"
 )
 
 # echo server
