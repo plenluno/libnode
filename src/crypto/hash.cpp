@@ -18,32 +18,18 @@ class HashImpl : public Hash {
         return p;
     }
 
-    Boolean update(const Value& data) {
-        const void* dat = 0;
-        Size len = 0;
-        if (data.instanceof(Type<Buffer>::id())) {
-            Buffer::CPtr buf = toCPtr<Buffer>(data);
-            dat = buf->data();
-            len = buf->length();
+    Boolean update(Buffer::CPtr buf) {
+        if (buf) {
+            return update(buf->data(), buf->length());
+        } else {
+            return false;
         }
-        if (updatable_ && dat) {
-            switch (algorithm_) {
-            case MD5:
-                MD5_Update(static_cast<MD5_CTX*>(context_), dat, len);
-                break;
-            case SHA1:
-                SHA1_Update(static_cast<SHA_CTX*>(context_), dat, len);
-                break;
-            case SHA256:
-                SHA256_Update(static_cast<SHA256_CTX*>(context_), dat, len);
-                break;
-            case SHA512:
-                SHA512_Update(static_cast<SHA512_CTX*>(context_), dat, len);
-                break;
-            default:
-                assert(false);
-            }
-            return true;
+    }
+
+    Boolean update(String::CPtr str, Buffer::Encoding enc) {
+        if (str) {
+            Buffer::CPtr buf = Buffer::create(str, enc);
+            return update(buf);
         } else {
             return false;
         }
@@ -73,6 +59,31 @@ class HashImpl : public Hash {
             assert(false);
         }
         return Buffer::create(md_, len);
+    }
+
+ private:
+    Boolean update(const void* dat, Size len) {
+        if (updatable_ && dat) {
+            switch (algorithm_) {
+            case MD5:
+                MD5_Update(static_cast<MD5_CTX*>(context_), dat, len);
+                break;
+            case SHA1:
+                SHA1_Update(static_cast<SHA_CTX*>(context_), dat, len);
+                break;
+            case SHA256:
+                SHA256_Update(static_cast<SHA256_CTX*>(context_), dat, len);
+                break;
+            case SHA512:
+                SHA512_Update(static_cast<SHA512_CTX*>(context_), dat, len);
+                break;
+            default:
+                assert(false);
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
  private:

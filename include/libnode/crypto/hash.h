@@ -6,6 +6,8 @@
 #include <libj/js_object.h>
 #include <libj/string.h>
 
+#include "libnode/buffer.h"
+
 namespace libj {
 namespace node {
 namespace crypto {
@@ -21,7 +23,8 @@ class Hash : LIBJ_JS_OBJECT(Hash)
 
     static Ptr create(Algorithm algo);
 
-    virtual Boolean update(const Value& data) = 0;
+    virtual Boolean update(Buffer::CPtr buf) = 0;
+    virtual Boolean update(String::CPtr str, Buffer::Encoding enc) = 0;
     virtual Value digest() = 0;
 };
 
