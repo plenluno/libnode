@@ -5,6 +5,8 @@
 
 #include <libj/string.h>
 
+#include "libnode/buffer.h"
+
 namespace libj {
 namespace node {
 namespace util {
@@ -13,10 +15,16 @@ Boolean isArray(const Value& val);
 Boolean isError(const Value& val);
 Boolean isRegExp(const Value& val);
 
+Buffer::Ptr hexEncode(Buffer::CPtr buf);
+Buffer::Ptr hexDecode(Buffer::CPtr buf);
+
+Buffer::Ptr base64Encode(Buffer::CPtr buf);
+Buffer::Ptr base64Decode(Buffer::CPtr buf);
+
 String::CPtr percentEncode(
-    String::CPtr str, String::Encoding enc = String::UTF8);
+    String::CPtr str, Buffer::Encoding enc = Buffer::UTF8);
 String::CPtr percentDecode(
-    String::CPtr str, String::Encoding enc = String::UTF8);
+    String::CPtr str, Buffer::Encoding enc = Buffer::UTF8);
 
 }  // namespace util
 }  // namespace node
