@@ -175,12 +175,12 @@ class SocketImpl : public Socket {
         return write(buf, JsFunction::null());
     }
 
-    Boolean write(String::CPtr str, String::Encoding enc) {
+    Boolean write(String::CPtr str, Buffer::Encoding enc) {
         Buffer::Ptr buf = Buffer::create(str, enc);
         return write(buf, JsFunction::null());
     }
 
-    Boolean write(String::CPtr str, String::Encoding enc, JsFunction::Ptr cb) {
+    Boolean write(String::CPtr str, Buffer::Encoding enc, JsFunction::Ptr cb) {
         Buffer::Ptr buf = Buffer::create(str, enc);
         return write(buf, cb);
     }

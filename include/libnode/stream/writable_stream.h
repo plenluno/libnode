@@ -19,7 +19,7 @@ class WritableStream : LIBNODE_STREAM(WritableStream)
     virtual Boolean write(Buffer::CPtr buf) = 0;
     virtual Boolean write(
         String::CPtr str,
-        String::Encoding enc = String::UTF8) = 0;
+        Buffer::Encoding enc = Buffer::UTF8) = 0;
     virtual Boolean end() = 0;
 
     virtual Boolean destroySoon() = 0;

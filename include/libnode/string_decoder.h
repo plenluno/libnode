@@ -10,7 +10,7 @@ namespace node {
 
 class StringDecoder : LIBJ_JS_OBJECT(StringDecoder)
  public:
-    static Ptr create(String::Encoding enc = String::UTF8);
+    static Ptr create(Buffer::Encoding enc = Buffer::UTF8);
 
     virtual String::CPtr write(Buffer::CPtr buf) const = 0;
 };

@@ -121,7 +121,7 @@ class ServerResponseImpl : public ServerResponse {
         return flush(JsFunction::null());
     }
 
-    Boolean write(String::CPtr str, String::Encoding enc) {
+    Boolean write(String::CPtr str, Buffer::Encoding enc) {
         Buffer::Ptr buf = Buffer::create(str, enc);
         return write(buf);
     }
@@ -210,7 +210,7 @@ class ServerResponseImpl : public ServerResponse {
             header->append(nl);
         }
         header->append(nl);
-        output_->add(0, Buffer::create(header->toString(), String::ASCII));
+        output_->add(0, Buffer::create(header->toString(), Buffer::ASCII));
         setFlag(HEADER_MADE);
     }
 

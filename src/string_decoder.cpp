@@ -8,7 +8,7 @@ namespace node {
 
 class StringDecoderImpl : public StringDecoder {
  public:
-    static Ptr create(String::Encoding enc) {
+    static Ptr create(Buffer::Encoding enc) {
         Ptr p(new StringDecoderImpl(enc));
         return p;
     }
@@ -22,16 +22,16 @@ class StringDecoderImpl : public StringDecoder {
 
  private:
     JsObject::Ptr obj_;
-    String::Encoding enc_;
+    Buffer::Encoding enc_;
 
-    StringDecoderImpl(String::Encoding enc)
+    StringDecoderImpl(Buffer::Encoding enc)
         : obj_(JsObject::create())
         , enc_(enc) {}
 
     LIBJ_JS_OBJECT_IMPL(obj_);
 };
 
-StringDecoder::Ptr StringDecoder::create(String::Encoding enc) {
+StringDecoder::Ptr StringDecoder::create(Buffer::Encoding enc) {
     return StringDecoderImpl::create(enc);
 }
 

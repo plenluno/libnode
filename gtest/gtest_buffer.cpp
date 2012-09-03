@@ -37,7 +37,7 @@ TEST(GTestBuffer, TestCreate4) {
     };
     String::CPtr str = String::create(d, String::UTF8);
     ASSERT_EQ(3, str->length());
-    Buffer::Ptr buf = Buffer::create(str, String::UTF8);
+    Buffer::Ptr buf = Buffer::create(str, Buffer::UTF8);
     ASSERT_TRUE(buf);
     ASSERT_EQ(9, buf->length());
     ASSERT_EQ(0x86, buf->get(8));

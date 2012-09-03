@@ -1,5 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <assert.h>
 #include <string>
 
 #include "libnode/buffer.h"
@@ -15,6 +16,8 @@ class BufferImpl : public Buffer {
     }
 
     static Ptr create(const void* data, Size length) {
+        if (!data) return null();
+
         Ptr p(new BufferImpl(length));
         const UByte* d = static_cast<const UByte*>(data);
         for (Size i = 0; i < length; i++)
@@ -23,6 +26,8 @@ class BufferImpl : public Buffer {
     }
 
     static Ptr create(JsTypedArray<UByte>::CPtr array) {
+        if (!array) return null();
+
         Size length = array->length();
         Ptr p(new BufferImpl(length));
         for (Size i = 0; i < length; i++) {
@@ -34,8 +39,10 @@ class BufferImpl : public Buffer {
         return p;
     }
 
-    static Ptr create(String::CPtr str, String::Encoding enc) {
-        if (enc == String::ASCII || enc == String::UTF8) {
+    static Ptr create(String::CPtr str, Encoding enc) {
+        if (!str) return null();
+
+        if (enc == UTF8 || (enc == ASCII && str->isAscii())) {
             std::string str8 = str->toStdString();
             Size length = str8.length();
             return create(
@@ -46,10 +53,10 @@ class BufferImpl : public Buffer {
     }
 
     Int write(
-        String::CPtr str, Size offset, Size length, String::Encoding enc) {
-        if (offset > this->length()) {
+        String::CPtr str, Size offset, Size length, Encoding enc) {
+        if (!str || offset > this->length()) {
             return -1;
-        } else if (enc == String::ASCII || enc == String::UTF8) {
+        } else if (enc == UTF8 || (enc == ASCII && str->isAscii())) {
             std::string str8 = str->toStdString();
             const UByte* data = reinterpret_cast<const UByte*>(str8.c_str());
             Size len = this->length() - offset;
@@ -76,6 +83,8 @@ class BufferImpl : public Buffer {
         Size targetStart,
         Size sourceStart,
         Size sourceEnd) const {
+        if (!target) return 0;
+
         if (sourceEnd > length())
             sourceEnd = length();
         Size sourceLen = 0;
@@ -96,16 +105,32 @@ class BufferImpl : public Buffer {
     }
 
     virtual String::CPtr toString(
-        String::Encoding enc,
+        Encoding enc,
         Size start,
         Size end) const {
+        String::Encoding strEnc = toStringEncoding(enc);
         if (start == 0 && end >= length()) {
-            return String::create(data(), enc);
+            return String::create(data(), strEnc);
         } else {
             Size len = end - start;
             Buffer::Ptr buf = Buffer::create(len);
             this->copy(buf, 0, start, end);
-            return String::create(buf->data(), enc);
+            return String::create(buf->data(), strEnc);
+        }
+    }
+
+ private:
+    static String::Encoding toStringEncoding(Encoding enc) {
+        switch (enc) {
+        case ASCII:
+            return String::ASCII;
+        case UTF8:
+            return String::UTF8;
+        case BASE64:
+            return String::ASCII;
+        default:
+            assert(false);
+            return String::UTF8;
         }
     }
 
@@ -131,7 +156,7 @@ Buffer::Ptr Buffer::create(JsTypedArray<UByte>::CPtr array) {
     return BufferImpl::create(array);
 }
 
-Buffer::Ptr Buffer::create(String::CPtr str, String::Encoding enc) {
+Buffer::Ptr Buffer::create(String::CPtr str, Encoding enc) {
     return BufferImpl::create(str, enc);
 }
 
@@ -139,7 +164,7 @@ Boolean Buffer::isBuffer(const Value& val) {
     return val.instanceof(Type<Buffer>::id());
 }
 
-Size Buffer::byteLength(String::CPtr str, String::Encoding enc) {
+Size Buffer::byteLength(String::CPtr str, Encoding enc) {
     if (str) {
         return create(str, enc)->length();
     } else {

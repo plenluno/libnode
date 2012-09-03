@@ -27,7 +27,7 @@ class DuplexStream : LIBNODE_STREAM(DuplexStream)
     virtual Boolean write(Buffer::CPtr buf) = 0;
     virtual Boolean write(
         String::CPtr str,
-        String::Encoding enc = String::UTF8) = 0;
+        Buffer::Encoding enc = Buffer::UTF8) = 0;
     virtual Boolean end() = 0;
 };
 
@@ -48,7 +48,7 @@ public: \
     } \
     virtual Boolean write( \
         String::CPtr str, \
-        String::Encoding enc = String::UTF8) { \
+        Buffer::Encoding enc = Buffer::UTF8) { \
         return S->write(str, enc); \
     } \
     virtual Boolean end() { \

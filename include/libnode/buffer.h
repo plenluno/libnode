@@ -11,16 +11,20 @@ namespace node {
 
 class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
  public:
+    enum Encoding {
+        ASCII,
+        UTF8,
+        BASE64,
+    };
+
     static Ptr create(Size length = 0);
     static Ptr create(const void* data, Size length);
     static Ptr create(JsTypedArray<UByte>::CPtr array);
-    static Ptr create(
-        String::CPtr str, String::Encoding enc = String::UTF8);
+    static Ptr create(String::CPtr str, Encoding enc = UTF8);
 
     static Boolean isBuffer(const Value& val);
 
-    static Size byteLength(
-        String::CPtr str, String::Encoding enc = String::UTF8);
+    static Size byteLength(String::CPtr str, Encoding enc = UTF8);
 
     static Ptr concat(JsArray::CPtr list, Size total = NO_POS);
 
@@ -28,7 +32,7 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
         String::CPtr str,
         Size offset = 0,
         Size length = NO_POS,
-        String::Encoding enc = String::UTF8) = 0;
+        Encoding enc = UTF8) = 0;
 
     virtual Size copy(
         Ptr target,
@@ -38,7 +42,7 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
 
     virtual String::CPtr toString() const = 0;
     virtual String::CPtr toString(
-        String::Encoding enc,
+        Encoding enc,
         Size start = 0,
         Size end = NO_POS) const = 0;
 
