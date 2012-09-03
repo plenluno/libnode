@@ -113,7 +113,7 @@ Buffer::Ptr base64Decode(Buffer::CPtr buf) {
     char* src = new char[len + 1];
     memcpy(src, buf->data(), len);
     src[len] = 0;
-    
+
     BIO* bio = BIO_new(BIO_f_base64());
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
     BIO* bioMem = BIO_new_mem_buf(src, len);
