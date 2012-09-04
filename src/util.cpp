@@ -128,7 +128,7 @@ Buffer::Ptr base64Decode(String::CPtr str) {
         decoded = Buffer::null();
     }
     BIO_free_all(bio);
-    delete dst;
+    delete [] dst;
     return decoded;
 }
 
