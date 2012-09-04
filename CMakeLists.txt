@@ -12,7 +12,7 @@ message(STATUS "LIBNODE_BUILD_GTEST=${LIBNODE_BUILD_GTEST}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_SAMPLE=${LIBNODE_BUILD_SAMPLE}")
 
-# find libs ----------------------------------------------------------------------------------------
+# find libraries -----------------------------------------------------------------------------------
 
 find_library(PTHREAD pthread REQUIRED)
 if(NOT EXISTS ${PTHREAD})
@@ -26,7 +26,7 @@ if(LIBNODE_BUILD_GTEST)
     endif()
 endif(LIBNODE_BUILD_GTEST)
 
-# set vars -----------------------------------------------------------------------------------------
+# set variables ------------------------------------------------------------------------------------
 
 set(libnode-src
     src/buffer.cpp
@@ -94,7 +94,7 @@ set(libnode-include
 )
 endif(LIBNODE_BUILD_OPENSSL)
 
-# build libs ---------------------------------------------------------------------------------------
+# build libraries ----------------------------------------------------------------------------------
 
 include_directories(
     ${libnode-include}
