@@ -2,37 +2,29 @@ cmake_minimum_required(VERSION 2.8)
 
 project(libnode)
 
-option(LIBNODE_USE_GTEST "Use Google Test" OFF)
+# options ----------------------------------------------------------------------
+option(LIBNODE_BUILD_GTEST "Build Google Tests" OFF)
+option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON)
+option(LIBNODE_BUILD_SAMPLE "Build Samples" OFF)
 
-message(STATUS "LIBNODE_USE_GTEST=${LIBNODE_USE_GTEST}")
+message(STATUS "LIBNODE_BUILD_GTEST=${LIBNODE_BUILD_GTEST}")
+message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
+message(STATUS "LIBNODE_BUILD_SAMPLE=${LIBNODE_BUILD_SAMPLE}")
 
+# find libs --------------------------------------------------------------------
 find_library(PTHREAD pthread REQUIRED)
 if(NOT EXISTS ${PTHREAD})
     message(FATAL_ERROR "libpthread not found.")
 endif()
 
-if(LIBNODE_USE_GTEST)
+if(LIBNODE_BUILD_GTEST)
     find_library(GTEST gtest REQUIRED)
     if(NOT EXISTS ${GTEST})
         message(FATAL_ERROR "libgtest not found.")
     endif()
-endif(LIBNODE_USE_GTEST)
+endif(LIBNODE_BUILD_GTEST)
 
-include_directories(
-    include
-    deps
-    deps/http-parser
-    deps/url_parser
-    deps/libj/include
-    deps/libj/deps/boost-svn
-    deps/libuv/include
-    deps/openssl/include
-)
-
-link_directories(
-    ${CMAKE_BINARY_DIR}
-)
-
+# set vars ---------------------------------------------------------------------
 set(libnode-src
     src/buffer.cpp
     src/crypto.cpp
@@ -60,10 +52,10 @@ set(libnode-src
 
 set(libnode-deps-common
     crypto
+    httpparser
     j
-    parser-http
-    parser-url
     pthread
+    urlparser
     uv
 )
 
@@ -78,28 +70,78 @@ else(APPLE)
     )
 endif(APPLE)
 
+set(libnode-include-common
+    include
+    deps
+    deps/http-parser
+    deps/url_parser
+    deps/libj/include
+    deps/libj/deps/boost-svn
+    deps/libuv/include
+)
+
+if(LIBNODE_BUILD_OPENSSL)
+set(libnode-include
+    ${libnode-include-common}
+    deps/openssl/include
+)
+else(LIBNODE_BUILD_OPENSSL)
+set(libnode-include
+    ${libnode-include-common}
+)
+endif(LIBNODE_BUILD_OPENSSL)
+
+# build libs -------------------------------------------------------------------
+include_directories(
+    ${libnode-include}
+)
+
+link_directories(
+    ${CMAKE_BINARY_DIR}
+)
+
+## libj
+add_subdirectory(deps/libj)
+
 # url_parser
-add_library(parser-url
+add_library(urlparser
     deps/url_parser/url_parser.c
 )
 
-# http-parser
-add_library(parser-http
+## http-parser
+add_library(httpparser
     deps/http-parser/http_parser.c
 )
 
-# libj
-add_subdirectory(deps/libj)
-
-# libuv
+## libuv
 add_custom_command(
-    TARGET parser-http PRE_BUILD
+    TARGET httpparser PRE_BUILD
     COMMAND rsync -av ${CMAKE_CURRENT_LIST_DIR}/deps/libuv ${CMAKE_BINARY_DIR}/deps/
     COMMAND make -C ${CMAKE_BINARY_DIR}/deps/libuv
     COMMAND ln -sf ${CMAKE_BINARY_DIR}/deps/libuv/uv.a ${CMAKE_BINARY_DIR}/libuv.a
 )
 
-# libnode
+## openssl
+if(LIBNODE_BUILD_OPENSSL)
+    add_custom_command(
+        TARGET httpparser PRE_BUILD
+        COMMAND rsync -av ${CMAKE_CURRENT_LIST_DIR}/deps/openssl ${CMAKE_BINARY_DIR}/deps/
+        COMMAND cd ${CMAKE_BINARY_DIR}/deps/openssl && ./config
+    )
+    if(APPLE)
+        add_custom_command(
+            TARGET httpparser PRE_BUILD
+            COMMAND cd ${CMAKE_BINARY_DIR}/deps/openssl && ./Configure darwin64-x86_64-cc
+        )
+    endif(APPLE)
+    add_custom_command(
+        TARGET httpparser PRE_BUILD
+        COMMAND make -C ${CMAKE_BINARY_DIR}/deps/openssl
+        COMMAND ln -sf ${CMAKE_BINARY_DIR}/deps/openssl/libcrypto.a ${CMAKE_BINARY_DIR}/libcrypto.a
+    )
+endif(LIBNODE_BUILD_OPENSSL)
+
+## libnode
 add_library(node STATIC
     ${libnode-src}
 )
@@ -110,68 +152,81 @@ set_target_properties(node PROPERTIES
     COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions -D_FILE_OFFSET_BITS=64"
 )
 
-# echo server
-add_executable(echo-server
-    sample/echo_server.cpp
-)
-target_link_libraries(echo-server
-    node
-    ${libnode-deps}
-)
-if(APPLE)
-    set_target_properties(echo-server PROPERTIES
-        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
-        LINK_FLAGS "-framework CoreServices"
-    )
-else(APPLE)
-    set_target_properties(echo-server PROPERTIES
-        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
-    )
-endif(APPLE)
+# build samples ----------------------------------------------------------------
+if(LIBNODE_BUILD_SAMPLE)
 
-# static server
-add_executable(static-server
-    sample/static_server.cpp
-)
-target_link_libraries(static-server
-    node
-    ${libnode-deps}
-)
-if(APPLE)
-    set_target_properties(static-server PROPERTIES
-        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
-        LINK_FLAGS "-framework CoreServices"
+    set(libnode-sample-cflags
+        "-Wall -fno-rtti -fno-exceptions"
     )
-else(APPLE)
-    set_target_properties(echo-server PROPERTIES
-        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+    set(libnode-sample-lflags
+        "-framework CoreServices"
     )
-endif(APPLE)
 
-# countdown timer
-add_executable(countdown-timer
-    sample/countdown_timer.cpp
-)
-target_link_libraries(countdown-timer
-    node
-    ${libnode-deps}
-)
-if(APPLE)
-    set_target_properties(countdown-timer PROPERTIES
-        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
-        LINK_FLAGS "-framework CoreServices"
+## echo server
+    add_executable(libnode-echo-server
+        sample/echo_server.cpp
     )
-else(APPLE)
-    set_target_properties(echo-server PROPERTIES
-        COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions"
+    target_link_libraries(libnode-echo-server
+        node
+        ${libnode-deps}
     )
-endif(APPLE)
+    if(APPLE)
+        set_target_properties(libnode-echo-server PROPERTIES
+            COMPILE_FLAGS ${libnode-sample-cflags}
+            LINK_FLAGS ${libnode-sample-lflags}
+        )
+    else(APPLE)
+        set_target_properties(libnode-echo-server PROPERTIES
+            COMPILE_FLAGS ${libnode-sample-cflags}
+        )
+    endif(APPLE)
 
-# gtest
-if(LIBNODE_USE_GTEST)
+## static server
+    add_executable(libnode-static-server
+        sample/static_server.cpp
+    )
+    target_link_libraries(libnode-static-server
+        node
+        ${libnode-deps}
+    )
+    if(APPLE)
+        set_target_properties(libnode-static-server PROPERTIES
+            COMPILE_FLAGS ${libnode-sample-cflags}
+            LINK_FLAGS ${libnode-sample-lflags}
+        )
+    else(APPLE)
+        set_target_properties(libnode-static-server PROPERTIES
+            COMPILE_FLAGS ${libnode-sample-cflags}
+        )
+    endif(APPLE)
+
+## countdown timer
+    add_executable(libnode-countdown-timer
+        sample/countdown_timer.cpp
+    )
+    target_link_libraries(libnode-countdown-timer
+        node
+        ${libnode-deps}
+    )
+    if(APPLE)
+        set_target_properties(libnode-countdown-timer PROPERTIES
+            COMPILE_FLAGS ${libnode-sample-cflags}
+            LINK_FLAGS ${libnode-sample-lflags}
+        )
+    else(APPLE)
+        set_target_properties(libnode-countdown-timer PROPERTIES
+            COMPILE_FLAGS ${libnode-sample-cflags}
+        )
+    endif(APPLE)
+
+endif(LIBNODE_BUILD_SAMPLE)
+
+# build gtests -----------------------------------------------------------------
+if(LIBNODE_BUILD_GTEST)
     add_executable(libnode-gtest
         gtest/gtest_main.cpp
         gtest/gtest_buffer.cpp
+        gtest/gtest_crypto_hash.cpp
         gtest/gtest_error.cpp
         gtest/gtest_event_emitter.cpp
         gtest/gtest_http_server.cpp
@@ -189,12 +244,12 @@ if(LIBNODE_USE_GTEST)
     )
     if(APPLE)
         set_target_properties(libnode-gtest PROPERTIES
-            COMPILE_FLAGS "-Wall -DLIBJ_GTEST_BUILD_ERRORS"
+            COMPILE_FLAGS "-Wall"
             LINK_FLAGS "-framework CoreServices"
         )
     else(APPLE)
         set_target_properties(libnode-gtest PROPERTIES
-            COMPILE_FLAGS "-Wall -DLIBJ_GTEST_BUILD_ERRORS"
+            COMPILE_FLAGS "-Wall"
         )
     endif(APPLE)
-endif(LIBNODE_USE_GTEST)
+endif(LIBNODE_BUILD_GTEST)
