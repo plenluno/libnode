@@ -118,12 +118,10 @@ Buffer::Ptr base64Decode(String::CPtr str) {
     bio = BIO_push(bio, bioMem);
 
     char* dst = new char[len + 1];
-    memset(dst, 0, len + 1);
-
     int readLen = BIO_read(bio, dst, len);
     Buffer::Ptr decoded;
     if (readLen > 0) {
-        decoded = Buffer::create(dst, strlen(dst));
+        decoded = Buffer::create(dst, readLen);
     } else {
         decoded = Buffer::null();
     }
