@@ -15,11 +15,11 @@ Boolean isArray(const Value& val);
 Boolean isError(const Value& val);
 Boolean isRegExp(const Value& val);
 
-Buffer::Ptr hexEncode(Buffer::CPtr buf);
-Buffer::Ptr hexDecode(Buffer::CPtr buf);
+String::CPtr hexEncode(Buffer::CPtr buf);
+Buffer::Ptr hexDecode(String::CPtr str);
 
-Buffer::Ptr base64Encode(Buffer::CPtr buf);
-Buffer::Ptr base64Decode(Buffer::CPtr buf);
+String::CPtr base64Encode(Buffer::CPtr buf);
+Buffer::Ptr base64Decode(String::CPtr str);
 
 String::CPtr percentEncode(
     String::CPtr str, Buffer::Encoding enc = Buffer::UTF8);

@@ -29,8 +29,8 @@ Boolean isRegExp(const Value& val) {
 
 // -- hexEncode & hexDecode --
 
-Buffer::Ptr hexEncode(Buffer::CPtr buf) {
-    if (!buf) return Buffer::null();
+String::CPtr hexEncode(Buffer::CPtr buf) {
+    if (!buf) return String::null();
 
     Size len = buf->length();
     Buffer::Ptr encoded = Buffer::create(len * 2);
@@ -44,35 +44,34 @@ Buffer::Ptr hexEncode(Buffer::CPtr buf) {
         encoded->writeUInt8(
             (lsb < 10) ? lsb + '0' : (lsb - 10) + 'a', i * 2 + 1);
     }
-    return encoded;
+    return encoded->toString();
 }
 
-static Boolean decodeHex(UByte byte, UByte* decoded) {
+static Boolean decodeHex(Char c, UByte* decoded) {
     if (!decoded) return false;
 
-    if (byte >= '0' && byte <= '9') {
-        *decoded = byte - '0';
+    if (c >= '0' && c <= '9') {
+        *decoded = c - '0';
         return true;
-    } else if (byte >= 'a' && byte <= 'f') {
-        *decoded = byte - 'a' + 10;
+    } else if (c >= 'a' && c <= 'f') {
+        *decoded = c - 'a' + 10;
         return true;
     } else {
         return false;
     }
 }
 
-Buffer::Ptr hexDecode(Buffer::CPtr buf) {
-    if (!buf) return Buffer::null();
+Buffer::Ptr hexDecode(String::CPtr str) {
+    if (!str) return Buffer::null();
+    if (str->length() & 1) return Buffer::null();
 
-    Size len = buf->length() / 2;
+    Size len = str->length() >> 1;
     Buffer::Ptr decoded = Buffer::create(len);
     for (Size i = 0; i < len; i++) {
-        UByte byte1 = 0;
-        UByte byte2 = 0;
-        buf->readUInt8(i * 2, &byte1);
-        buf->readUInt8(i * 2 + 1, &byte2);
+        Char c1 = str->charAt(i * 2);
+        Char c2 = str->charAt(i * 2 + 1);
         UByte msb, lsb;
-        if (decodeHex(byte1, &msb) && decodeHex(byte2, &lsb)) {
+        if (decodeHex(c1, &msb) && decodeHex(c2, &lsb)) {
             decoded->writeUInt8((msb << 4) + lsb, i);
         } else {
             return Buffer::null();
@@ -84,9 +83,9 @@ Buffer::Ptr hexDecode(Buffer::CPtr buf) {
 
 // -- base64Encode & base64Decode --
 
-Buffer::Ptr base64Encode(Buffer::CPtr buf) {
-    if (!buf) return Buffer::null();
-    if (!buf->length()) return Buffer::create();
+String::CPtr base64Encode(Buffer::CPtr buf) {
+    if (!buf) return String::null();
+    if (!buf->length()) return String::create();
 
     BIO* bio = BIO_new(BIO_f_base64());
     BIO* bioMem = BIO_new(BIO_s_mem());
@@ -98,35 +97,36 @@ Buffer::Ptr base64Encode(Buffer::CPtr buf) {
 
     BUF_MEM* bufMem;
     BIO_get_mem_ptr(bio, &bufMem);
-#if 0
-    Buffer::Ptr encoded = Buffer::create(bufMem->data, bufMem->length);
-#else
-    Buffer::Ptr encoded = Buffer::create(bufMem->data, strlen(bufMem->data));
-#endif
+    String::CPtr encoded =
+        String::create(bufMem->data, String::ASCII, bufMem->length);
     BIO_free_all(bio);
     return encoded;
 }
 
-Buffer::Ptr base64Decode(Buffer::CPtr buf) {
-    if (!buf) return Buffer::null();
+Buffer::Ptr base64Decode(String::CPtr str) {
+    if (!str) return Buffer::null();
+    if (!str->length()) return Buffer::create();
 
-    const Size len = buf->length();
-    char* src = new char[len + 1];
-    memcpy(src, buf->data(), len);
-    src[len] = 0;
+    std::string src = str->toStdString();
+    Size len = src.length();
+    if (len != str->length()) return Buffer::null();
 
     BIO* bio = BIO_new(BIO_f_base64());
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-    BIO* bioMem = BIO_new_mem_buf(src, len);
+    BIO* bioMem = BIO_new_mem_buf(const_cast<char*>(src.c_str()), len);
     bio = BIO_push(bio, bioMem);
 
     char* dst = new char[len + 1];
     memset(dst, 0, len + 1);
 
-    BIO_read(bio, dst, len);
-    Buffer::Ptr decoded = Buffer::create(dst, strlen(dst));
+    int readLen = BIO_read(bio, dst, len);
+    Buffer::Ptr decoded;
+    if (readLen > 0) {
+        decoded = Buffer::create(dst, strlen(dst));
+    } else {
+        decoded = Buffer::null();
+    }
     BIO_free_all(bio);
-    delete src;
     delete dst;
     return decoded;
 }

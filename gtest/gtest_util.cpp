@@ -7,86 +7,76 @@ namespace libj {
 namespace node {
 
 TEST(GTestUtil, TestHexEncode) {
-    Buffer::Ptr buf = Buffer::create();
-    Buffer::Ptr encoded = util::hexEncode(buf);
-    ASSERT_EQ(0, encoded->length());
+    String::CPtr encoded = util::hexEncode(Buffer::create());
+    ASSERT_TRUE(encoded && encoded->isEmpty());
 
-    buf = Buffer::create(1);
+    Buffer::Ptr buf = Buffer::create(1);
     buf->writeUInt8(0xa9, 0);
     encoded = util::hexEncode(buf);
     ASSERT_EQ(2, encoded->length());
-    ASSERT_EQ('a', encoded->get(0));
-    ASSERT_EQ('9', encoded->get(1));
+    ASSERT_EQ('a', encoded->charAt(0));
+    ASSERT_EQ('9', encoded->charAt(1));
 }
 
 TEST(GTestUtil, TestHexDecode) {
-    Buffer::Ptr buf = Buffer::create();
-    Buffer::Ptr decoded = util::hexDecode(buf);
+    Buffer::Ptr decoded = util::hexDecode(String::create());
     ASSERT_EQ(0, decoded->length());
 
-    buf = Buffer::create(2);
-    buf->writeUInt8('a', 0);
-    buf->writeUInt8('9', 1);
-    decoded = util::hexDecode(buf);
+    decoded = util::hexDecode(String::create("a9"));
     ASSERT_EQ(1, decoded->length());
     ASSERT_EQ(0xa9, decoded->get(0));
+
+    decoded = util::hexDecode(String::create("uv"));
+    ASSERT_FALSE(decoded);
+
+    decoded = util::hexDecode(String::create("012"));
+    ASSERT_FALSE(decoded);
 }
 
 TEST(GTestUtil, TestBase64Encode) {
-    Buffer::Ptr buf = Buffer::create();
-    ASSERT_TRUE(buf);
-    Buffer::Ptr encoded = util::base64Encode(buf);
-    ASSERT_TRUE(encoded);
-    ASSERT_EQ(0, encoded->length());
+    String::CPtr encoded = util::base64Encode(Buffer::create());
+    ASSERT_TRUE(encoded && encoded->isEmpty());
 
     String::CPtr str = String::create("ABCDEFG");
-    buf = Buffer::create(str, Buffer::ASCII);
-    ASSERT_EQ(7, buf->length());
+    Buffer::Ptr buf = Buffer::create(str);
     encoded = util::base64Encode(buf);
-    ASSERT_TRUE(encoded->toString()->equals(String::create("QUJDREVGRw==")));
+    ASSERT_TRUE(encoded->equals(String::create("QUJDREVGRw==")));
 }
 
 TEST(GTestUtil, TestBase64Decode) {
-    Buffer::Ptr buf = Buffer::create();
-    Buffer::Ptr decoded = util::base64Decode(buf);
+    Buffer::Ptr decoded = util::base64Decode(String::create());
     ASSERT_EQ(0, decoded->length());
 
     String::CPtr str = String::create("QUJDREVGRw==");
-    buf = Buffer::create(str, Buffer::ASCII);
-    ASSERT_EQ(12, buf->length());
-    decoded = util::base64Decode(buf);
-    ASSERT_EQ(7, decoded->length());
+    decoded = util::base64Decode(str);
     ASSERT_TRUE(decoded->toString()->equals(String::create("ABCDEFG")));
+
+    str = String::create("QUJDREVGRw==@[]@");
+    decoded = util::base64Decode(str);
+    ASSERT_FALSE(decoded);
 }
 
 TEST(GTestUtil, TestPercentEncode) {
-    String::CPtr str = String::create();
-    String::CPtr encoded = util::percentEncode(str);
-    ASSERT_TRUE(encoded->equals(String::create()));
+    String::CPtr encoded = util::percentEncode(String::create());
+    ASSERT_TRUE(encoded && encoded->isEmpty());
 
-    str = String::create(" ");
-    encoded = util::percentEncode(str);
+    encoded = util::percentEncode(String::create(" "));
     ASSERT_TRUE(encoded->equals(String::create("%20")));
 
-    str = String::create("[\"123\"]");
-    encoded = util::percentEncode(str);
+    encoded = util::percentEncode(String::create("[\"123\"]"));
     ASSERT_TRUE(encoded->equals(String::create("%5B%22123%22%5D")));
 }
 
 TEST(GTestUtil, TestPercentDecode) {
-    String::CPtr str = String::create();
-    String::CPtr decoded = util::percentDecode(str);
+    String::CPtr decoded = util::percentDecode(String::create());
     ASSERT_TRUE(decoded->equals(String::create()));
 
-    str = String::create("%20");
-    decoded = util::percentDecode(str);
+    decoded = util::percentDecode(String::create("%20"));
     ASSERT_TRUE(decoded->equals(String::create(" ")));
 
-    str = String::create("%5B%22123%22%5D");
-    decoded = util::percentDecode(str);
+    decoded = util::percentDecode(String::create("%5B%22123%22%5D"));
     ASSERT_TRUE(decoded->equals(String::create("[\"123\"]")));
 }
-
 
 }  // namespace node
 }  // namespace libj
