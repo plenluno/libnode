@@ -35,8 +35,9 @@ class HashImpl : public Hash {
         }
     }
 
-    Value digest() {
-        updatable_ = false;
+    Buffer::CPtr digest() {
+        if (digest_) return digest_;
+
         Size len = 0;
         switch (algorithm_) {
         case MD5:
@@ -58,12 +59,17 @@ class HashImpl : public Hash {
         default:
             assert(false);
         }
-        return Buffer::create(md_, len);
+        digest_ = Buffer::create(md_, len);
+        return digest_;
+    }
+
+    String::CPtr digest(Buffer::Encoding enc) {
+        return digest()->toString(enc);
     }
 
  private:
     Boolean update(const void* dat, Size len) {
-        if (updatable_ && dat) {
+        if (!digest_ && dat) {
             switch (algorithm_) {
             case MD5:
                 MD5_Update(static_cast<MD5_CTX*>(context_), dat, len);
@@ -89,14 +95,14 @@ class HashImpl : public Hash {
  private:
     JsObject::Ptr obj_;
     Algorithm algorithm_;
-    Boolean updatable_;
+    Buffer::Ptr digest_;
     void* context_;
     unsigned char* md_;
 
     HashImpl(Algorithm algo)
         : obj_(JsObject::create())
         , algorithm_(algo)
-        , updatable_(true)
+        , digest_(Buffer::null())
         , context_(0)
         , md_(0) {
         switch (algo) {
