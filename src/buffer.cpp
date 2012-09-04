@@ -119,7 +119,7 @@ class BufferImpl : public Buffer {
         if (end > size) end = size;
         if (start > end || start > size) return String::null();
         if (start == end) return String::create();
-        
+
         if (start == 0 && end == size) {
             switch (enc) {
             case ASCII:

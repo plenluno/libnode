@@ -7,6 +7,7 @@
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
+#include <string>
 
 #include "libnode/util.h"
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2012 Plenluno All rights reserved.
+
 #include <gtest/gtest.h>
 #include <libnode/crypto.h>
 
