@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(libnode)
 
-# options ----------------------------------------------------------------------
+# options ------------------------------------------------------------------------------------------
+
 option(LIBNODE_BUILD_GTEST "Build Google Tests" OFF)
 option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON)
 option(LIBNODE_BUILD_SAMPLE "Build Samples" OFF)
@@ -11,7 +12,8 @@ message(STATUS "LIBNODE_BUILD_GTEST=${LIBNODE_BUILD_GTEST}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_SAMPLE=${LIBNODE_BUILD_SAMPLE}")
 
-# find libs --------------------------------------------------------------------
+# find libs ----------------------------------------------------------------------------------------
+
 find_library(PTHREAD pthread REQUIRED)
 if(NOT EXISTS ${PTHREAD})
     message(FATAL_ERROR "libpthread not found.")
@@ -24,7 +26,8 @@ if(LIBNODE_BUILD_GTEST)
     endif()
 endif(LIBNODE_BUILD_GTEST)
 
-# set vars ---------------------------------------------------------------------
+# set vars -----------------------------------------------------------------------------------------
+
 set(libnode-src
     src/buffer.cpp
     src/crypto.cpp
@@ -91,7 +94,8 @@ set(libnode-include
 )
 endif(LIBNODE_BUILD_OPENSSL)
 
-# build libs -------------------------------------------------------------------
+# build libs ---------------------------------------------------------------------------------------
+
 include_directories(
     ${libnode-include}
 )
@@ -152,7 +156,8 @@ set_target_properties(node PROPERTIES
     COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions -D_FILE_OFFSET_BITS=64"
 )
 
-# build samples ----------------------------------------------------------------
+# build samples ------------------------------------------------------------------------------------
+
 if(LIBNODE_BUILD_SAMPLE)
 
     set(libnode-sample-cflags
@@ -221,7 +226,8 @@ if(LIBNODE_BUILD_SAMPLE)
 
 endif(LIBNODE_BUILD_SAMPLE)
 
-# build gtests -----------------------------------------------------------------
+# build gtests -------------------------------------------------------------------------------------
+
 if(LIBNODE_BUILD_GTEST)
     add_executable(libnode-gtest
         gtest/gtest_main.cpp
