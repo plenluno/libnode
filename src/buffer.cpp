@@ -4,6 +4,7 @@
 #include <string>
 
 #include "libnode/buffer.h"
+#include "libnode/util.h"
 
 namespace libj {
 namespace node {
@@ -42,21 +43,27 @@ class BufferImpl : public Buffer {
     static Ptr create(String::CPtr str, Encoding enc) {
         if (!str) return null();
 
-        if (enc == UTF8 || (enc == ASCII && str->isAscii())) {
-            std::string str8 = str->toStdString();
-            Size length = str8.length();
+        std::string str8;
+        switch (enc) {
+        case BASE64:
+            return util::base64Decode(str);
+        case HEX:
+            return util::hexDecode(str);
+        case UTF8:
+            str8 = str->toStdString();
             return create(
-                reinterpret_cast<const UByte*>(str8.c_str()), length);
-        } else {
+                reinterpret_cast<const UByte*>(str8.c_str()),
+                str8.length());
+        default:
             return null();
         }
     }
 
     Int write(
         String::CPtr str, Size offset, Size length, Encoding enc) {
-        if (!str || offset > this->length()) {
-            return -1;
-        } else if (enc == UTF8 || (enc == ASCII && str->isAscii())) {
+        if (!str || offset > this->length()) return -1;
+
+        if (enc == UTF8) {
             std::string str8 = str->toStdString();
             const UByte* data = reinterpret_cast<const UByte*>(str8.c_str());
             Size len = this->length() - offset;
@@ -108,29 +115,35 @@ class BufferImpl : public Buffer {
         Encoding enc,
         Size start,
         Size end) const {
-        String::Encoding strEnc = toStringEncoding(enc);
-        if (start == 0 && end >= length()) {
-            return String::create(data(), strEnc);
-        } else {
-            Size len = end - start;
-            Buffer::Ptr buf = Buffer::create(len);
-            this->copy(buf, 0, start, end);
-            return String::create(buf->data(), strEnc);
+        const Size size = length();
+        if (end > size) end = size;
+        if (start > end || start > size) return String::null();
+        if (start == end) return String::create();
+        
+        if (start == 0 && end == size) {
+            switch (enc) {
+            case ASCII:
+                return String::create(data(), String::ASCII);
+            case UTF8:
+                return String::create(data(), String::UTF8);
+            default:
+                break;
+            }
         }
-    }
 
- private:
-    static String::Encoding toStringEncoding(Encoding enc) {
+        Buffer::Ptr buf = Buffer::create(end - start);
+        this->copy(buf, 0, start, end);
         switch (enc) {
         case ASCII:
-            return String::ASCII;
+            return String::create(buf->data(), String::ASCII);
         case UTF8:
-            return String::UTF8;
+            return String::create(buf->data(), String::UTF8);
         case BASE64:
-            return String::ASCII;
+            return util::base64Encode(buf);
+        case HEX:
+            return util::hexEncode(buf);
         default:
-            assert(false);
-            return String::UTF8;
+        return String::null();
         }
     }
 
