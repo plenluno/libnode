@@ -12,7 +12,6 @@ namespace node {
 class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
  public:
     enum Encoding {
-        ASCII,
         UTF8,
         BASE64,
         HEX,
@@ -27,12 +26,12 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
 
     static Size byteLength(String::CPtr str, Encoding enc = UTF8);
 
-    static Ptr concat(JsArray::CPtr list, Size total = NO_POS);
+    static Ptr concat(JsArray::CPtr list, Size total = NO_SIZE);
 
     virtual Int write(
         String::CPtr str,
         Size offset = 0,
-        Size length = NO_POS,
+        Size length = NO_SIZE,
         Encoding enc = UTF8) = 0;
 
     virtual Size copy(
@@ -47,13 +46,70 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
         Size start = 0,
         Size end = NO_POS) const = 0;
 
-    virtual Int get(Size offset) {
+ public:
+    Int get(Size offset) const {
         UByte b;
         if (readUInt8(offset, &b)) {
             return b;
         } else {
             return -1;
         }
+    }
+
+    Boolean readUInt8(Size offset, UByte* value) const {
+        return getUInt8(offset, value);
+    }
+
+    Boolean readUInt16LE(Size offset, UShort* value) const {
+        return getUInt16(offset, value, true);
+    }
+
+    Boolean readUInt16BE(Size offset, UShort* value) const {
+        return getUInt16(offset, value, false);
+    }
+
+    Boolean readUInt32LE(Size offset, UInt* value) const {
+        return getUInt32(offset, value, true);
+    }
+
+    Boolean readUInt32BE(Size offset, UInt* value) const {
+        return getUInt32(offset, value, false);
+    }
+
+    Boolean readInt8(Size offset, Byte* value) const {
+        return getInt8(offset, value);
+    }
+
+    Boolean readInt16LE(Size offset, Short* value) const {
+        return getInt16(offset, value, true);
+    }
+
+    Boolean readInt16BE(Size offset, Short* value) const {
+        return getInt16(offset, value, false);
+    }
+
+    Boolean readInt32LE(Size offset, Int* value) const {
+        return getInt32(offset, value, true);
+    }
+
+    Boolean readInt32BE(Size offset, Int* value) const {
+        return getInt32(offset, value, false);
+    }
+
+    Boolean readFloatLE(Size offset, Float* value) const {
+        return getFloat32(offset, value, true);
+    }
+
+    Boolean readFloatBE(Size offset, Float* value) const {
+        return getFloat32(offset, value, false);
+    }
+
+    Boolean readDoubleLE(Size offset, Double* value) const {
+        return getFloat64(offset, value, true);
+    }
+
+    Boolean readDoubleBE(Size offset, Double* value) const {
+        return getFloat64(offset, value, false);
     }
 
 #ifdef LIBJ_USE_EXCEPTION
@@ -113,62 +169,6 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
         return getFloat64(offset, false);
     }
 #endif  // LIBJ_USE_EXCEPTION
-
-    Boolean readUInt8(Size offset, UByte* value) const {
-        return getUInt8(offset, value);
-    }
-
-    Boolean readUInt16LE(Size offset, UShort* value) const {
-        return getUInt16(offset, value, true);
-    }
-
-    Boolean readUInt16BE(Size offset, UShort* value) const {
-        return getUInt16(offset, value, false);
-    }
-
-    Boolean readUInt32LE(Size offset, UInt* value) const {
-        return getUInt32(offset, value, true);
-    }
-
-    Boolean readUInt32BE(Size offset, UInt* value) const {
-        return getUInt32(offset, value, false);
-    }
-
-    Boolean readInt8(Size offset, Byte* value) const {
-        return getInt8(offset, value);
-    }
-
-    Boolean readInt16LE(Size offset, Short* value) const {
-        return getInt16(offset, value, true);
-    }
-
-    Boolean readInt16BE(Size offset, Short* value) const {
-        return getInt16(offset, value, false);
-    }
-
-    Boolean readInt32LE(Size offset, Int* value) const {
-        return getInt32(offset, value, true);
-    }
-
-    Boolean readInt32BE(Size offset, Int* value) const {
-        return getInt32(offset, value, false);
-    }
-
-    Boolean readFloatLE(Size offset, Float* value) const {
-        return getFloat32(offset, value, true);
-    }
-
-    Boolean readFloatBE(Size offset, Float* value) const {
-        return getFloat32(offset, value, false);
-    }
-
-    Boolean readDoubleLE(Size offset, Double* value) const {
-        return getFloat64(offset, value, true);
-    }
-
-    Boolean readDoubleBE(Size offset, Double* value) const {
-        return getFloat64(offset, value, false);
-    }
 
     Boolean writeUInt8(UByte value, Size offset) {
         return setUInt8(offset, value);

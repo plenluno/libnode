@@ -45,15 +45,15 @@ class BufferImpl : public Buffer {
 
         std::string str8;
         switch (enc) {
-        case BASE64:
-            return util::base64Decode(str);
-        case HEX:
-            return util::hexDecode(str);
         case UTF8:
             str8 = str->toStdString();
             return create(
                 reinterpret_cast<const UByte*>(str8.c_str()),
                 str8.length());
+        case BASE64:
+            return util::base64Decode(str);
+        case HEX:
+            return util::hexDecode(str);
         default:
             return null();
         }
@@ -122,8 +122,6 @@ class BufferImpl : public Buffer {
 
         if (start == 0 && end == size) {
             switch (enc) {
-            case ASCII:
-                return String::create(data(), String::ASCII);
             case UTF8:
                 return String::create(data(), String::UTF8);
             default:
@@ -134,8 +132,6 @@ class BufferImpl : public Buffer {
         Buffer::Ptr buf = Buffer::create(end - start);
         this->copy(buf, 0, start, end);
         switch (enc) {
-        case ASCII:
-            return String::create(buf->data(), String::ASCII);
         case UTF8:
             return String::create(buf->data(), String::UTF8);
         case BASE64:
@@ -143,7 +139,7 @@ class BufferImpl : public Buffer {
         case HEX:
             return util::hexEncode(buf);
         default:
-        return String::null();
+            return String::null();
         }
     }
 
