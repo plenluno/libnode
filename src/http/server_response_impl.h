@@ -210,7 +210,7 @@ class ServerResponseImpl : public ServerResponse {
             header->append(nl);
         }
         header->append(nl);
-        output_->add(0, Buffer::create(header->toString(), Buffer::ASCII));
+        output_->add(0, Buffer::create(header->toString()));
         setFlag(HEADER_MADE);
     }
 
