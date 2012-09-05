@@ -194,7 +194,7 @@ class ServerImpl : public Server {
 
     static int onUrl(http_parser* parser, const char* at, size_t length) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
-        String::CPtr url = String::create(at, String::ASCII, length);
+        String::CPtr url = String::create(at, String::UTF8, length);
         context->request->setUrl(url);
         return 0;
     }
@@ -203,7 +203,7 @@ class ServerImpl : public Server {
 
     static int onHeaderField(
         http_parser* parser, const char* at, size_t length) {
-        headerName = String::create(at, String::ASCII, length);
+        headerName = String::create(at, String::UTF8, length);
         return 0;
     }
 
@@ -212,7 +212,7 @@ class ServerImpl : public Server {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
         context->request->setHeader(
             headerName,
-            String::create(at, String::ASCII, length));
+            String::create(at, String::UTF8, length));
         return 0;
     }
 
@@ -282,7 +282,7 @@ class ServerImpl : public Server {
     static int onBody(http_parser* parser, const char* at, size_t length) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
         if (context->request) {
-            String::CPtr chunk = String::create(at, String::ASCII, length);
+            String::CPtr chunk = String::create(at, String::UTF8, length);
             JsArray::Ptr args = JsArray::create();
             args->add(chunk);
             context->request->emit(ServerRequest::EVENT_DATA, args);
