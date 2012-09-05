@@ -22,9 +22,9 @@ String::CPtr base64Encode(Buffer::CPtr buf);
 Buffer::Ptr base64Decode(String::CPtr str);
 
 String::CPtr percentEncode(
-    String::CPtr str, Buffer::Encoding enc = Buffer::UTF8);
+    String::CPtr str, String::Encoding enc = String::UTF8);
 String::CPtr percentDecode(
-    String::CPtr str, Buffer::Encoding enc = Buffer::UTF8);
+    String::CPtr str, String::Encoding enc = String::UTF8);
 
 }  // namespace util
 }  // namespace node

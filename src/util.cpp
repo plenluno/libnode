@@ -99,7 +99,7 @@ String::CPtr base64Encode(Buffer::CPtr buf) {
     BUF_MEM* bufMem;
     BIO_get_mem_ptr(bio, &bufMem);
     String::CPtr encoded =
-        String::create(bufMem->data, String::ASCII, bufMem->length);
+        String::create(bufMem->data, String::UTF8, bufMem->length);
     BIO_free_all(bio);
     return encoded;
 }
@@ -187,7 +187,7 @@ static Size percentEncode(
             *(encoded++) = hexCharFromValue((unsigned char)temp >> 4);
             if (!(--encodedLength)) break;
             *(encoded++) = hexCharFromValue(temp & 0x0F);
-            encodedLength-=2;
+            encodedLength -= 2;
         }
         source++;
         encodedLength--;
@@ -206,10 +206,10 @@ static Size percentDecode(
     decodedLength--;
     while (*source && decodedLength) {
         if (*source == '%') {
-            if (*(source+1) == '\0') break;
+            if (*(source + 1) == '\0') break;
             *(decoded++) =
                 (valueFromHexChar(*(source + 1)) << 4) +
-                valueFromHexChar(*(source + 2));
+                 valueFromHexChar(*(source + 2));
             source += 3;
         } else if (*source == '+') {
             *(decoded++) = ' ';
@@ -223,28 +223,28 @@ static Size percentDecode(
     return decoded - start;
 }
 
-String::CPtr percentEncode(String::CPtr str, Buffer::Encoding enc) {
+String::CPtr percentEncode(String::CPtr str, String::Encoding enc) {
     if (!str || str->length() == 0)
         return String::create();
 
-    Buffer::Ptr buf = Buffer::create(str, enc);
+    // only UTF8 temporarily
+    Buffer::Ptr buf = Buffer::create(str, Buffer::UTF8);
     Size len = buf->length() * 3 + 1;
     char* encoded = new char[len];
     percentEncode(encoded, len, static_cast<const char*>(buf->data()));
-    String::CPtr res = String::create(encoded, String::ASCII);
+    String::CPtr res = String::create(encoded);
     delete [] encoded;
     return res;
 }
 
-String::CPtr percentDecode(String::CPtr str, Buffer::Encoding enc) {
-    if (!str || str->isEmpty() || !str->isAscii())
+String::CPtr percentDecode(String::CPtr str, String::Encoding enc) {
+    if (!str || str->isEmpty())
         return String::create();
 
     Size len = str->length() + 1;
     char* decoded = new char[len];
-    Size size = percentDecode(
-        decoded, len, static_cast<const char*>(str->toStdString().c_str()));
-    String::CPtr res = Buffer::create(decoded, size)->toString(enc);
+    Size size = percentDecode(decoded, len, str->toStdString().c_str());
+    String::CPtr res = String::create(decoded, enc, size);
     delete [] decoded;
     return res;
 }
