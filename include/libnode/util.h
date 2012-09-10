@@ -16,9 +16,11 @@ Boolean isError(const Value& val);
 Boolean isRegExp(const Value& val);
 
 String::CPtr hexEncode(Buffer::CPtr buf);
+String::CPtr hexEncode(const void* data, Size length);
 Buffer::Ptr hexDecode(String::CPtr str);
 
 String::CPtr base64Encode(Buffer::CPtr buf);
+String::CPtr base64Encode(const void* data, Size length);
 Buffer::Ptr base64Decode(String::CPtr str);
 
 String::CPtr percentEncode(

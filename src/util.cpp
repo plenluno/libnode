@@ -31,13 +31,24 @@ Boolean isRegExp(const Value& val) {
 // -- hexEncode & hexDecode --
 
 String::CPtr hexEncode(Buffer::CPtr buf) {
-    if (!buf) return String::null();
+    if (buf) {
+        if (buf->isEmpty()) {
+            return String::create();
+        } else {
+            return hexEncode(buf->data(), buf->length());
+        }
+    } else {
+        return String::null();
+    }
+}
 
-    Size len = buf->length();
+String::CPtr hexEncode(const void* data, Size len) {
+    if (!data) return String::null();
+
+    const UByte* bytes = static_cast<const UByte*>(data);
     Buffer::Ptr encoded = Buffer::create(len * 2);
     for (Size i = 0; i < len; i++) {
-        UByte byte = 0;
-        buf->readUInt8(i, &byte);
+        UByte byte = bytes[i];
         const UByte msb = (byte >> 4) & 0x0f;
         const UByte lsb = byte & 0x0f;
         encoded->writeUInt8(
@@ -85,14 +96,26 @@ Buffer::Ptr hexDecode(String::CPtr str) {
 // -- base64Encode & base64Decode --
 
 String::CPtr base64Encode(Buffer::CPtr buf) {
-    if (!buf) return String::null();
-    if (!buf->length()) return String::create();
+    if (buf) {
+        if (buf->isEmpty()) {
+            return String::create();
+        } else {
+            return base64Encode(buf->data(), buf->length());
+        }
+    } else {
+        return String::null();
+    }
+}
+
+String::CPtr base64Encode(const void* data, Size len) {
+    if (!data) return String::null();
+    if (!len) return String::create();
 
     BIO* bio = BIO_new(BIO_f_base64());
     BIO* bioMem = BIO_new(BIO_s_mem());
     bio = BIO_push(bio, bioMem);
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-    BIO_write(bio, buf->data(), buf->length());
+    BIO_write(bio, data, len);
     int ret = BIO_flush(bio);
     assert(ret == 1);
 
