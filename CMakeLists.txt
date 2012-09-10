@@ -53,7 +53,7 @@ set(libnode-src
     src/util.cpp
 )
 
-set(libnode-deps-common
+set(libnode-deps
     crypto
     httpparser
     j
@@ -62,18 +62,14 @@ set(libnode-deps-common
     uv
 )
 
-if(APPLE)
+if(NOT APPLE)
     set(libnode-deps
-        ${libnode-deps-common}
-    )
-else(APPLE)
-    set(libnode-deps
-        ${libnode-deps-common}
+        ${libnode-deps}
         rt
     )
-endif(APPLE)
+endif(NOT APPLE)
 
-set(libnode-include-common
+set(libnode-include
     include
     deps
     deps/http-parser
@@ -84,14 +80,10 @@ set(libnode-include-common
 )
 
 if(LIBNODE_BUILD_OPENSSL)
-set(libnode-include
-    ${libnode-include-common}
-    deps/openssl/include
-)
-else(LIBNODE_BUILD_OPENSSL)
-set(libnode-include
-    ${libnode-include-common}
-)
+    set(libnode-include
+        ${libnode-include}
+        deps/openssl/include
+    )
 endif(LIBNODE_BUILD_OPENSSL)
 
 # build libraries ----------------------------------------------------------------------------------
