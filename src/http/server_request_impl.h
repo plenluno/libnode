@@ -92,14 +92,39 @@ class ServerRequestImpl : public ServerRequest {
         }
     }
 
+    Boolean hasEncoding() const {
+        return enc_ != Buffer::NONE;
+    }
+
+    Buffer::Encoding getEncoding() const {
+        return enc_;
+    }
+
+    Boolean setEncoding(Buffer::Encoding enc) {
+        switch (enc) {
+        case Buffer::UTF8:
+        case Buffer::UTF16BE:
+        case Buffer::UTF16LE:
+        case Buffer::UTF32BE:
+        case Buffer::UTF32LE:
+        case Buffer::HEX:
+        case Buffer::NONE:
+            enc_ = enc;
+            return true;
+        default:
+            return false;
+        }
+    }
+
  private:
     net::SocketImpl::Ptr socket_;
-
+    Buffer::Encoding enc_;
     EventEmitter::Ptr ee_;
 
  public:
     ServerRequestImpl(net::SocketImpl::Ptr sock)
         : socket_(sock)
+        , enc_(Buffer::NONE)
         , ee_(EventEmitter::create()) {
     }
 

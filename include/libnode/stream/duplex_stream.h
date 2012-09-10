@@ -16,14 +16,12 @@ class DuplexStream : LIBNODE_STREAM(DuplexStream)
     static const String::CPtr EVENT_DRAIN;
     static const String::CPtr EVENT_PIPE;
 
+    // ReadableStream
     virtual Boolean readable() const = 0;
+    virtual Boolean setEncoding(Buffer::Encoding enc) = 0;
+
+    // WritableStream
     virtual Boolean writable() const = 0;
-
-    // stream.setEncoding([encoding])
-    // stream.pause()
-    // stream.resume()
-    // stream.pipe(destination, [options])
-
     virtual Boolean write(Buffer::CPtr buf) = 0;
     virtual Boolean write(
         String::CPtr str,
@@ -39,6 +37,9 @@ class DuplexStream : LIBNODE_STREAM(DuplexStream)
 public: \
     virtual Boolean readable() const { \
         return S->readable(); \
+    } \
+    virtual Boolean setEncoding(Buffer::Encoding enc) { \
+        return S->setEncoding(enc); \
     } \
     virtual Boolean writable() const { \
         return S->writable(); \

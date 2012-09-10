@@ -19,6 +19,7 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
         UTF32LE,
         BASE64,
         HEX,
+        NONE,
     };
 
     static Ptr create(Size length = 0);

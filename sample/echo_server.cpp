@@ -106,13 +106,16 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
             toPtr<http::ServerRequest>(args->get(0));
         http::ServerResponse::Ptr res =
             toPtr<http::ServerResponse>(args->get(1));
+
         OnData::Ptr onData(new OnData());
         OnEnd::Ptr onEnd(new OnEnd(srv_, req, res, onData));
         OnClose::Ptr onClose(new OnClose());
+        req->setEncoding(Buffer::UTF8);
         req->on(http::ServerRequest::EVENT_DATA, onData);
         req->on(http::ServerRequest::EVENT_END, onEnd);
         req->on(http::ServerRequest::EVENT_CLOSE, onClose);
         res->on(http::ServerResponse::EVENT_CLOSE, onClose);
+
         console::log(
             String::create("method: ")->concat(req->method()));
         console::log(

@@ -260,6 +260,30 @@ class SocketImpl : public Socket {
         return hasFlag(WRITABLE);
     }
 
+    Boolean hasEncoding() const {
+        return enc_ != Buffer::NONE;
+    }
+
+    Buffer::Encoding getEncoding() const {
+        return enc_;
+    }
+
+    Boolean setEncoding(Buffer::Encoding enc) {
+        switch (enc) {
+        case Buffer::UTF8:
+        case Buffer::UTF16BE:
+        case Buffer::UTF16LE:
+        case Buffer::UTF32BE:
+        case Buffer::UTF32LE:
+        case Buffer::HEX:
+        case Buffer::NONE:
+            enc_ = enc;
+            return true;
+        default:
+            return false;
+        }
+    }
+
  private:
     Boolean destroy(libj::Error::CPtr err, JsFunction::Ptr cb) {
         if (hasFlag(DESTROYED))
@@ -349,14 +373,16 @@ class SocketImpl : public Socket {
  private:
     UInt flags_;
     uv_tcp_t* tcp_;
-    UInt pendingWriteReqs_;
+    Buffer::Encoding enc_;
     EventEmitter::Ptr ee_;
+    UInt pendingWriteReqs_;
 
     SocketImpl()
         : flags_(0)
         , tcp_(new uv_tcp_t)
-        , pendingWriteReqs_(0)
-        , ee_(events::EventEmitter::create()) {
+        , enc_(Buffer::NONE)
+        , ee_(events::EventEmitter::create())
+        , pendingWriteReqs_(0) {
         uv_tcp_init(uv_default_loop(), tcp_);
         tcp_->data = this;
         // setFlag(READABLE);

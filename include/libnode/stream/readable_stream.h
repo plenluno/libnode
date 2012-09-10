@@ -3,6 +3,7 @@
 #ifndef LIBNODE_STREAM_READABLE_STREAM_H_
 #define LIBNODE_STREAM_READABLE_STREAM_H_
 
+#include "libnode/buffer.h"
 #include "libnode/stream/stream.h"
 
 namespace libj {
@@ -14,11 +15,7 @@ class ReadableStream : LIBNODE_STREAM(ReadableStream)
     static const String::CPtr EVENT_END;
 
     virtual Boolean readable() const = 0;
-
-    // stream.setEncoding([encoding])
-    // stream.pause()
-    // stream.resume()
-    // stream.pipe(destination, [options])
+    virtual Boolean setEncoding(Buffer::Encoding enc) = 0;
 };
 
 #define LIBNODE_READABLE_STREAM(T) public libj::node::ReadableStream { \

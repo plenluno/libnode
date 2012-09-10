@@ -281,10 +281,16 @@ class ServerImpl : public Server {
 
     static int onBody(http_parser* parser, const char* at, size_t length) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
-        if (context->request) {
-            String::CPtr chunk = String::create(at, String::UTF8, length);
+        ServerRequestImpl::Ptr request = context->request;
+        if (request) {
+            Buffer::Ptr chunk = Buffer::create(at, length);
             JsArray::Ptr args = JsArray::create();
-            args->add(chunk);
+            if (request->hasEncoding()) {
+                Buffer::Encoding enc = request->getEncoding();
+                args->add(chunk->toString(enc));
+            } else {
+                args->add(chunk);
+            }
             context->request->emit(ServerRequest::EVENT_DATA, args);
         }
         return 0;

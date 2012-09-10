@@ -41,7 +41,11 @@ class ServerImpl : public Server {
         if (nread >= 0) {
             Buffer::Ptr buffer = Buffer::create(buf.base, nread);
             JsArray::Ptr args = JsArray::create();
-            args->add(buffer);
+            if (sock->hasEncoding()) {
+                args->add(buffer->toString(sock->getEncoding()));
+            } else {
+                args->add(buffer);
+            }
             sock->emit(EVENT_DATA, args);
         } else {
             uv_err_t err = uv_last_error(uv_default_loop());
