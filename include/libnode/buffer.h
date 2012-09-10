@@ -13,6 +13,10 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
  public:
     enum Encoding {
         UTF8,
+        UTF16BE,
+        UTF16LE,
+        UTF32BE,
+        UTF32LE,
         BASE64,
         HEX,
     };

@@ -43,13 +43,33 @@ class BufferImpl : public Buffer {
     static Ptr create(String::CPtr str, Encoding enc) {
         if (!str) return null();
 
-        std::string str8;
+        std::string s;
         switch (enc) {
         case UTF8:
-            str8 = str->toStdString();
+            s = str->toStdString();
             return create(
-                reinterpret_cast<const UByte*>(str8.c_str()),
-                str8.length());
+                reinterpret_cast<const UByte*>(s.c_str()),
+                s.length());
+        case UTF16BE:
+            s = str->toStdString(String::UTF16BE);
+            return create(
+                reinterpret_cast<const UByte*>(s.c_str()),
+                s.length() - 2);  // delete the last null character
+        case UTF16LE:
+            s = str->toStdString(String::UTF16LE);
+            return create(
+                reinterpret_cast<const UByte*>(s.c_str()),
+                s.length() - 2);  // delete the last null character
+        case UTF32BE:
+            s = str->toStdString(String::UTF32BE);
+            return create(
+                reinterpret_cast<const UByte*>(s.c_str()),
+                s.length() - 4);  // delete the last null character
+        case UTF32LE:
+            s = str->toStdString(String::UTF32LE);
+            return create(
+                reinterpret_cast<const UByte*>(s.c_str()),
+                s.length() - 4);  // delete the last null character
         case BASE64:
             return util::base64Decode(str);
         case HEX:
@@ -61,21 +81,47 @@ class BufferImpl : public Buffer {
 
     Int write(
         String::CPtr str, Size offset, Size length, Encoding enc) {
-        if (!str || offset > this->length()) return -1;
+        if (!str || offset > this->length()) {
+            return -1;
+        } else if (!length) {
+            return 0;
+        }
 
-        if (enc == UTF8) {
-            std::string str8 = str->toStdString();
-            const UByte* data = reinterpret_cast<const UByte*>(str8.c_str());
-            Size len = this->length() - offset;
-            len = len < length ? len : length;
-            len = len < str->length() ? len : str->length();
-            for (Size i = 0; i < len; i++) {
-                setUInt8(i + offset, data[i]);
-            }
-            return len;
-        } else {
+        std::string s;
+        Size len;
+        switch (enc) {
+        case UTF8:
+            s = str->toStdString();
+            len = s.length();
+            break;
+        case UTF16BE:
+            s = str->toStdString(String::UTF16BE);
+            len = s.length() - 2;
+            break;
+        case UTF16LE:
+            s = str->toStdString(String::UTF16LE);
+            len = s.length() - 2;
+            break;
+        case UTF32BE:
+            s = str->toStdString(String::UTF32BE);
+            len = s.length() - 4;
+            break;
+        case UTF32LE:
+            s = str->toStdString(String::UTF32LE);
+            len = s.length() - 4;
+            break;
+        default:
             return -1;
         }
+
+        Size remain = this->length() - offset;
+        len = len < length ? len : length;
+        len = len < remain ? len : remain;
+        const UByte* data = reinterpret_cast<const UByte*>(s.c_str());
+        for (Size i = 0; i < len; i++) {
+            setUInt8(i + offset, data[i]);
+        }
+        return len;
     }
 
     virtual Value slice(Size begin, Size end) const {
@@ -120,24 +166,34 @@ class BufferImpl : public Buffer {
         if (start > end || start > size) return String::null();
         if (start == end) return String::create();
 
+        Buffer::Ptr buf;
+        const void* dp;
+        Size len;
         if (start == 0 && end == size) {
-            switch (enc) {
-            case UTF8:
-                return String::create(data(), String::UTF8);
-            default:
-                break;
-            }
+            dp = data();
+            len = size;
+        } else {
+            buf = Buffer::create(end - start);
+            this->copy(buf, 0, start, end);
+            dp = buf->data();
+            len = buf->length();
         }
 
-        Buffer::Ptr buf = Buffer::create(end - start);
-        this->copy(buf, 0, start, end);
         switch (enc) {
         case UTF8:
-            return String::create(buf->data(), String::UTF8);
+            return String::create(dp, String::UTF8);
+        case UTF16BE:
+            return String::create(dp, String::UTF16BE);
+        case UTF16LE:
+            return String::create(dp, String::UTF16LE);
+        case UTF32BE:
+            return String::create(dp, String::UTF32BE);
+        case UTF32LE:
+            return String::create(dp, String::UTF32LE);
         case BASE64:
-            return util::base64Encode(buf);
+            return util::base64Encode(dp, len);
         case HEX:
-            return util::hexEncode(buf);
+            return util::hexEncode(dp, len);
         default:
             return String::null();
         }
