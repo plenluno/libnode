@@ -38,7 +38,7 @@ class ServerImpl : public Server {
 
     static void onRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf) {
         SocketImpl* sock = static_cast<SocketImpl*>(stream->data);
-        if (nread >= 0) {
+        if (nread > 0) {
             Buffer::Ptr buffer = Buffer::create(buf.base, nread);
             JsArray::Ptr args = JsArray::create();
             if (sock->hasEncoding()) {
@@ -47,9 +47,15 @@ class ServerImpl : public Server {
                 args->add(buffer);
             }
             sock->emit(EVENT_DATA, args);
-        } else {
+        } else if (nread < 0) {
             uv_err_t err = uv_last_error(uv_default_loop());
-            sock->destroy(Error::valueOf(err.code));
+            if (err.code == UV_EOF) {
+                sock->stopReading();
+                sock->emit(EVENT_END, JsArray::create());
+                if (!sock->writable()) sock->destroy();
+            } else {
+                sock->destroy(Error::valueOf(err.code));
+            }
         }
         free(buf.base);
     }

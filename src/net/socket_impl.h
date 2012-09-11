@@ -245,11 +245,7 @@ class SocketImpl : public Socket {
 
         unsetFlag(WRITABLE);
         setFlag(DESTROY_SOON);
-        if (pendingWriteReqs_) {
-            return true;
-        } else {
-            return destroy();
-        }
+        return destroy();
     }
 
     Boolean readable() const {
@@ -258,6 +254,14 @@ class SocketImpl : public Socket {
 
     Boolean writable() const {
         return hasFlag(WRITABLE);
+    }
+
+    void stopReading() {
+        unsetFlag(READABLE);
+    }
+
+    void stopWriting() {
+        unsetFlag(WRITABLE);
     }
 
     Boolean hasEncoding() const {
@@ -375,17 +379,15 @@ class SocketImpl : public Socket {
     uv_tcp_t* tcp_;
     Buffer::Encoding enc_;
     EventEmitter::Ptr ee_;
-    UInt pendingWriteReqs_;
 
     SocketImpl()
         : flags_(0)
         , tcp_(new uv_tcp_t)
         , enc_(Buffer::NONE)
-        , ee_(events::EventEmitter::create())
-        , pendingWriteReqs_(0) {
+        , ee_(events::EventEmitter::create()) {
         uv_tcp_init(uv_default_loop(), tcp_);
         tcp_->data = this;
-        // setFlag(READABLE);
+        setFlag(READABLE);
         setFlag(WRITABLE);
     }
 
