@@ -291,16 +291,17 @@ class ServerImpl : public Server {
             } else {
                 args->add(chunk);
             }
-            context->request->emit(ServerRequest::EVENT_DATA, args);
+            request->emit(ServerRequest::EVENT_DATA, args);
         }
         return 0;
     }
 
     static int onMessageComplete(http_parser* parser) {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
-        if (context->request) {
+        ServerRequestImpl::Ptr request = context->request;
+        if (request) {
             JsArray::Ptr args = JsArray::create();
-            context->request->emit(ServerRequest::EVENT_END, args);
+            request->emit(ServerRequest::EVENT_END, args);
         }
         return 0;
     }
