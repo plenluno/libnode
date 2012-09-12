@@ -187,14 +187,16 @@ static char hexCharFromValue(unsigned int value) {
 
 static Size percentEncode(
     char* encoded,
-    size_t encodedLength,
-    const char* source) {
+    Size encodedLength,
+    const char* source,
+    Size sourceLength) {
     if (!encoded || !source) return 0;
 
-    const char* start = encoded;
+    const char* encodedStart = encoded;
+    const char* sourceEnd = source + sourceLength;
     char temp;
     encodedLength--;
-    while (*source && encodedLength) {
+    while (source < sourceEnd && encodedLength) {
         temp = *source;
         if ((ASCII_ALPHA1_START <= temp && temp <= ASCII_ALPHA1_END)
             || (ASCII_ALPHA2_START <= temp && temp <= ASCII_ALPHA2_END)
@@ -216,12 +218,12 @@ static Size percentEncode(
         encodedLength--;
     }
     *encoded = '\0';
-    return encoded - start;
+    return encoded - encodedStart;
 }
 
 static Size percentDecode(
     char* decoded,
-    size_t decodedLength,
+    Size decodedLength,
     const char* source) {
     if (!decoded || !source) return 0;
 
@@ -250,11 +252,29 @@ String::CPtr percentEncode(String::CPtr str, String::Encoding enc) {
     if (!str || str->length() == 0)
         return String::create();
 
-    // only UTF8 temporarily
-    Buffer::Ptr buf = Buffer::create(str, Buffer::UTF8);
-    Size len = buf->length() * 3 + 1;
-    char* encoded = new char[len];
-    percentEncode(encoded, len, static_cast<const char*>(buf->data()));
+    Buffer::Ptr buf;
+    switch (enc) {
+    case String::UTF8:
+        buf = Buffer::create(str, Buffer::UTF8);
+        break;
+    case String::UTF16BE:
+        buf = Buffer::create(str, Buffer::UTF16BE);
+        break;
+    case String::UTF16LE:
+        buf = Buffer::create(str, Buffer::UTF16LE);
+        break;
+    case String::UTF32BE:
+        buf = Buffer::create(str, Buffer::UTF32BE);
+        break;
+    case String::UTF32LE:
+        buf = Buffer::create(str, Buffer::UTF32LE);
+        break;
+    }
+    Size sourceLen = buf->length();
+    const char* source = static_cast<const char*>(buf->data());
+    Size encodedLen = sourceLen * 3 + 1;
+    char* encoded = new char[encodedLen];
+    percentEncode(encoded, encodedLen, source, sourceLen);
     String::CPtr res = String::create(encoded);
     delete [] encoded;
     return res;
