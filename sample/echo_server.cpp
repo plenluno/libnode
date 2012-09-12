@@ -116,18 +116,16 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
         req->on(http::ServerRequest::EVENT_CLOSE, onClose);
         res->on(http::ServerResponse::EVENT_CLOSE, onClose);
 
-        console::log(
-            String::create("method: ")->concat(req->method()));
-        console::log(
-            String::create("url: ")->concat(req->url()));
-        console::log(
-            String::create("version: HTTP/")->concat(req->httpVersion()));
-        console::log(
-            String::create("address: ")->concat(
-                json::stringify(req->connection()->address())));
-        console::log(
-            String::create("remote address: ")->concat(
-                req->connection()->remoteAddress()));
+        console::write("method: ");
+        console::log(req->method());
+        console::write("url: ");
+        console::log(req->url());
+        console::write("version: HTTP/");
+        console::log(req->httpVersion());
+        console::write("address: ");
+        console::log(json::stringify(req->connection()->address()));
+        console::write("remote address: ");
+        console::log(req->connection()->remoteAddress());
         return Status::OK;
     }
 };
