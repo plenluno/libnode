@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef SRC_FS_STATS_IMPL_H_
-#define SRC_FS_STATS_IMPL_H_
+#ifndef LIBNODE_SRC_FS_STATS_IMPL_H_
+#define LIBNODE_SRC_FS_STATS_IMPL_H_
 
 #include "libnode/fs/stats.h"
 
@@ -28,4 +28,4 @@ class StatsImpl : public Stats {
 }  // namespace node
 }  // namespace libj
 
-#endif  // SRC_FS_STATS_IMPL_H_
+#endif  // LIBNODE_SRC_FS_STATS_IMPL_H_

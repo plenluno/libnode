@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef SRC_HTTP_SERVER_RESPONSE_IMPL_H_
-#define SRC_HTTP_SERVER_RESPONSE_IMPL_H_
+#ifndef LIBNODE_SRC_HTTP_SERVER_RESPONSE_IMPL_H_
+#define LIBNODE_SRC_HTTP_SERVER_RESPONSE_IMPL_H_
 
 #include <libj/string_buffer.h>
 #include <string.h>
@@ -257,4 +257,4 @@ class ServerResponseImpl : public ServerResponse {
 }  // namespace node
 }  // namespace libj
 
-#endif  // SRC_HTTP_SERVER_RESPONSE_IMPL_H_
+#endif  // LIBNODE_SRC_HTTP_SERVER_RESPONSE_IMPL_H_

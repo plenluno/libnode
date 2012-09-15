@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef SRC_NET_SOCKET_IMPL_H_
-#define SRC_NET_SOCKET_IMPL_H_
+#ifndef LIBNODE_SRC_NET_SOCKET_IMPL_H_
+#define LIBNODE_SRC_NET_SOCKET_IMPL_H_
 
 #include <assert.h>
 #include <uv.h>
@@ -403,4 +403,4 @@ class SocketImpl : public Socket {
 }  // namespace node
 }  // namespace libj
 
-#endif  // SRC_NET_SOCKET_IMPL_H_
+#endif  // LIBNODE_SRC_NET_SOCKET_IMPL_H_

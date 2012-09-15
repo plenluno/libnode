@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef SRC_NET_SERVER_IMPL_H_
-#define SRC_NET_SERVER_IMPL_H_
+#ifndef LIBNODE_SRC_NET_SERVER_IMPL_H_
+#define LIBNODE_SRC_NET_SERVER_IMPL_H_
 
 #include "libnode/net/server.h"
 #include "./socket_impl.h"
@@ -114,4 +114,4 @@ class ServerImpl : public Server {
 }  // namespace node
 }  // namespace libj
 
-#endif  // SRC_NET_SERVER_IMPL_H_
+#endif  // LIBNODE_SRC_NET_SERVER_IMPL_H_
