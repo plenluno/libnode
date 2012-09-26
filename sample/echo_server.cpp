@@ -73,7 +73,7 @@ class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
     Value operator()(JsArray::Ptr args) {
         req_->put(String::create("body"), onData_->getBody());
         res_->setHeader(
-            String::create("Content-Type"),
+            http::ServerResponse::HEADER_CONTENT_TYPE,
             String::create("text/plain"));
         res_->write(json::stringify(req_));
         Send::Ptr send(new Send(srv_, req_, res_));

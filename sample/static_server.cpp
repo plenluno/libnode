@@ -20,11 +20,11 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
     Value operator()(JsArray::Ptr args) {
         Buffer::CPtr content = toCPtr<Buffer>(args->get(1));
         res_->setHeader(
-            String::create("Content-Type"),
+            http::ServerResponse::HEADER_CONTENT_TYPE,
             String::create("text/plain"));
         if (content) {
             res_->setHeader(
-                String::create("Content-Length"),
+                http::ServerResponse::HEADER_CONTENT_LENGTH,
                 String::valueOf(content->length()));
             res_->write(content);
         } else {
