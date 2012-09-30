@@ -10,14 +10,14 @@ namespace libj {
 namespace node {
 
 Value setTimeout(
-	JsFunction::Ptr callback,
-	Int delay,
-	JsArray::Ptr args = JsArray::null());
+    JsFunction::Ptr callback,
+    Int delay,
+    JsArray::Ptr args = JsArray::null());
 
 Value setInterval(
-	JsFunction::Ptr callback,
-	Int delay,
-	JsArray::Ptr args = JsArray::null());
+    JsFunction::Ptr callback,
+    Int delay,
+    JsArray::Ptr args = JsArray::null());
 
 void clearTimeout(Value timeoutId);
 
