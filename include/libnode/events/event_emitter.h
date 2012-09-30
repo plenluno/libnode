@@ -28,8 +28,9 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
         String::CPtr event, JsFunction::CPtr listener) = 0;
     virtual void removeAllListeners() = 0;
     virtual void removeAllListeners(String::CPtr event) = 0;
-    virtual void emit(String::CPtr event, JsArray::Ptr args) = 0;
     virtual JsArray::Ptr listeners(String::CPtr event) = 0;
+    virtual void emit(
+        String::CPtr event, JsArray::Ptr args = JsArray::null()) = 0;
 };
 
 #define LIBNODE_EVENT_EMITTER(T) \
@@ -57,11 +58,11 @@ public: \
     void removeAllListeners(String::CPtr event) { \
         EE->removeAllListeners(event); \
     } \
-    void emit(String::CPtr event, JsArray::Ptr args) { \
-        EE->emit(event, args); \
-    } \
     JsArray::Ptr listeners(String::CPtr event) { \
         return EE->listeners(event); \
+    } \
+    void emit(String::CPtr event, JsArray::Ptr args = JsArray::null()) { \
+        EE->emit(event, args); \
     }
 
 }  // namespace events

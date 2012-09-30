@@ -364,7 +364,7 @@ class SocketImpl : public Socket {
         socket->active();
 
         if (callback) {
-            (*callback)(JsArray::create());
+            (*callback)();
         }
     }
 
@@ -389,7 +389,7 @@ class SocketImpl : public Socket {
         OnTimeout(SocketImpl* self) : self_(self) {}
 
         Value operator()(JsArray::Ptr args) {
-            self_->emit(EVENT_TIMEOUT, JsArray::create());
+            self_->emit(EVENT_TIMEOUT);
             return Status::OK;
         }
     };
@@ -402,7 +402,7 @@ class SocketImpl : public Socket {
         if (hasTimer()) finishTimer();
 
         JsFunction::Ptr onTimeout(new OnTimeout(this));
-        timer_ = node::setTimeout(onTimeout, timeout, JsArray::create());
+        timer_ = node::setTimeout(onTimeout, timeout);
         timeout_ = timeout;
     }
 

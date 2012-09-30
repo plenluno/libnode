@@ -68,7 +68,7 @@ class ServerImpl : public Server {
         }
 
         Value operator()(JsArray::Ptr args) {
-            server_->emit(EVENT_CLOSE, JsArray::create());
+            server_->emit(EVENT_CLOSE);
             return libj::Status::OK;
         }
 
@@ -177,9 +177,8 @@ class ServerImpl : public Server {
 
         Value operator()(JsArray::Ptr args) {
             if (context_) {
-                JsArray::Ptr noArgs = JsArray::create();
-                context_->request->emit(ServerRequest::EVENT_CLOSE, noArgs);
-                context_->response->emit(ServerResponse::EVENT_CLOSE, noArgs);
+                context_->request->emit(ServerRequest::EVENT_CLOSE);
+                context_->response->emit(ServerResponse::EVENT_CLOSE);
                 delete context_;
                 context_ = NULL;
             }
@@ -300,8 +299,7 @@ class ServerImpl : public Server {
         ServerContext* context = static_cast<ServerContext*>(parser->data);
         ServerRequestImpl::Ptr request = context->request;
         if (request) {
-            JsArray::Ptr args = JsArray::create();
-            request->emit(ServerRequest::EVENT_END, args);
+            request->emit(ServerRequest::EVENT_END);
         }
         return 0;
     }

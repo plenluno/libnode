@@ -13,7 +13,8 @@ static JsArray::Ptr results = JsArray::create();
 class Add : LIBJ_JS_FUNCTION(Add)
  public:
     Value operator()(JsArray::Ptr args) {
-        if (args->size() == 2 &&
+        if (args &&
+            args->size() == 2 &&
             args->get(0).type() == Type<Int>::id() &&
             args->get(1).type() == Type<Int>::id()) {
             int x, y;
@@ -23,7 +24,9 @@ class Add : LIBJ_JS_FUNCTION(Add)
             results->add(res);
             return res;
         } else {
-            return Error::create(Error::ILLEGAL_ARGUMENT);
+            Value res = Error::create(Error::ILLEGAL_ARGUMENT);
+            results->add(res);
+            return res;
         }
     }
 
@@ -36,7 +39,8 @@ class Add : LIBJ_JS_FUNCTION(Add)
 class Sub : LIBJ_JS_FUNCTION(Sub)
  public:
     Value operator()(JsArray::Ptr args) {
-        if (args->size() == 2 &&
+        if (args &&
+            args->size() == 2 &&
             args->get(0).type() == Type<Int>::id() &&
             args->get(1).type() == Type<Int>::id()) {
             int x, y;
@@ -46,7 +50,9 @@ class Sub : LIBJ_JS_FUNCTION(Sub)
             results->add(res);
             return res;
         } else {
-            return Error::create(Error::ILLEGAL_ARGUMENT);
+            Value res = Error::create(Error::ILLEGAL_ARGUMENT);
+            results->add(res);
+            return res;
         }
     }
 
@@ -88,6 +94,7 @@ TEST(GTestEventEmitter, TestEmit) {
     ee->on(event, add);
     ee->on(event, sub);
 
+    results->clear();
     JsArray::Ptr args = JsArray::create();
     args->add(5);
     args->add(3);
@@ -100,6 +107,10 @@ TEST(GTestEventEmitter, TestEmit) {
     to<Int>(v1, &i1);
     ASSERT_EQ(8, i0);
     ASSERT_EQ(2, i1);
+
+    ee->emit(event);
+    results->get(2).instanceof(Type<Error>::id());
+    results->get(3).instanceof(Type<Error>::id());
 }
 
 TEST(GTestEventEmitter, TestRemoveListener) {

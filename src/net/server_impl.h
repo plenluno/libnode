@@ -52,7 +52,7 @@ class ServerImpl : public Server {
             uv_err_t err = uv_last_error(uv_default_loop());
             if (err.code == UV_EOF) {
                 sock->stopReading();
-                sock->emit(EVENT_END, JsArray::create());
+                sock->emit(EVENT_END);
                 if (!sock->writable()) sock->destroy();
             } else {
                 sock->destroy(Error::valueOf(err.code));
@@ -63,7 +63,7 @@ class ServerImpl : public Server {
 
     static void onClose(uv_handle_t* handle) {
         ServerImpl* srv = static_cast<ServerImpl*>(handle->data);
-        srv->emit(EVENT_CLOSE, JsArray::create());
+        srv->emit(EVENT_CLOSE);
     }
 
     uv_tcp_t* getUvTcp() {
@@ -82,8 +82,7 @@ class ServerImpl : public Server {
                         backlog,
                         onConnection);
         if (isOpen_) {
-            JsArray::Ptr args = JsArray::create();
-            emit(EVENT_LISTENING, args);
+            emit(EVENT_LISTENING);
         }
         return isOpen_;
     }

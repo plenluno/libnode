@@ -64,7 +64,7 @@ class EventEmitterImpl : public EventEmitter {
             a = toPtr<JsArray>(v);
         }
         a->add(listener);
-        emit(EVENT_NEW_LISTENER, JsArray::create());
+        emit(EVENT_NEW_LISTENER);
     }
 
     void removeListener(String::CPtr event, JsFunction::CPtr listener) {
@@ -96,7 +96,7 @@ class EventEmitterImpl : public EventEmitter {
         listeners_->remove(event);
     }
 
-    void emit(String::CPtr event, JsArray::Ptr args) {
+    void emit(String::CPtr event, JsArray::Ptr args = JsArray::null()) {
         JsArray::Ptr a = listeners(event);
         Size i = 0;
         while (i < a->size()) {
