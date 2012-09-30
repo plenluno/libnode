@@ -38,6 +38,7 @@ class ServerImpl : public Server {
 
     static void onRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf) {
         SocketImpl* sock = static_cast<SocketImpl*>(stream->data);
+        sock->active();
         if (nread > 0) {
             Buffer::Ptr buffer = Buffer::create(buf.base, nread);
             JsArray::Ptr args = JsArray::create();

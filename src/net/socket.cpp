@@ -7,6 +7,7 @@ namespace node {
 namespace net {
 
 const String::CPtr Socket::EVENT_CONNECT = String::create("connect");
+const String::CPtr Socket::EVENT_TIMEOUT = String::create("timeout");
 
 Socket::Ptr Socket::create() {
     return SocketImpl::create();

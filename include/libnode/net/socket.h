@@ -26,6 +26,9 @@ class Socket : LIBNODE_DUPLEX_STREAM(Socket)
     virtual Boolean setNoDelay(Boolean noDelay = true) = 0;
     virtual Boolean setKeepAlive(
         Boolean enable = false, Int initialDelay = 0) = 0;
+    virtual Boolean setTimeout(
+        Int timeout,
+        JsFunction::Ptr callback = JsFunction::null()) = 0;
 };
 
 #define LIBNODE_SOCKET(T) \
@@ -50,6 +53,11 @@ public: \
     virtual Boolean setKeepAlive( \
         Boolean enable = false, Int initialDelay = 0) { \
         return S->setKeepAlive(enable, initialDelay); \
+    } \
+    virtual Boolean setTimeout( \
+        Int timeout, \
+        JsFunction::Ptr callback = JsFunction::null()) { \
+        return S->setTimeout(timeout, callback); \
     }
 
 }  // namespace net

@@ -10,6 +10,7 @@
 
 #include "libnode/error.h"
 #include "libnode/net/socket.h"
+#include "libnode/timer.h"
 
 namespace libj {
 namespace node {
@@ -171,6 +172,30 @@ class SocketImpl : public Socket {
         }
     }
 
+    Boolean setTimeout(Int timeout, JsFunction::Ptr callback) {
+        if (timeout < 0) return false;
+
+        if (timeout) {
+            startTimer(timeout);
+            if (callback) {
+                once(EVENT_TIMEOUT, callback);
+            }
+        } else {
+            finishTimer();
+            if (callback) {
+                removeListener(EVENT_TIMEOUT, callback);
+            }
+        }
+        return true;
+    }
+
+    void active() {
+        if (hasTimer()) {
+            finishTimer();
+            startTimer(timeout_);
+        }
+    }
+
     Boolean write(Buffer::CPtr buf) {
         return write(buf, JsFunction::null());
     }
@@ -188,6 +213,7 @@ class SocketImpl : public Socket {
     Boolean write(Buffer::CPtr buf, JsFunction::Ptr cb) {
         if (!tcp_) return false;
 
+        active();
         SocketWriteContext* context = new SocketWriteContext(this);
         context->buffer = buf;
         context->callback = cb;
@@ -335,6 +361,8 @@ class SocketImpl : public Socket {
             return;
         }
 
+        socket->active();
+
         if (callback) {
             (*callback)(JsArray::create());
         }
@@ -350,6 +378,38 @@ class SocketImpl : public Socket {
         if (!socket->hasFlag(DESTROYED) && !socket->hasFlag(READABLE)) {
             socket->destroy();
         }
+    }
+
+ private:
+    class OnTimeout : LIBJ_JS_FUNCTION(OnTimeout)
+     private:
+        SocketImpl* self_;
+
+     public:
+        OnTimeout(SocketImpl* self) : self_(self) {}
+
+        Value operator()(JsArray::Ptr args) {
+            self_->emit(EVENT_TIMEOUT, JsArray::create());
+            return Status::OK;
+        }
+    };
+
+    Boolean hasTimer() {
+        return !timer_.isEmpty();
+    }
+
+    void startTimer(Int timeout) {
+        if (hasTimer()) finishTimer();
+
+        JsFunction::Ptr onTimeout(new OnTimeout(this));
+        timer_ = node::setTimeout(onTimeout, timeout, JsArray::create());
+        timeout_ = timeout;
+    }
+
+    void finishTimer() {
+        clearTimeout(timer_);
+        timer_ = NO_VALUE;
+        timeout_ = 0;
     }
 
  private:
@@ -377,12 +437,16 @@ class SocketImpl : public Socket {
  private:
     UInt flags_;
     uv_tcp_t* tcp_;
+    Value timer_;
+    Int timeout_;
     Buffer::Encoding enc_;
     EventEmitter::Ptr ee_;
 
     SocketImpl()
         : flags_(0)
         , tcp_(new uv_tcp_t)
+        , timer_(NO_VALUE)
+        , timeout_(0)
         , enc_(Buffer::NONE)
         , ee_(events::EventEmitter::create()) {
         uv_tcp_init(uv_default_loop(), tcp_);
