@@ -232,9 +232,9 @@ static Size percentDecode(
     while (*source && decodedLength) {
         if (*source == '%') {
             if (*(source + 1) == '\0') break;
-            *(decoded++) =
+            *(decoded++) = static_cast<char>(
                 (valueFromHexChar(*(source + 1)) << 4) +
-                 valueFromHexChar(*(source + 2));
+                 valueFromHexChar(*(source + 2)));
             source += 3;
         } else if (*source == '+') {
             *(decoded++) = ' ';
