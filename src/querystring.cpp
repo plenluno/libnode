@@ -2,7 +2,6 @@
 
 #include <assert.h>
 #include <libj/js_array.h>
-#include <libj/undefined.h>
 #include <libj/string_buffer.h>
 
 #include "libnode/querystring.h"
@@ -13,11 +12,10 @@ namespace node {
 namespace querystring {
 
 static String::CPtr toString(Value val) {
-    if (val.isEmpty() ||
+    if (val.isUndefined() ||
         val.equals(Object::null()) ||
         val.instanceof(Type<JsArray>::id()) ||
-        val.instanceof(Type<JsObject>::id()) ||
-        val.instanceof(Type<Undefined>::id())) {
+        val.instanceof(Type<JsObject>::id())) {
         return String::create();
     } else {
         return util::percentEncode(String::valueOf(val));

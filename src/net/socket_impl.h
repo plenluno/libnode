@@ -395,7 +395,7 @@ class SocketImpl : public Socket {
     };
 
     Boolean hasTimer() {
-        return !timer_.isEmpty();
+        return !timer_.isUndefined();
     }
 
     void startTimer(Int timeout) {
@@ -408,7 +408,7 @@ class SocketImpl : public Socket {
 
     void finishTimer() {
         clearTimeout(timer_);
-        timer_ = NO_VALUE;
+        timer_ = UNDEFINED;
         timeout_ = 0;
     }
 
@@ -445,7 +445,7 @@ class SocketImpl : public Socket {
     SocketImpl()
         : flags_(0)
         , tcp_(new uv_tcp_t)
-        , timer_(NO_VALUE)
+        , timer_(UNDEFINED)
         , timeout_(0)
         , enc_(Buffer::NONE)
         , ee_(events::EventEmitter::create()) {

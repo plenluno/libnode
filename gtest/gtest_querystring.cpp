@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 #include <libj/json.h>
 #include <libj/js_array.h>
-#include <libj/undefined.h>
 #include <libnode/querystring.h>
 
 namespace libj {
@@ -73,7 +72,7 @@ TEST(GTestQueryString, TestStringify) {
     ASSERT_TRUE(query->equals(String::create("a=")));
 
     obj = JsObject::create();
-    obj->put(String::create("a"), Undefined::instance());
+    obj->put(String::create("a"), UNDEFINED);
     query = querystring::stringify(obj);
     ASSERT_TRUE(query->equals(String::create("a=")));
 
@@ -91,7 +90,7 @@ TEST(GTestQueryString, TestStringify) {
     JsArray::Ptr ary = JsArray::create();
     ary->add(String::create("xyz"));
     ary->add(123);
-    obj->put(Undefined::instance(), ary);
+    obj->put(UNDEFINED, ary);
     query = querystring::stringify(obj);
     ASSERT_TRUE(query->equals(
         String::create("undefined=xyz&undefined=123")));

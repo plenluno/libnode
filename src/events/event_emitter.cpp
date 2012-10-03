@@ -56,7 +56,7 @@ class EventEmitterImpl : public EventEmitter {
     void addListener(String::CPtr event, JsFunction::Ptr listener) {
         JsArray::Ptr a;
         Value v = listeners_->get(event);
-        if (v.isEmpty()) {
+        if (v.isUndefined()) {
             a = JsArray::create();
             listeners_->put(event, a);
         } else {
@@ -108,7 +108,7 @@ class EventEmitterImpl : public EventEmitter {
 
     JsArray::Ptr listeners(String::CPtr event) {
         Value v = listeners_->get(event);
-        if (v.isEmpty()) {
+        if (v.isUndefined()) {
             JsArray::Ptr a = JsArray::create();
             listeners_->put(event, a);
             return a;
