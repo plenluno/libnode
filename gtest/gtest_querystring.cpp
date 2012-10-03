@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 #include <libj/json.h>
 #include <libj/js_array.h>
-#include <libj/null.h>
 #include <libj/undefined.h>
 #include <libnode/querystring.h>
 
@@ -69,7 +68,7 @@ TEST(GTestQueryString, TestStringify) {
     ASSERT_TRUE(query->equals(String::create()));
 
     obj = JsObject::create();
-    obj->put(String::create("a"), Null::instance());
+    obj->put(String::create("a"), Object::null());
     query = querystring::stringify(obj);
     ASSERT_TRUE(query->equals(String::create("a=")));
 
@@ -84,7 +83,7 @@ TEST(GTestQueryString, TestStringify) {
     ASSERT_TRUE(query->equals(String::create("=")));
 
     obj = JsObject::create();
-    obj->put(Null::instance(), Null::instance());
+    obj->put(Object::null(), Object::null());
     query = querystring::stringify(obj);
     ASSERT_TRUE(query->equals(String::create("null=")));
 

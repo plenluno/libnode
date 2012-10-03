@@ -1,6 +1,5 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include <libj/null.h>
 #include <libj/status.h>
 
 #include "libnode/events/event_emitter.h"
@@ -57,7 +56,7 @@ class EventEmitterImpl : public EventEmitter {
     void addListener(String::CPtr event, JsFunction::Ptr listener) {
         JsArray::Ptr a;
         Value v = listeners_->get(event);
-        if (v.instanceof(Type<Null>::id())) {
+        if (v.isEmpty()) {
             a = JsArray::create();
             listeners_->put(event, a);
         } else {
@@ -109,7 +108,7 @@ class EventEmitterImpl : public EventEmitter {
 
     JsArray::Ptr listeners(String::CPtr event) {
         Value v = listeners_->get(event);
-        if (v.instanceof(Type<Null>::id())) {
+        if (v.isEmpty()) {
             JsArray::Ptr a = JsArray::create();
             listeners_->put(event, a);
             return a;
