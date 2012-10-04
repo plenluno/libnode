@@ -53,6 +53,8 @@ class ServerRequest : LIBNODE_READABLE_STREAM(ServerRequest)
     static const String::CPtr HEADER_TE;
     static const String::CPtr HEADER_USER_AGENT;
 
+    static const String::CPtr HEADER_COOKIE;
+
     static const String::CPtr HEADER_ORIGIN;
     static const String::CPtr HEADER_ACCESS_CONTROL_REQUEST_METHOD;
     static const String::CPtr HEADER_ACCESS_CONTROL_REQUEST_HEADERS;

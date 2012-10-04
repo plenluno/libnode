@@ -50,6 +50,7 @@ namespace http {
     GEN(HEADER_REFERER, "referer") \
     GEN(HEADER_TE, "te") \
     GEN(HEADER_USER_AGENT, "user-agent") \
+    GEN(HEADER_COOKIE, "cookie") \
     GEN(HEADER_ORIGIN, "origin") \
     GEN(HEADER_ACCESS_CONTROL_REQUEST_METHOD, \
         "access-control-request-method") \

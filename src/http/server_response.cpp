@@ -41,6 +41,7 @@ namespace http {
     GEN(HEADER_SERVER, "Server") \
     GEN(HEADER_VARY, "Vary") \
     GEN(HEADER_WWW_AUTHENTICATE, "WWW-Authenticate") \
+    GEN(HEADER_SET_COOKIE, "Set-Cookie") \
     GEN(HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, \
         "Access-Control-Allow-Origin") \
     GEN(HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, \

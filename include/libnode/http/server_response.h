@@ -42,6 +42,8 @@ class ServerResponse : LIBNODE_WRITABLE_STREAM(ServerResponse)
     static const String::CPtr HEADER_VARY;
     static const String::CPtr HEADER_WWW_AUTHENTICATE;
 
+    static const String::CPtr HEADER_SET_COOKIE;
+
     static const String::CPtr HEADER_ACCESS_CONTROL_ALLOW_ORIGIN;
     static const String::CPtr HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS;
     static const String::CPtr HEADER_ACCESS_CONTROL_EXPOSE_HEADERS;
