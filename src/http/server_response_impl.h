@@ -186,8 +186,11 @@ class ServerResponseImpl : public ServerResponse {
         static const String::CPtr ws = String::create(" ");
         static const String::CPtr nl = String::create("\r\n");
         static const String::CPtr colon = String::create(": ");
+        static const String::CPtr close = String::create("close");
 
         if (hasFlag(HEADER_MADE)) return;
+
+        setHeader(HEADER_CONNECTION, close);
 
         StringBuffer::Ptr header = StringBuffer::create();
         header->append(http11);
