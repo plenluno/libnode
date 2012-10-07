@@ -12,6 +12,7 @@ class StringDecoder : LIBJ_JS_OBJECT(StringDecoder)
  public:
     static Ptr create(Buffer::Encoding enc = Buffer::UTF8);
 
+    virtual Buffer::Encoding encoding() const = 0;
     virtual String::CPtr write(Buffer::CPtr buf) const = 0;
 };
 

@@ -13,6 +13,10 @@ class StringDecoderImpl : public StringDecoder {
         return p;
     }
 
+    Buffer::Encoding encoding() const {
+        return enc_;
+    }
+
     String::CPtr write(Buffer::CPtr buf) const {
         if (buf)
             return buf->toString(enc_);
