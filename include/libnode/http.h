@@ -3,6 +3,7 @@
 #ifndef LIBNODE_HTTP_H_
 #define LIBNODE_HTTP_H_
 
+#include "libnode/http/header.h"
 #include "libnode/http/server.h"
 #include "libnode/http/server_request.h"
 #include "libnode/http/server_response.h"

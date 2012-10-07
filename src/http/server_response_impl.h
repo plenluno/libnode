@@ -9,8 +9,8 @@
 #include <list>
 #include <string>
 
-#include "libnode/http/server_response.h"
-#include "libnode/http/status.h"
+#include "libnode/http.h"
+
 #include "../net/socket_impl.h"
 
 namespace libj {

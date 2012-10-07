@@ -4,6 +4,8 @@
 #define LIBNODE_SRC_HTTP_SERVER_REQUEST_IMPL_H_
 
 #include "libnode/http/server_request.h"
+
+#include "./incoming_message.h"
 #include "../net/socket_impl.h"
 
 namespace libj {
@@ -11,12 +13,6 @@ namespace node {
 namespace http {
 
 class ServerRequestImpl : public ServerRequest {
- private:
-    static const String::CPtr METHOD;
-    static const String::CPtr URL;
-    static const String::CPtr HEADERS;
-    static const String::CPtr HTTP_VERSION;
-
  public:
     typedef LIBJ_PTR(ServerRequestImpl) Ptr;
     typedef LIBJ_CPTR(ServerRequestImpl) CPtr;
@@ -26,109 +22,15 @@ class ServerRequestImpl : public ServerRequest {
         return p;
     }
 
-    String::CPtr method() const {
-        return getCPtr<String>(METHOD);
-    }
-
-    String::CPtr url() const {
-        return getCPtr<String>(URL);
-    }
-
-    JsObject::CPtr headers() const {
-        return getCPtr<JsObject>(HEADERS);
-    }
-
-    String::CPtr httpVersion() const {
-        return getCPtr<String>(HTTP_VERSION);
-    }
-
-    net::Socket::Ptr connection() const {
-        return socket_;
-    }
-
-    void setMethod(String::CPtr method) {
-        put(METHOD, method);
-    }
-
-    void setUrl(String::CPtr url) {
-        put(URL, url);
-    }
-
-    void setHeader(String::CPtr name, String::CPtr value) {
-        JsObject::Ptr headers = getPtr<JsObject>(HEADERS);
-        if (!headers) {
-            headers = JsObject::create();
-            put(HEADERS, headers);
-        }
-        headers->put(name->toLowerCase(), value);
-    }
-
-    String::CPtr getHeader(String::CPtr name) const {
-        JsObject::Ptr headers = getPtr<JsObject>(HEADERS);
-        if (headers) {
-            return headers->getCPtr<String>(name);
-        } else {
-            return String::null();
-        }
-    }
-
-    void setHttpVersion(String::CPtr httpVersion) {
-        put(HTTP_VERSION, httpVersion);
-    }
-
-    Boolean destroy() {
-        if (socket_) {
-            return socket_->destroy();
-        } else {
-            return false;
-        }
-    }
-
-    Boolean readable() const {
-        if (socket_) {
-            return socket_->readable();
-        } else {
-            return false;
-        }
-    }
-
-    Boolean hasEncoding() const {
-        return enc_ != Buffer::NONE;
-    }
-
-    Buffer::Encoding getEncoding() const {
-        return enc_;
-    }
-
-    Boolean setEncoding(Buffer::Encoding enc) {
-        switch (enc) {
-        case Buffer::UTF8:
-        case Buffer::UTF16BE:
-        case Buffer::UTF16LE:
-        case Buffer::UTF32BE:
-        case Buffer::UTF32LE:
-        case Buffer::HEX:
-        case Buffer::NONE:
-            enc_ = enc;
-            return true;
-        default:
-            return false;
-        }
-    }
-
  private:
-    net::SocketImpl::Ptr socket_;
-    Buffer::Encoding enc_;
-    EventEmitter::Ptr ee_;
+    IncomingMessage::Ptr im_;
 
  public:
     ServerRequestImpl(net::SocketImpl::Ptr sock)
-        : socket_(sock)
-        , enc_(Buffer::NONE)
-        , ee_(EventEmitter::create()) {
+        : im_(IncomingMessage::create(sock)) {
     }
 
-    LIBNODE_EVENT_EMITTER_IMPL(ee_);
+    LIBNODE_HTTP_INCOMING_MESSAGE_IMPL(im_);
 };
 
 }  // namespace http

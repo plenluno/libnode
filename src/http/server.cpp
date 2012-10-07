@@ -14,6 +14,18 @@ namespace libj {
 namespace node {
 namespace http {
 
+class ParserContext {
+ public:
+    ParserContext()
+        : url(String::create())
+        , headers(JsArray::create()) {}
+
+    http_parser parser;
+    String::CPtr url;
+    JsArray::Ptr headers;
+    IncomingMessage::Ptr incoming;
+};
+
 class ServerImpl;
 
 class ServerContext {

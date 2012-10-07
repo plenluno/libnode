@@ -21,6 +21,16 @@ class ReadableStream : LIBNODE_STREAM(ReadableStream)
 #define LIBNODE_READABLE_STREAM(T) public libj::node::ReadableStream { \
     LIBJ_MUTABLE_DEFS(T, libj::node::ReadableStream)
 
+#define LIBNODE_READABLE_STREAM_IMPL(S) \
+    LIBNODE_STREAM_IMPL(S); \
+public: \
+    virtual Boolean readable() const { \
+        return S->readable(); \
+    } \
+    virtual Boolean setEncoding(Buffer::Encoding enc) { \
+        return S->setEncoding(enc); \
+    }
+
 }  // namespace node
 }  // namespace libj
 

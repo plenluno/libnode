@@ -37,14 +37,15 @@ set(libnode-src
     src/fs.cpp
     src/fs/stats.cpp
     src/http.cpp
+    src/http/header.cpp
     src/http/server.cpp
-    src/http/server_request.cpp
     src/http/server_response.cpp
     src/http/status.cpp
     src/net/server.cpp
     src/net/socket.cpp
     src/node.cpp
     src/path.cpp
+    src/process.cpp
     src/querystring.cpp
     src/stream.cpp
     src/string_decoder.cpp
