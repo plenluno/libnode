@@ -12,8 +12,7 @@ namespace fs {
 class StatsImpl : public Stats {
  public:
     static Ptr create() {
-        Ptr p(new StatsImpl());
-        return p;
+        return Ptr(new StatsImpl());
     }
 
  private:

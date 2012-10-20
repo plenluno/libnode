@@ -18,8 +18,7 @@ class ServerRequestImpl : public ServerRequest {
     typedef LIBJ_CPTR(ServerRequestImpl) CPtr;
 
     static Ptr create(net::SocketImpl::Ptr sock) {
-        Ptr p(new ServerRequestImpl(sock));
-        return p;
+        return Ptr(new ServerRequestImpl(sock));
     }
 
  private:
