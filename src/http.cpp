@@ -11,9 +11,9 @@ Server::Ptr createServer() {
 }
 
 Server::Ptr createServer(JsFunction::Ptr requestListener) {
-    Server::Ptr p = Server::create();
-    p->on(Server::EVENT_REQUEST, requestListener);
-    return p;
+    Server::Ptr srv = Server::create();
+    srv->on(Server::EVENT_REQUEST, requestListener);
+    return srv;
 }
 
 }  // namespace http
