@@ -33,6 +33,8 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
 
     static Ptr concat(JsArray::CPtr list, Size total = NO_SIZE);
 
+    virtual Ptr concat(CPtr other) = 0;
+
     virtual Int write(
         String::CPtr str,
         Size offset = 0,

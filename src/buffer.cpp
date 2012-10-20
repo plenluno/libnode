@@ -78,6 +78,16 @@ class BufferImpl : public Buffer {
         }
     }
 
+    Ptr concat(CPtr other) {
+        if (!other) return null();
+
+        Size length = this->length();
+        Buffer::Ptr buf = Buffer::create(length + other->length());
+        this->copy(buf, 0);
+        other->copy(buf, length);
+        return buf;
+    }
+
     Int write(
         String::CPtr str, Size offset, Size length, Encoding enc) {
         if (!str || offset > this->length()) {
@@ -131,9 +141,9 @@ class BufferImpl : public Buffer {
 
     virtual Size copy(
         Ptr target,
-        Size targetStart,
-        Size sourceStart,
-        Size sourceEnd) const {
+        Size targetStart = 0,
+        Size sourceStart = 0,
+        Size sourceEnd = NO_POS) const {
         if (!target) return 0;
 
         if (sourceEnd > length())

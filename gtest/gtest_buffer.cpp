@@ -80,6 +80,13 @@ TEST(GTestBuffer, TestConcat) {
     ASSERT_TRUE(str->equals(String::create("abcxy")));
 }
 
+TEST(GTestBuffer, TestConcat2) {
+    Buffer::Ptr buf1 = Buffer::create("abc", 3);
+    Buffer::Ptr buf2 = Buffer::create("xyz", 3);
+    Buffer::Ptr buf = buf1->concat(buf2);
+    ASSERT_TRUE(buf->toString()->equals(String::create("abcxyz")));
+}
+
 TEST(GTestBuffer, TestWriteRead) {
     Buffer::Ptr buf = Buffer::create(2);
     Byte wb = 15;
