@@ -115,6 +115,8 @@ class ServerResponseImpl : public ServerResponse {
         if (!buf) {
             String::CPtr str = toCPtr<String>(data);
             if (str) {
+                if (enc == Buffer::NONE)
+                    enc = Buffer::UTF8;
                 buf = Buffer::create(str, enc);
             } else {
                 return false;
