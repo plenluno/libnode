@@ -12,32 +12,31 @@ namespace node {
 class BufferImpl : public Buffer {
  public:
     static Ptr create(Size length) {
-        Ptr p(new BufferImpl(length));
-        return p;
+        return Ptr(new BufferImpl(length));
     }
 
     static Ptr create(const void* data, Size length) {
         if (!data) return null();
 
-        Ptr p(new BufferImpl(length));
+        BufferImpl* buf(new BufferImpl(length));
         const UByte* d = static_cast<const UByte*>(data);
         for (Size i = 0; i < length; i++)
-            p->setUInt8(i, d[i]);
-        return p;
+            buf->setUInt8(i, d[i]);
+        return Ptr(buf);
     }
 
     static Ptr create(JsTypedArray<UByte>::CPtr array) {
         if (!array) return null();
 
         Size length = array->length();
-        Ptr p(new BufferImpl(length));
+        BufferImpl* buf(new BufferImpl(length));
         for (Size i = 0; i < length; i++) {
             Value v = array->get(i);
             UByte b;
             to<UByte>(v, &b);
-            p->setUInt8(i, b);
+            buf->setUInt8(i, b);
         }
-        return p;
+        return Ptr(buf);
     }
 
     static Ptr create(String::CPtr str, Encoding enc) {
@@ -127,8 +126,7 @@ class BufferImpl : public Buffer {
     virtual Value slice(Size begin, Size end) const {
         Value val = buffer_->slice(begin, end);
         JsArrayBuffer::Ptr buf = toPtr<JsArrayBuffer>(val);
-        Ptr p(new BufferImpl(buf));
-        return p;
+        return Ptr(new BufferImpl(buf));
     }
 
     virtual Size copy(

@@ -14,8 +14,7 @@ namespace crypto {
 class HashImpl : public Hash {
  public:
     static Ptr create(Algorithm algo) {
-        Ptr p(new HashImpl(algo));
-        return p;
+        return Ptr(new HashImpl(algo));
     }
 
     Boolean update(Buffer::CPtr buf) {

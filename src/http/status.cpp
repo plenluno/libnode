@@ -77,8 +77,7 @@ class StatusImpl : public Status {
         default:
             return null();
         }
-        CPtr p(new StatusImpl(code, msg));
-        return p;
+        return CPtr(new StatusImpl(code, msg));
     }
 
     static CPtr create(Int code, String::CPtr msg) {
@@ -88,8 +87,7 @@ class StatusImpl : public Status {
         default:
             return null();
         }
-        CPtr p(new StatusImpl(code, msg));
-        return p;
+        return CPtr(new StatusImpl(code, msg));
     }
 
     LIBJ_STATUS_IMPL(status_);

@@ -38,8 +38,7 @@ class ErrorImpl : public Error {
         default:
             return null();
         }
-        CPtr p(new ErrorImpl(code, msg));
-        return p;
+        return CPtr(new ErrorImpl(code, msg));
     }
 
     static CPtr create(Int code, String::CPtr msg) {
@@ -49,8 +48,7 @@ class ErrorImpl : public Error {
         default:
             return null();
         }
-        CPtr p(new ErrorImpl(code, msg));
-        return p;
+        return CPtr(new ErrorImpl(code, msg));
     }
 
     LIBJ_STATUS_IMPL(status_);
