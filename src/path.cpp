@@ -12,8 +12,8 @@ namespace path {
 
 String::CPtr normalize(String::CPtr path) {
     static const String::CPtr empty = String::create();
-    static const String::CPtr current = String::create(".");
-    static const String::CPtr parent = String::create("..");
+    static const String::CPtr current = String::intern(".");
+    static const String::CPtr parent = String::intern("..");
 
     if (!path) return empty;
 
@@ -72,7 +72,7 @@ String::CPtr normalize(String::CPtr path) {
 }
 
 String::CPtr join(JsArray::CPtr paths) {
-    static const String::CPtr current = String::create(".");
+    static const String::CPtr current = String::intern(".");
 
     if (!paths) return current;
 
@@ -127,7 +127,7 @@ String::CPtr relative(String::CPtr from, String::CPtr to) {
 }
 
 String::CPtr dirname(String::CPtr path) {
-    static const String::CPtr current = String::create(".");
+    static const String::CPtr current = String::intern(".");
 
     if (!path) return current;
 
@@ -193,7 +193,7 @@ String::CPtr extname(String::CPtr path) {
 }
 
 String::CPtr sep() {
-    static const String::CPtr separator = String::create("/");
+    static const String::CPtr separator = String::intern("/");
     return separator;
 }
 

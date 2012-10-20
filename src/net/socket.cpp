@@ -6,8 +6,8 @@ namespace libj {
 namespace node {
 namespace net {
 
-const String::CPtr Socket::EVENT_CONNECT = String::create("connect");
-const String::CPtr Socket::EVENT_TIMEOUT = String::create("timeout");
+const String::CPtr Socket::EVENT_CONNECT = String::intern("connect");
+const String::CPtr Socket::EVENT_TIMEOUT = String::intern("timeout");
 
 Socket::Ptr Socket::create() {
     return SocketImpl::create();

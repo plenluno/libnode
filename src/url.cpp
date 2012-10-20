@@ -8,17 +8,17 @@ namespace libj {
 namespace node {
 namespace url {
 
-const String::CPtr HREF = String::create("href");
-const String::CPtr PROTOCOL = String::create("protocol");
-const String::CPtr HOST = String::create("host");
-const String::CPtr AUTH = String::create("auth");
-const String::CPtr HOSTNAME = String::create("hostname");
-const String::CPtr PORT = String::create("port");
-const String::CPtr PATHNAME = String::create("pathname");
-const String::CPtr SEARCH = String::create("search");
-const String::CPtr PATH = String::create("path");
-const String::CPtr QUERY = String::create("query");
-const String::CPtr HASH = String::create("hash");
+const String::CPtr HREF = String::intern("href");
+const String::CPtr PROTOCOL = String::intern("protocol");
+const String::CPtr HOST = String::intern("host");
+const String::CPtr AUTH = String::intern("auth");
+const String::CPtr HOSTNAME = String::intern("hostname");
+const String::CPtr PORT = String::intern("port");
+const String::CPtr PATHNAME = String::intern("pathname");
+const String::CPtr SEARCH = String::intern("search");
+const String::CPtr PATH = String::intern("path");
+const String::CPtr QUERY = String::intern("query");
+const String::CPtr HASH = String::intern("hash");
 
 JsObject::Ptr parse(String::CPtr urlStr) {
     static const String::CPtr colon = String::create(":");

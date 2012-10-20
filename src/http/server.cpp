@@ -319,11 +319,11 @@ class ServerImpl : public Server {
 http_parser_settings ServerImpl::settings = {};
 String::CPtr ServerImpl::headerName = String::null();
 
-const String::CPtr Server::IN_ADDR_ANY = String::create("0.0.0.0");
-const String::CPtr Server::EVENT_REQUEST = String::create("request");
-const String::CPtr Server::EVENT_CONNECTION = String::create("connection");
-const String::CPtr Server::EVENT_CLOSE = String::create("close");
-const String::CPtr Server::EVENT_UPGRADE = String::create("upgrade");
+const String::CPtr Server::IN_ADDR_ANY = String::intern("0.0.0.0");
+const String::CPtr Server::EVENT_REQUEST = String::intern("request");
+const String::CPtr Server::EVENT_CONNECTION = String::intern("connection");
+const String::CPtr Server::EVENT_CLOSE = String::intern("close");
+const String::CPtr Server::EVENT_UPGRADE = String::intern("upgrade");
 
 Server::Ptr Server::create() {
     return ServerImpl::create();

@@ -7,9 +7,9 @@ namespace node {
 namespace http {
 
 const String::CPtr ServerResponseImpl::HEADERS =
-    String::create("headers");
+    String::intern("headers");
 const String::CPtr ServerResponseImpl::STATUS_CODE =
-    String::create("statusCode");
+    String::intern("statusCode");
 
 }  // namespace http
 }  // namespace node

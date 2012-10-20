@@ -130,7 +130,7 @@ class EventEmitterImpl : public EventEmitter {
 };
 
 const String::CPtr EventEmitter::EVENT_NEW_LISTENER =
-    String::create("newListener");
+    String::intern("newListener");
 
 EventEmitter::Ptr EventEmitter::create() {
     return EventEmitterImpl::create();
