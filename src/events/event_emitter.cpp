@@ -16,8 +16,7 @@ class EventEmitterImpl : public EventEmitter {
             String::CPtr event,
             JsFunction::Ptr listener,
             EventEmitterImpl* ee) {
-            Ptr p(new Once(event, listener, ee));
-            return p;
+            return Ptr(new Once(event, listener, ee));
         }
 
         Value operator()(JsArray::Ptr args) {
@@ -118,8 +117,7 @@ class EventEmitterImpl : public EventEmitter {
     }
 
     static Ptr create() {
-        Ptr p(new EventEmitterImpl());
-        return p;
+        return Ptr(new EventEmitterImpl());
     }
 
  private:

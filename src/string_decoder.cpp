@@ -9,8 +9,7 @@ namespace node {
 class StringDecoderImpl : public StringDecoder {
  public:
     static Ptr create(Buffer::Encoding enc) {
-        Ptr p(new StringDecoderImpl(enc));
-        return p;
+        return Ptr(new StringDecoderImpl(enc));
     }
 
     Buffer::Encoding encoding() const {
