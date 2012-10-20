@@ -13,8 +13,7 @@ namespace net {
 class ServerImpl : public Server {
  public:
     static Ptr create() {
-        Ptr p(new ServerImpl());
-        return p;
+        return Ptr(new ServerImpl());
     }
 
     static void onConnection(uv_stream_t* stream, int status) {
@@ -24,9 +23,7 @@ class ServerImpl : public Server {
         if (uv_accept(stream, tcp))
             return;
         uv_read_start(tcp, onAlloc, onRead);
-        JsArray::Ptr args = JsArray::create();
-        args->add(socket);
-        srv->emit(EVENT_CONNECTION, args);
+        srv->emit(EVENT_CONNECTION, socket);
     }
 
     static uv_buf_t onAlloc(uv_handle_t* handle, size_t suggestedSize) {

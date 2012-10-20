@@ -154,14 +154,10 @@ class IncomingMessage : LIBNODE_READABLE_STREAM(IncomingMessage)
         if (decoder_) {
             String::CPtr str = decoder_->write(buf);
             if (!str->isEmpty()) {
-                JsArray::Ptr args = JsArray::create();
-                args->add(str);
-                emit(EVENT_DATA, args);
+                emit(EVENT_DATA, str);
             }
         } else {
-            JsArray::Ptr args = JsArray::create();
-            args->add(buf);
-            emit(EVENT_DATA, args);
+            emit(EVENT_DATA, buf);
         }
     }
 

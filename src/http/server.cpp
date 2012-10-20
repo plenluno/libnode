@@ -48,8 +48,7 @@ class ServerContext {
 class ServerImpl : public Server {
  public:
     static Ptr create() {
-        Ptr p(new ServerImpl());
-        return p;
+        return Ptr(new ServerImpl());
     }
 
     Boolean listen(Int port, String::CPtr hostName, Int backlog) {
@@ -75,8 +74,7 @@ class ServerImpl : public Server {
     class OnServerClose : LIBJ_JS_FUNCTION(OnServerClose)
      public:
         static Ptr create(ServerImpl* srv) {
-            Ptr p(new OnServerClose(srv));
-            return p;
+            return Ptr(new OnServerClose(srv));
         }
 
         Value operator()(JsArray::Ptr args) {
@@ -93,8 +91,7 @@ class ServerImpl : public Server {
     class OnServerListening : LIBJ_JS_FUNCTION(OnServerListening)
      public:
         static Ptr create() {
-            Ptr p(new OnServerListening());
-            return p;
+            return Ptr(new OnServerListening());
         }
 
         Value operator()(JsArray::Ptr args) {
@@ -112,8 +109,7 @@ class ServerImpl : public Server {
     class OnServerConnection : LIBJ_JS_FUNCTION(OnServerConnection)
      public:
         static Ptr create(ServerImpl* srv) {
-            Ptr p(new OnServerConnection(srv));
-            return p;
+            return Ptr(new OnServerConnection(srv));
         }
 
         Value operator()(JsArray::Ptr args) {
@@ -141,8 +137,7 @@ class ServerImpl : public Server {
      public:
         static Ptr create(ServerContext* ctxt) {
             assert(ctxt);
-            Ptr p(new OnSocketData(ctxt));
-            return p;
+            return Ptr(new OnSocketData(ctxt));
         }
 
         Value operator()(JsArray::Ptr args) {
@@ -160,11 +155,9 @@ class ServerImpl : public Server {
                 LIBJ_STATIC_PTR_CAST(net::SocketImpl)(request->connection());
             if (httpParser->upgrade) {
                 socket->removeAllListeners();
-                JsArray::Ptr args = JsArray::create();
-                args->add(request);
-                args->add(socket);
-                args->add(buf->slice(numParsed));
-                context_->server->emit(EVENT_UPGRADE, args);
+                context_->server->emit(
+                    EVENT_UPGRADE,
+                    request, socket, buf->slice(numParsed));
                 delete context_;
             } else if (numParsed < numRead) {  // parse error
                 socket->destroy(
@@ -183,8 +176,7 @@ class ServerImpl : public Server {
      public:
         static Ptr create(ServerContext* ctxt) {
             assert(ctxt);
-            Ptr p(new OnSocketClose(ctxt));
-            return p;
+            return Ptr(new OnSocketClose(ctxt));
         }
 
         Value operator()(JsArray::Ptr args) {
@@ -276,13 +268,10 @@ class ServerImpl : public Server {
         httpVer = httpVer->concat(String::valueOf(minorVer));
         context->request->setHttpVersion(httpVer);
 
-        JsArray::Ptr args = JsArray::create();
         ServerRequest::Ptr req(context->request);
         ServerResponse::Ptr res(context->response);
-        args->add(req);
-        args->add(res);
         assert(context->server);
-        context->server->emit(Server::EVENT_REQUEST, args);
+        context->server->emit(Server::EVENT_REQUEST, req, res);
         return 0;
     }
 
