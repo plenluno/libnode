@@ -1,5 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <libj/status.h>
 #include <libnode/fs.h>
 #include <libnode/http.h>
 #include <libnode/node.h>
@@ -34,7 +35,7 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
             res_->write(status404->message());
         }
         res_->end();
-        return 0;
+        return Status::OK;
     }
 };
 
@@ -50,7 +51,7 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
         fs::readFile(
             root->concat(toCPtr<String>(url->get(url::PATHNAME))),
             onRead);
-        return 0;
+        return Status::OK;
     }
 };
 

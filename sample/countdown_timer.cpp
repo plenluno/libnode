@@ -1,6 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <libj/console.h>
+#include <libj/status.h>
 #include <libj/string.h>
 #include <libnode/node.h>
 #include <libnode/timer.h>
@@ -30,7 +31,7 @@ class OnInterval : LIBJ_JS_FUNCTION(OnInterval)
         } else {
             clearInterval(id_);
         }
-        return 0;
+        return Status::OK;
     }
 };
 
