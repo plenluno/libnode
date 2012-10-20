@@ -22,10 +22,9 @@ class DuplexStream : LIBNODE_STREAM(DuplexStream)
 
     // WritableStream
     virtual Boolean writable() const = 0;
-    virtual Boolean write(Buffer::CPtr buf) = 0;
     virtual Boolean write(
-        String::CPtr str,
-        Buffer::Encoding enc = Buffer::UTF8) = 0;
+        const Value& data,
+        Buffer::Encoding enc = Buffer::NONE) = 0;
     virtual Boolean end() = 0;
 };
 
@@ -44,13 +43,10 @@ public: \
     virtual Boolean writable() const { \
         return S->writable(); \
     } \
-    virtual Boolean write(Buffer::CPtr buf) { \
-        return S->write(buf); \
-    } \
     virtual Boolean write( \
-        String::CPtr str, \
+        const Value& data, \
         Buffer::Encoding enc = Buffer::UTF8) { \
-        return S->write(str, enc); \
+        return S->write(data, enc); \
     } \
     virtual Boolean end() { \
         return S->end(); \

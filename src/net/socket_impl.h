@@ -60,8 +60,7 @@ class SocketImpl : public Socket {
     }
 
     static Ptr create() {
-        Ptr p(new SocketImpl());
-        return p;
+        return Ptr(new SocketImpl());
     }
 
     uv_tcp_t* getUvTcp() { return tcp_; }
@@ -196,13 +195,19 @@ class SocketImpl : public Socket {
         }
     }
 
-    Boolean write(Buffer::CPtr buf) {
-        return write(buf, JsFunction::null());
-    }
+    Boolean write(const Value& data, Buffer::Encoding enc) {
+        String::CPtr str = toCPtr<String>(data);
+        if (str) {
+            Buffer::Ptr buf = Buffer::create(str, enc);
+            return write(buf, JsFunction::null());
+        }
 
-    Boolean write(String::CPtr str, Buffer::Encoding enc) {
-        Buffer::Ptr buf = Buffer::create(str, enc);
-        return write(buf, JsFunction::null());
+        Buffer::CPtr buf = toCPtr<Buffer>(data);
+        if (buf) {
+            return write(buf, JsFunction::null());
+        }
+
+        return false;
     }
 
     Boolean write(String::CPtr str, Buffer::Encoding enc, JsFunction::Ptr cb) {
@@ -339,10 +344,7 @@ class SocketImpl : public Socket {
         assert(socket && socket->tcp_);
         delete socket->tcp_;
         socket->tcp_ = NULL;
-
-        JsArray::Ptr args = JsArray::create();
-        args->add(socket->hasFlag(HAD_ERROR));
-        socket->emit(Socket::EVENT_CLOSE, args);
+        socket->emit(Socket::EVENT_CLOSE, socket->hasFlag(HAD_ERROR));
     }
 
     static void afterWrite(uv_write_t* write, int status) {

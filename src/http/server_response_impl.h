@@ -27,8 +27,7 @@ class ServerResponseImpl : public ServerResponse {
         static Ptr create(
             ServerResponseImpl* res,
             net::SocketImpl::Ptr sock) {
-            Ptr p(new SocketEnd(res, sock));
-            return p;
+            return Ptr(new SocketEnd(res, sock));
         }
 
         Value operator()(JsArray::Ptr args) {
@@ -53,8 +52,7 @@ class ServerResponseImpl : public ServerResponse {
     typedef LIBJ_CPTR(ServerResponseImpl) CPtr;
 
     static Ptr create(net::SocketImpl::Ptr sock) {
-        Ptr p(new ServerResponseImpl(sock));
-        return p;
+        return Ptr(new ServerResponseImpl(sock));
     }
 
     Boolean writeHead(Int statusCode) {
@@ -112,18 +110,23 @@ class ServerResponseImpl : public ServerResponse {
         getHeaders()->remove(name);
     }
 
-    Boolean write(Buffer::CPtr buf) {
+    Boolean write(const Value& data, Buffer::Encoding enc) {
+        Buffer::CPtr buf = toCPtr<Buffer>(data);
+        if (!buf) {
+            String::CPtr str = toCPtr<String>(data);
+            if (str) {
+                buf = Buffer::create(str, enc);
+            } else {
+                return false;
+            }
+        }
+
         if (hasFlag(FINISHED))
             return false;
         if (!hasFlag(HEADER_SENT))
             makeHeader();
         output_->add(buf);
         return flush(JsFunction::null());
-    }
-
-    Boolean write(String::CPtr str, Buffer::Encoding enc) {
-        Buffer::Ptr buf = Buffer::create(str, enc);
-        return write(buf);
     }
 
     Boolean end() {
