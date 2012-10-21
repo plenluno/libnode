@@ -78,7 +78,7 @@ class BufferImpl : public Buffer {
         }
     }
 
-    Ptr concat(CPtr other) {
+    Ptr concat(CPtr other) const {
         if (!other) return null();
 
         Size length = this->length();

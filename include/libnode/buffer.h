@@ -28,12 +28,10 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
     static Ptr create(String::CPtr str, Encoding enc = UTF8);
 
     static Boolean isBuffer(const Value& val);
-
     static Size byteLength(String::CPtr str, Encoding enc = UTF8);
-
     static Ptr concat(JsArray::CPtr list, Size total = NO_SIZE);
 
-    virtual Ptr concat(CPtr other) = 0;
+    virtual Ptr concat(CPtr other) const = 0;
 
     virtual Int write(
         String::CPtr str,
