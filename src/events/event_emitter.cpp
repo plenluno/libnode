@@ -57,7 +57,7 @@ class EventEmitterImpl : public EventEmitter {
         Value v = listeners_->get(event);
         if (v.isUndefined()) {
             a = JsArray::create();
-            listeners_->put(event, a);
+            listeners_->put(String::intern(event), a);
         } else {
             a = toPtr<JsArray>(v);
         }
