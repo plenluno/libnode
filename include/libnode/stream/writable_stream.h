@@ -18,12 +18,34 @@ class WritableStream : LIBNODE_STREAM(WritableStream)
     virtual Boolean write(
         const Value& data,
         Buffer::Encoding enc = Buffer::NONE) = 0;
-    virtual Boolean end() = 0;
+    virtual Boolean end(
+        const Value& data = UNDEFINED,
+        Buffer::Encoding enc = Buffer::NONE) = 0;
     virtual Boolean destroySoon() = 0;
 };
 
 #define LIBNODE_WRITABLE_STREAM(T) public libj::node::WritableStream { \
     LIBJ_MUTABLE_DEFS(T, libj::node::WritableStream)
+
+#define LIBNODE_WRITABLE_STREAM_IMPL(S) \
+    LIBNODE_STREAM_IMPL(S); \
+public: \
+    virtual Boolean writable() const { \
+        return S->writable(); \
+    } \
+    virtual Boolean write( \
+        const Value& data, \
+        Buffer::Encoding enc = Buffer::NONE) { \
+        return S->write(data, enc); \
+    } \
+    virtual Boolean end( \
+        const Value& data = UNDEFINED, \
+        Buffer::Encoding enc = Buffer::NONE) { \
+        return S->end(data, enc); \
+    } \
+    virtual Boolean destroySoon() { \
+        return S->destroySoon(); \
+    }
 
 }  // namespace node
 }  // namespace libj

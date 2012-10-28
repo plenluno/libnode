@@ -11,13 +11,19 @@ namespace http {
 
 class ServerResponse : LIBNODE_WRITABLE_STREAM(ServerResponse)
  public:
-    virtual Boolean writeHead(Int statusCode) = 0;
-    virtual Boolean writeHead(Int statusCode, String::CPtr reasonPhrase) = 0;
+    virtual void writeHead(
+        Int statusCode,
+        String::CPtr reasonPhrase = String::null(),
+        JsObject::CPtr headers = JsObject::null()) = 0;
     virtual Int statusCode() const = 0;
     virtual void setHeader(String::CPtr name, String::CPtr value) = 0;
     virtual String::CPtr getHeader(String::CPtr name) const = 0;
     virtual void removeHeader(String::CPtr name) = 0;
 };
+
+#define LIBNODE_HTTP_SERVER_RESPONSE(T) \
+    public libj::node::http::ServerResponse { \
+    LIBJ_MUTABLE_DEFS(T, libj::node::http::ServerResponse)
 
 }  // namespace http
 }  // namespace node

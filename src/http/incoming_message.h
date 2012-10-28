@@ -11,13 +11,16 @@
 #include "libnode/stream.h"
 #include "libnode/string_decoder.h"
 
+#include "../flag.h"
 #include "../net/socket_impl.h"
 
 namespace libj {
 namespace node {
 namespace http {
 
-class IncomingMessage : LIBNODE_READABLE_STREAM(IncomingMessage)
+class IncomingMessage
+    : public FlagMixin
+    , LIBNODE_READABLE_STREAM(IncomingMessage)
  public:
     static Ptr create(net::SocketImpl::Ptr sock) {
         if (sock) {
@@ -33,6 +36,10 @@ class IncomingMessage : LIBNODE_READABLE_STREAM(IncomingMessage)
 
     net::Socket::Ptr connection() const {
         return socket_;
+    }
+
+    Int statusCode() const {
+        return statusCode_;
     }
 
     String::CPtr httpVersion() const {
@@ -64,6 +71,10 @@ class IncomingMessage : LIBNODE_READABLE_STREAM(IncomingMessage)
     }
 
  public:
+    void setStatusCode(Int statusCode) {
+        statusCode_ = statusCode;
+    }
+
     void setHttpVersion(String::CPtr httpVersion) {
         httpVersion_ = httpVersion;
     }
@@ -76,7 +87,7 @@ class IncomingMessage : LIBNODE_READABLE_STREAM(IncomingMessage)
         headers_->put(name->toLowerCase(), value);
     }
 
-    void addHeader(String::CPtr name, String::CPtr value) {
+    void addHeaderLine(String::CPtr name, String::CPtr value) {
         static const String::CPtr comma = String::create(", ");
         static const String::CPtr extPrefix = String::create("x-");
         static Set::Ptr commaSeparated = Set::null();
@@ -150,7 +161,7 @@ class IncomingMessage : LIBNODE_READABLE_STREAM(IncomingMessage)
         }
     }
 
-    void emitData(Buffer::Ptr buf) {
+    void emitData(Buffer::CPtr buf) {
         if (decoder_) {
             String::CPtr str = decoder_->write(buf);
             if (!str->isEmpty()) {
@@ -169,24 +180,13 @@ class IncomingMessage : LIBNODE_READABLE_STREAM(IncomingMessage)
     }
 
  public:
-    enum Flag {
+    typedef enum {
         COMPLETE    = 1 << 0,
         READABLE    = 1 << 1,
         PAUSED      = 1 << 2,
         END_EMITTED = 1 << 3,
-    };
-
-    void setFlag(Flag flag) {
-        flags_ |= flag;
-    }
-
-    void unsetFlag(Flag flag) {
-        flags_ &= ~flag;
-    }
-
-    Boolean hasFlag(Flag flag) const {
-        return flags_ & flag;
-    }
+        UPGRADE     = 1 << 4,
+    } Flag;
 
  private:
     class EmitPending : LIBJ_JS_FUNCTION(EmitPending)
@@ -229,7 +229,7 @@ class IncomingMessage : LIBNODE_READABLE_STREAM(IncomingMessage)
 
  private:
     net::SocketImpl::Ptr socket_;
-    UInt flags_;
+    Int statusCode_;
     String::CPtr httpVersion_;
     JsObject::Ptr headers_;
     JsObject::Ptr trailers_;
@@ -241,7 +241,7 @@ class IncomingMessage : LIBNODE_READABLE_STREAM(IncomingMessage)
 
     IncomingMessage(net::SocketImpl::Ptr sock)
         : socket_(sock)
-        , flags_(0)
+        , statusCode_(0)
         , httpVersion_(String::null())
         , headers_(JsObject::create())
         , trailers_(JsObject::create())
@@ -265,6 +265,9 @@ public: \
     net::Socket::Ptr connection() const { \
         return I->connection(); \
     } \
+    Int statusCode() const { \
+        return I->statusCode(); \
+    } \
     String::CPtr httpVersion() const { \
         return I->httpVersion(); \
     } \
@@ -286,6 +289,9 @@ public: \
     void setHeader(String::CPtr name, String::CPtr value) { \
         I->setHeader(name, value); \
     } \
+    void addHeaderLine(String::CPtr name, String::CPtr value) { \
+        I->addHeaderLine(name, value); \
+    } \
     void setUrl(String::CPtr url) { \
         I->setUrl(url); \
     } \
@@ -297,15 +303,6 @@ public: \
     } \
     Buffer::Encoding getEncoding() const { \
         return I->getEncoding(); \
-    } \
-    void setFlag(IncomingMessage::Flag flag) { \
-        I->setFlag(flag); \
-    } \
-    void unsetFlag(IncomingMessage::Flag flag) { \
-        I->unsetFlag(flag); \
-    } \
-    Boolean hasFlag(IncomingMessage::Flag flag) const { \
-        return I->hasFlag(flag); \
     }
 
 }  // namespace http

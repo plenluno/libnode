@@ -19,6 +19,10 @@ class ServerRequest : LIBNODE_READABLE_STREAM(ServerRequest)
     virtual net::Socket::Ptr connection() const = 0;
 };
 
+#define LIBNODE_HTTP_SERVER_REQUEST(T) \
+    public libj::node::http::ServerRequest { \
+    LIBJ_MUTABLE_DEFS(T, libj::node::http::ServerRequest)
+
 }  // namespace http
 }  // namespace node
 }  // namespace libj

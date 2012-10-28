@@ -12,24 +12,21 @@ namespace libj {
 namespace node {
 namespace http {
 
-class ServerRequestImpl : public ServerRequest {
+class ServerRequestImpl : LIBNODE_HTTP_SERVER_REQUEST(ServerRequestImpl)
  public:
-    typedef LIBJ_PTR(ServerRequestImpl) Ptr;
-    typedef LIBJ_CPTR(ServerRequestImpl) CPtr;
-
     static Ptr create(net::SocketImpl::Ptr sock) {
         return Ptr(new ServerRequestImpl(sock));
     }
 
  private:
-    IncomingMessage::Ptr im_;
+    IncomingMessage::Ptr msg_;
 
  public:
     ServerRequestImpl(net::SocketImpl::Ptr sock)
-        : im_(IncomingMessage::create(sock)) {
+        : msg_(IncomingMessage::create(sock)) {
     }
 
-    LIBNODE_HTTP_INCOMING_MESSAGE_IMPL(im_);
+    LIBNODE_HTTP_INCOMING_MESSAGE_IMPL(msg_);
 };
 
 }  // namespace http

@@ -11,13 +11,18 @@ TEST(GTestHttpStatus, TestCreate) {
     Status::CPtr s = Status::create(Status::OK);
     ASSERT_TRUE(s);
     s = Status::create(libj::Status::OK);
-    ASSERT_FALSE(s);
+    ASSERT_TRUE(s);
 }
 
 TEST(GTestHttpStatus, TestMessage) {
-    String::CPtr notFound = String::create("Not Found");
+    String::CPtr strNotFound = String::create("Not Found");
+    String::CPtr strUnknown = String::create("Unknown");
+
     Status::CPtr s = Status::create(Status::NOT_FOUND);
-    ASSERT_TRUE(s->message()->equals(notFound));
+    ASSERT_TRUE(s->message()->equals(strNotFound));
+
+    s = Status::create(libj::Status::OK);
+    ASSERT_TRUE(s->message()->equals(strUnknown));
 }
 
 TEST(GTestHttpStatus, TestMessage2) {
@@ -27,9 +32,9 @@ TEST(GTestHttpStatus, TestMessage2) {
 }
 
 TEST(GTestHttpStatus, TestToString) {
-    String::CPtr notFound = String::create("Not Found");
+    String::CPtr strNotFound = String::create("Not Found");
     Status::CPtr s = Status::create(Status::NOT_FOUND);
-    ASSERT_TRUE(s->toString()->equals(notFound));
+    ASSERT_TRUE(s->toString()->equals(strNotFound));
 }
 
 TEST(GTestHttpStatus, TestInstanceOf) {

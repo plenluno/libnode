@@ -11,9 +11,17 @@
 #include "libnode/error.h"
 #include "libnode/net/socket.h"
 #include "libnode/timer.h"
+#include "../flag.h"
 
 namespace libj {
 namespace node {
+
+namespace http {
+
+class OutcomingMessage;
+
+}  // namespace http
+
 namespace net {
 
 class SocketImpl;
@@ -50,15 +58,8 @@ class SocketShutdownContext {
     }
 };
 
-class SocketImpl : public Socket {
+class SocketImpl : LIBNODE_NET_SOCKET(SocketImpl)
  public:
-    typedef LIBJ_PTR(SocketImpl) Ptr;
-
-    Boolean instanceof(libj::TypeId id) const {
-        return id == libj::Type<SocketImpl>::id()
-            || Socket::instanceof(id);
-    }
-
     static Ptr create() {
         return Ptr(new SocketImpl());
     }
@@ -240,7 +241,9 @@ class SocketImpl : public Socket {
         return true;
     }
 
-    Boolean end() {
+    Boolean end(
+        const Value& data = UNDEFINED,
+        Buffer::Encoding enc = Buffer::NONE) {
         if (!hasFlag(WRITABLE)) {
             return false;
         } else {
@@ -317,6 +320,14 @@ class SocketImpl : public Socket {
         default:
             return false;
         }
+    }
+
+    http::OutcomingMessage* getHttpMessage() const {
+        return message_;
+    }
+
+    void setHttpMessage(http::OutcomingMessage* msg) {
+        message_ = msg;
     }
 
  private:
@@ -424,17 +435,7 @@ class SocketImpl : public Socket {
         HAD_ERROR       = 1 << 5,
     };
 
-    void setFlag(Flag flag) {
-        flags_ |= flag;
-    }
-
-    void unsetFlag(Flag flag) {
-        flags_ &= ~flag;
-    }
-
-    Boolean hasFlag(Flag flag) const {
-        return flags_ & flag;
-    }
+    LIBNODE_FLAG_METHODS(Flag, flags_);
 
  private:
     UInt flags_;
@@ -442,6 +443,7 @@ class SocketImpl : public Socket {
     Value timer_;
     Int timeout_;
     Buffer::Encoding enc_;
+    http::OutcomingMessage* message_;
     EventEmitter::Ptr ee_;
 
     SocketImpl()
@@ -450,6 +452,7 @@ class SocketImpl : public Socket {
         , timer_(UNDEFINED)
         , timeout_(0)
         , enc_(Buffer::NONE)
+        , message_(0)
         , ee_(events::EventEmitter::create()) {
         uv_tcp_init(uv_default_loop(), tcp_);
         tcp_->data = this;

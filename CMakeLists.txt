@@ -39,7 +39,6 @@ set(libnode-src
     src/http.cpp
     src/http/header.cpp
     src/http/server.cpp
-    src/http/server_response.cpp
     src/http/status.cpp
     src/net/server.cpp
     src/net/socket.cpp

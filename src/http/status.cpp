@@ -48,9 +48,6 @@ namespace http {
     GEN(GATEWAY_TIMEOUT, "Gateway Timeout") \
     GEN(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported")
 
-#define LIBNODE_HTTP_STATUS_CASE_GEN(NAME, MESSAGE) \
-    case NAME:
-
 #define LIBNODE_HTTP_STATUS_MSG_DECL_GEN(NAME, MESSAGE) \
     static const String::CPtr MSG_##NAME;
 
@@ -70,22 +67,15 @@ class StatusImpl : public Status {
         : status_(libj::Status::create(code, msg)) {}
 
  public:
-    static CPtr create(Int code) {
-        String::CPtr msg;
-        switch (code) {
-            LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_CASE_GEN)
-        default:
-            return null();
-        }
-        return CPtr(new StatusImpl(code, msg));
-    }
-
     static CPtr create(Int code, String::CPtr msg) {
-        switch (code) {
-            LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_CASE_GEN)
-            break;
-        default:
-            return null();
+        static const String::CPtr strUnknown = String::intern("Unknown");
+
+        if (!msg) {
+            switch (code) {
+                LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_CASE_GEN);
+            default:
+                msg = strUnknown;
+            }
         }
         return CPtr(new StatusImpl(code, msg));
     }
@@ -97,10 +87,6 @@ class StatusImpl : public Status {
     const String::CPtr StatusImpl::MSG_##NAME = String::create(MESSAGE);
 
 LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_DEF_GEN)
-
-Status::CPtr Status::create(Int code) {
-    return StatusImpl::create(code);
-}
 
 Status::CPtr Status::create(Int code, String::CPtr msg) {
     return StatusImpl::create(code, msg);

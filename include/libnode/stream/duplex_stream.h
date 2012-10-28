@@ -25,7 +25,10 @@ class DuplexStream : LIBNODE_STREAM(DuplexStream)
     virtual Boolean write(
         const Value& data,
         Buffer::Encoding enc = Buffer::NONE) = 0;
-    virtual Boolean end() = 0;
+    virtual Boolean end(
+        const Value& data = UNDEFINED,
+        Buffer::Encoding enc = Buffer::NONE) = 0;
+    virtual Boolean destroySoon() = 0;
 };
 
 #define LIBNODE_DUPLEX_STREAM(T) public libj::node::DuplexStream { \
@@ -45,11 +48,16 @@ public: \
     } \
     virtual Boolean write( \
         const Value& data, \
-        Buffer::Encoding enc = Buffer::UTF8) { \
+        Buffer::Encoding enc = Buffer::NONE) { \
         return S->write(data, enc); \
     } \
-    virtual Boolean end() { \
-        return S->end(); \
+    virtual Boolean end( \
+        const Value& data = UNDEFINED, \
+        Buffer::Encoding enc = Buffer::NONE) { \
+        return S->end(data, enc); \
+    } \
+    virtual Boolean destroySoon() { \
+        return S->destroySoon(); \
     }
 
 }  // namespace node

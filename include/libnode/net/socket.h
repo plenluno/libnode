@@ -31,11 +31,11 @@ class Socket : LIBNODE_DUPLEX_STREAM(Socket)
         JsFunction::Ptr callback = JsFunction::null()) = 0;
 };
 
-#define LIBNODE_SOCKET(T) \
+#define LIBNODE_NET_SOCKET(T) \
     public libj::node::net::Socket { \
     LIBJ_MUTABLE_DEFS(T, libj::node::net::Socket)
 
-#define LIBNODE_SOCKET_IMPL(S) \
+#define LIBNODE_NET_SOCKET_IMPL(S) \
     LIBNODE_DUPLEX_STREAM_IMPL(S); \
 public: \
     virtual JsObject::Ptr address() { \

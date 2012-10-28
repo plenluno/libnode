@@ -59,8 +59,7 @@ class Status : LIBJ_STATUS(Status)
         LIBNODE_HTTP_STATUS_MAP(LIBNODE_HTTP_STATUS_GEN)
     };
 
-    static CPtr create(Int code);
-    static CPtr create(Int code, String::CPtr msg);
+    static CPtr create(Int code, String::CPtr msg = String::null());
 };
 
 }  // namespace http

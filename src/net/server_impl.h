@@ -104,7 +104,7 @@ class ServerImpl : public Server {
         tcp->data = this;
     }
 
-    LIBNODE_SOCKET_IMPL(sock_);
+    LIBNODE_NET_SOCKET_IMPL(sock_);
 };
 
 }  // namespace net

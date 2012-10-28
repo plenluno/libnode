@@ -5,6 +5,7 @@
 #include <uv.h>
 
 #include "libnode/http/server.h"
+#include "./parser.h"
 #include "./server_request_impl.h"
 #include "./server_response_impl.h"
 #include "../net/server_impl.h"
@@ -28,6 +29,19 @@ class ParserContext {
 
 class ServerImpl;
 
+class ConnectionContext {
+ public:
+    ConnectionContext(ServerImpl* srv)
+        : server(srv)
+        , outgoing(JsArray::create())
+        , incoming(JsArray::create()) {}
+
+    ServerImpl* server;
+    JsArray::Ptr outgoing;
+    JsArray::Ptr incoming;
+    // Parser parser;
+};
+
 class ServerContext {
  public:
     ServerContext(
@@ -49,23 +63,6 @@ class ServerImpl : public Server {
  public:
     static Ptr create() {
         return Ptr(new ServerImpl());
-    }
-
-    Boolean listen(Int port, String::CPtr hostName, Int backlog) {
-        server_->on(
-            net::Server::EVENT_CLOSE,
-            OnServerClose::create(this));
-        server_->on(
-            net::Server::EVENT_LISTENING,
-            OnServerListening::create());
-        server_->on(
-            net::Server::EVENT_CONNECTION,
-            OnServerConnection::create(this));
-        return server_->listen(port, hostName, backlog);
-    }
-
-    void close() {
-        server_->close();
     }
 
  private:
@@ -112,9 +109,17 @@ class ServerImpl : public Server {
             return Ptr(new OnServerConnection(srv));
         }
 
+        #if 0
+        void httpSocketSetup(net::SocketImpl::Ptr socket) {
+            socket->removeListener(net::Socket::EVENT_DRAIN, xxx);
+            socket->on(net::Socket::EVENT_DRAIN, xxx);
+        }
+        #endif
+
         Value operator()(JsArray::Ptr args) {
             net::SocketImpl::Ptr socket = toPtr<net::SocketImpl>(args->get(0));
             assert(socket);
+
             ServerContext* context = new ServerContext(server_, socket);
             http_parser_init(&context->parser, HTTP_REQUEST);
             socket->on(
@@ -306,24 +311,23 @@ class ServerImpl : public Server {
     }
 
  private:
-    EventEmitter::Ptr ee_;
     net::ServerImpl::Ptr server_;
 
     ServerImpl()
-        : ee_(EventEmitter::create())
-        , server_(net::Server::create()) {}
+        : server_(net::Server::create()) {}
 
-    LIBNODE_EVENT_EMITTER_IMPL(ee_);
+    LIBNODE_NET_SERVER_IMPL(server_);
 };
 
 http_parser_settings ServerImpl::settings = {};
 String::CPtr ServerImpl::headerName = String::null();
 
-const String::CPtr Server::IN_ADDR_ANY = String::intern("0.0.0.0");
 const String::CPtr Server::EVENT_REQUEST = String::intern("request");
-const String::CPtr Server::EVENT_CONNECTION = String::intern("connection");
-const String::CPtr Server::EVENT_CLOSE = String::intern("close");
+const String::CPtr Server::EVENT_CHECK_CONTINUE =
+    String::intern("checkContinue");
+const String::CPtr Server::EVENT_CONNECT = String::intern("connect");
 const String::CPtr Server::EVENT_UPGRADE = String::intern("upgrade");
+const String::CPtr Server::EVENT_CLIENT_ERROR = String::intern("clientError");
 
 Server::Ptr Server::create() {
     return ServerImpl::create();
