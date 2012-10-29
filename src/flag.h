@@ -3,30 +3,6 @@
 #ifndef LIBNODE_SRC_FLAG_H_
 #define LIBNODE_SRC_FLAG_H_
 
-#define LIBNODE_FLAG_METHODS(T, V) \
-public: \
-    void setFlag(T flag) { \
-        V |= flag; \
-    } \
-    void unsetFlag(T flag) { \
-        V &= ~flag; \
-    } \
-    Boolean hasFlag(T flag) const { \
-        return V & flag; \
-    }
-
-#define LIBNODE_FLAG_IMPL(T, V) \
-public: \
-    void setFlag(T::Flag flag) { \
-        V->setFlag(flag); \
-    } \
-    void unsetFlag(T::Flag flag) { \
-        V->unsetFlag(flag); \
-    } \
-    Boolean hasFlag(T::Flag flag) const { \
-        return V->hasFlag(flag); \
-    }
-
 namespace libj {
 
 class FlagMixin {

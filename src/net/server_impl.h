@@ -5,12 +5,15 @@
 
 #include "libnode/net/server.h"
 #include "./socket_impl.h"
+#include "../flag.h"
 
 namespace libj {
 namespace node {
 namespace net {
 
-class ServerImpl : public Server {
+class ServerImpl
+    : public FlagMixin
+    , LIBNODE_NET_SERVER(ServerImpl)
  public:
     static Ptr create() {
         return Ptr(new ServerImpl());
@@ -92,6 +95,11 @@ class ServerImpl : public Server {
             isOpen_ = false;
         }
     }
+
+ public:
+    enum Flag {
+        ALLOW_HALF_OPEN = 1 << 0,
+    };
 
  private:
     Boolean isOpen_;

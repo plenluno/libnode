@@ -15,319 +15,249 @@ namespace libj {
 namespace node {
 namespace http {
 
-class ParserContext {
- public:
-    ParserContext()
-        : url(String::create())
-        , headers(JsArray::create()) {}
-
-    http_parser parser;
-    String::CPtr url;
-    JsArray::Ptr headers;
-    IncomingMessage::Ptr incoming;
-};
-
-class ServerImpl;
-
-class ConnectionContext {
- public:
-    ConnectionContext(ServerImpl* srv)
-        : server(srv)
-        , outgoing(JsArray::create())
-        , incoming(JsArray::create()) {}
-
-    ServerImpl* server;
-    JsArray::Ptr outgoing;
-    JsArray::Ptr incoming;
-    // Parser parser;
-};
-
-class ServerContext {
- public:
-    ServerContext(
-        ServerImpl* srv,
-        net::SocketImpl::Ptr sock)
-        : server(srv)
-        , request(ServerRequestImpl::create(sock))
-        , response(ServerResponseImpl::create(sock)) {
-        parser.data = this;
-    }
-
-    ServerImpl* server;
-    ServerRequestImpl::Ptr request;
-    ServerResponseImpl::Ptr response;
-    http_parser parser;
-};
-
 class ServerImpl : public Server {
  public:
     static Ptr create() {
-        return Ptr(new ServerImpl());
+        ServerImpl* httpSrv = new ServerImpl();
+        httpSrv->server_->setFlag(net::ServerImpl::ALLOW_HALF_OPEN);
+        httpSrv->addListener(
+            EVENT_CONNECTION,
+            ServerOnConnection::create(httpSrv));
+        httpSrv->addListener(
+            EVENT_CLIENT_ERROR,
+            ServerOnClientError::create());
+        return Ptr(httpSrv);
     }
 
  private:
-    static http_parser_settings settings;
+    static void httpSocketSetup(net::SocketImpl::Ptr socket) {
+        SocketOnDrain::Ptr onDrain = SocketOnDrain::create(socket);
+        socket->removeListener(net::Socket::EVENT_DRAIN, onDrain);
+        socket->on(net::Socket::EVENT_DRAIN, onDrain);
+    }
 
-    class OnServerClose : LIBJ_JS_FUNCTION(OnServerClose)
-     public:
-        static Ptr create(ServerImpl* srv) {
-            return Ptr(new OnServerClose(srv));
+    static void abortIncoming(JsArray::Ptr incomings) {
+        static const String::CPtr strAborted = String::intern("aborted");
+
+        while (incomings->length()) {
+            IncomingMessage::Ptr req =
+                toPtr<IncomingMessage>(incomings->shift());
+            req->emit(strAborted);
+            req->emit(IncomingMessage::EVENT_CLOSE);
+        }
+    }
+
+ private:
+    class SocketOnDrain : LIBJ_JS_FUNCTION(SocketOnDrain)
+        static Ptr create(net::SocketImpl::Ptr socket) {
+            return Ptr(new SocketOnDrain(&(*socket)));
         }
 
         Value operator()(JsArray::Ptr args) {
-            server_->emit(EVENT_CLOSE);
+            static const String::CPtr strHttpMsg =
+                String::intern("httpMessage");
+
+            OutgoingMessage* httpMessage = NULL;
+            to<OutgoingMessage*>(socket_->get(strHttpMsg), &httpMessage);
+            if (httpMessage)
+                httpMessage->emit(OutgoingMessage::EVENT_DRAIN);
             return libj::Status::OK;
         }
 
      private:
-        ServerImpl* server_;
+        net::SocketImpl* socket_;
 
-        OnServerClose(ServerImpl* srv) : server_(srv) {}
+        SocketOnDrain(net::SocketImpl* sock) : socket_(sock) {}
     };
 
-    class OnServerListening : LIBJ_JS_FUNCTION(OnServerListening)
+    class SocketOnClose : LIBJ_JS_FUNCTION(SocketOnClose)
      public:
-        static Ptr create() {
-            return Ptr(new OnServerListening());
+        static Ptr create(Parser* parser, JsArray::Ptr incomings) {
+            return Ptr(new SocketOnClose(parser, incomings));
         }
 
         Value operator()(JsArray::Ptr args) {
-            settings.on_url = ServerImpl::onUrl;
-            settings.on_header_field = ServerImpl::onHeaderField;
-            settings.on_header_value = ServerImpl::onHeaderValue;
-            settings.on_headers_complete = ServerImpl::onHeadersComplete;
-            settings.on_message_begin = ServerImpl::onMessageBegin;
-            settings.on_body = ServerImpl::onBody;
-            settings.on_message_complete = ServerImpl::onMessageComplete;
+            parser_->free();
+            abortIncoming(incomings_);
+            return libj::Status::OK;
+        }
+
+     private:
+        Parser* parser_;
+        JsArray::Ptr incomings_;
+
+        SocketOnClose(Parser* parser, JsArray::Ptr incomings)
+            : parser_(parser)
+            , incomings_(incomings) {}
+    };
+
+    class SocketOnTimeout : LIBJ_JS_FUNCTION(SocketOnTimeout)
+     public:
+        static Ptr create(net::SocketImpl::Ptr socket) {
+            return Ptr(new SocketOnTimeout(&(*socket)));
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            socket_->destroy();
+            return libj::Status::OK;
+        }
+
+     private:
+        net::SocketImpl* socket_;
+
+        SocketOnTimeout(net::SocketImpl* sock) : socket_(sock) {}
+    };
+
+    class SocketOnError : LIBJ_JS_FUNCTION(SocketOnError)
+     public:
+        static Ptr create(
+            ServerImpl* server,
+            net::SocketImpl::Ptr socket) {
+            return Ptr(new SocketOnError(server, &(*socket)));
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            Error::CPtr err = args->getCPtr<Error>(0);
+            self_->emit(EVENT_CLIENT_ERROR, err, socket_);
+            return libj::Status::OK;
+        }
+
+     private:
+        ServerImpl* self_;
+        net::SocketImpl* socket_;
+
+        SocketOnError(
+            ServerImpl* srv,
+            net::SocketImpl* sock)
+            : self_(srv)
+            , socket_(sock) {}
+    };
+
+    class SocketOnData : LIBJ_JS_FUNCTION(SocketOnData)
+     public:
+        static Ptr create() {
+            return Ptr(new SocketOnData());
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            Buffer::CPtr buf = args->getCPtr<Buffer>(0);
+            Int bytesParsed = parser_->execute(buf);
+            IncomingMessage::Ptr req = parser_->incoming();
+            if (bytesParsed < 0) {  // error
+                // socket_->destroy(error);
+            } else if (req && req->hasFlag(IncomingMessage::UPGRADE)) {
+            }
+            return libj::Status::OK;
+        }
+
+     private:
+        Parser* parser_;
+        net::SocketImpl::Ptr socket_;
+
+        SocketOnData() {}
+    };
+
+    class SocketOnEnd : LIBJ_JS_FUNCTION(SocketOnEnd)
+     public:
+        static Ptr create() {
+            return Ptr(new SocketOnEnd());
+        }
+
+        Value operator()(JsArray::Ptr args) {
             return libj::Status::OK;
         }
     };
 
-    class OnServerConnection : LIBJ_JS_FUNCTION(OnServerConnection)
+    class ParserOnIncoming : LIBJ_JS_FUNCTION(ParserOnIncoming)
      public:
-        static Ptr create(ServerImpl* srv) {
-            return Ptr(new OnServerConnection(srv));
+        static Ptr create() {
+            return Ptr(new ParserOnIncoming());
         }
-
-        #if 0
-        void httpSocketSetup(net::SocketImpl::Ptr socket) {
-            socket->removeListener(net::Socket::EVENT_DRAIN, xxx);
-            socket->on(net::Socket::EVENT_DRAIN, xxx);
-        }
-        #endif
 
         Value operator()(JsArray::Ptr args) {
+            return libj::Status::OK;
+        }
+    };
+
+    class ServerOnConnection : LIBJ_JS_FUNCTION(ServerOnConnection)
+     public:
+        static Ptr create(ServerImpl* srv) {
+            return Ptr(new ServerOnConnection(srv));
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            static const String::CPtr strParser = String::intern("parser");
+
             net::SocketImpl::Ptr socket = toPtr<net::SocketImpl>(args->get(0));
             assert(socket);
 
-            ServerContext* context = new ServerContext(server_, socket);
-            http_parser_init(&context->parser, HTTP_REQUEST);
-            socket->on(
-                net::Socket::EVENT_DATA,
-                OnSocketData::create(context));
-            socket->on(
-                net::Socket::EVENT_CLOSE,
-                OnSocketClose::create(context));
-            server_->emit(EVENT_CONNECTION, args);
+            JsArray::Ptr incomings = JsArray::create();
+            JsArray::Ptr outgoings = JsArray::create();
+
+            httpSocketSetup(socket);
+
+            socket->setTimeout(2 * 60 * 1000);
+            socket->once(
+                net::Socket::EVENT_TIMEOUT,
+                SocketOnTimeout::create(socket));
+
+            Parser*  parser = new Parser(HTTP_REQUEST, socket);
+            socket->put(strParser, parser);
+
+            socket->addListener(
+                EVENT_ERROR,
+                SocketOnError::create(self_, socket));
+            socket->addListener(
+                EVENT_CLOSE,
+                SocketOnClose::create(parser, incomings));
+
+            socket->setOnData(SocketOnData::create());
+            socket->setOnEnd(SocketOnEnd::create());
+
+            parser->setOnIncoming(ParserOnIncoming::create());
             return libj::Status::OK;
         }
 
      private:
-        ServerImpl* server_;
+        ServerImpl* self_;
 
-        OnServerConnection(ServerImpl* srv) : server_(srv) {}
+        ServerOnConnection(ServerImpl* srv) : self_(srv) {}
     };
 
-    class OnSocketData : LIBJ_JS_FUNCTION(OnSocketData)
+    class ServerOnClientError : LIBJ_JS_FUNCTION(ServerOnClientError)
      public:
-        static Ptr create(ServerContext* ctxt) {
-            assert(ctxt);
-            return Ptr(new OnSocketData(ctxt));
+        static Ptr create() {
+            return Ptr(new ServerOnClientError());
         }
 
         Value operator()(JsArray::Ptr args) {
-            http_parser* httpParser = &context_->parser;
-            Buffer::Ptr buf = toPtr<Buffer>(args->get(0));
-            assert(buf);
-            size_t numRead = buf->length();
-            size_t numParsed = http_parser_execute(
-                                httpParser,
-                                &settings,
-                                static_cast<const char*>(buf->data()),
-                                numRead);
-            ServerRequestImpl::Ptr request = context_->request;
-            net::SocketImpl::Ptr socket =
-                LIBJ_STATIC_PTR_CAST(net::SocketImpl)(request->connection());
-            if (httpParser->upgrade) {
-                socket->removeAllListeners();
-                context_->server->emit(
-                    EVENT_UPGRADE,
-                    request, socket, buf->slice(numParsed));
-                delete context_;
-            } else if (numParsed < numRead) {  // parse error
-                socket->destroy(
-                    libj::Error::create(libj::Error::ILLEGAL_REQUEST));
-            }
+            Error::CPtr err = args->getCPtr<Error>(0);
+            net::SocketImpl* socket = NULL;
+            to<net::SocketImpl*>(args->get(1), &socket);
+            assert(socket);
+            socket->destroy(err);
             return libj::Status::OK;
         }
-
-     private:
-        ServerContext* context_;
-
-        OnSocketData(ServerContext* ctxt) : context_(ctxt) {}
     };
-
-    class OnSocketClose : LIBJ_JS_FUNCTION(OnSocketClose)
-     public:
-        static Ptr create(ServerContext* ctxt) {
-            assert(ctxt);
-            return Ptr(new OnSocketClose(ctxt));
-        }
-
-        Value operator()(JsArray::Ptr args) {
-            if (context_) {
-                context_->request->emit(ServerRequest::EVENT_CLOSE);
-                context_->response->emit(ServerResponse::EVENT_CLOSE);
-                delete context_;
-                context_ = NULL;
-            }
-            return libj::Status::OK;
-        }
-
-     private:
-        ServerContext* context_;
-
-        OnSocketClose(ServerContext* ctxt) : context_(ctxt) {}
-    };
-
-    static int onUrl(http_parser* parser, const char* at, size_t length) {
-        ServerContext* context = static_cast<ServerContext*>(parser->data);
-        String::CPtr url = String::create(at, String::UTF8, length);
-        context->request->setUrl(url);
-        return 0;
-    }
-
-    static String::CPtr headerName;
-
-    static int onHeaderField(
-        http_parser* parser, const char* at, size_t length) {
-        headerName = String::create(at, String::UTF8, length);
-        return 0;
-    }
-
-    static int onHeaderValue(
-        http_parser* parser, const char* at, size_t length) {
-        ServerContext* context = static_cast<ServerContext*>(parser->data);
-        context->request->setHeader(
-            headerName,
-            String::create(at, String::UTF8, length));
-        return 0;
-    }
-
-    static int onHeadersComplete(http_parser* parser) {
-        static const String::CPtr methodDelete = String::create("DELETE");
-        static const String::CPtr methodGet = String::create("GET");
-        static const String::CPtr methodHead = String::create("HEAD");
-        static const String::CPtr methodPost = String::create("POST");
-        static const String::CPtr methodPut = String::create("PUT");
-        static const String::CPtr methodConnect = String::create("CONNECT");
-        static const String::CPtr methodOptions = String::create("OPTIONS");
-        static const String::CPtr methodTrace = String::create("TRACE");
-        static const String::CPtr dot = String::create(".");
-
-        ServerContext* context = static_cast<ServerContext*>(parser->data);
-        assert(context);
-        switch (parser->method) {
-        case HTTP_DELETE:
-            context->request->setMethod(methodDelete);
-            break;
-        case HTTP_GET:
-            context->request->setMethod(methodGet);
-            break;
-        case HTTP_HEAD:
-            context->request->setMethod(methodHead);
-            break;
-        case HTTP_POST:
-            context->request->setMethod(methodPost);
-            break;
-        case HTTP_PUT:
-            context->request->setMethod(methodPut);
-            break;
-        case HTTP_CONNECT:
-            context->request->setMethod(methodConnect);
-            break;
-        case HTTP_OPTIONS:
-            context->request->setMethod(methodOptions);
-            break;
-        case HTTP_TRACE:
-            context->request->setMethod(methodTrace);
-            break;
-        default:
-            context->request->setMethod(String::create());
-        }
-
-        Int majorVer = static_cast<Int>(parser->http_major);
-        Int minorVer = static_cast<Int>(parser->http_minor);
-        String::CPtr httpVer = String::valueOf(majorVer);
-        httpVer = httpVer->concat(dot);
-        httpVer = httpVer->concat(String::valueOf(minorVer));
-        context->request->setHttpVersion(httpVer);
-
-        ServerRequest::Ptr req(context->request);
-        ServerResponse::Ptr res(context->response);
-        assert(context->server);
-        context->server->emit(Server::EVENT_REQUEST, req, res);
-        return 0;
-    }
-
-    static int onMessageBegin(http_parser* parser) {
-        return 0;
-    }
-
-    static int onBody(http_parser* parser, const char* at, size_t length) {
-        ServerContext* context = static_cast<ServerContext*>(parser->data);
-        ServerRequestImpl::Ptr request = context->request;
-        if (request) {
-            Buffer::Ptr chunk = Buffer::create(at, length);
-            JsArray::Ptr args = JsArray::create();
-            if (request->hasEncoding()) {
-                Buffer::Encoding enc = request->getEncoding();
-                args->add(chunk->toString(enc));
-            } else {
-                args->add(chunk);
-            }
-            request->emit(ServerRequest::EVENT_DATA, args);
-        }
-        return 0;
-    }
-
-    static int onMessageComplete(http_parser* parser) {
-        ServerContext* context = static_cast<ServerContext*>(parser->data);
-        ServerRequestImpl::Ptr request = context->request;
-        if (request) {
-            request->emit(ServerRequest::EVENT_END);
-        }
-        return 0;
-    }
 
  private:
     net::ServerImpl::Ptr server_;
 
-    ServerImpl()
-        : server_(net::Server::create()) {}
+    ServerImpl() : server_(net::ServerImpl::create()) {}
 
     LIBNODE_NET_SERVER_IMPL(server_);
 };
 
-http_parser_settings ServerImpl::settings = {};
-String::CPtr ServerImpl::headerName = String::null();
-
-const String::CPtr Server::EVENT_REQUEST = String::intern("request");
+const String::CPtr Server::EVENT_REQUEST =
+    String::intern("request");
 const String::CPtr Server::EVENT_CHECK_CONTINUE =
     String::intern("checkContinue");
-const String::CPtr Server::EVENT_CONNECT = String::intern("connect");
-const String::CPtr Server::EVENT_UPGRADE = String::intern("upgrade");
-const String::CPtr Server::EVENT_CLIENT_ERROR = String::intern("clientError");
+const String::CPtr Server::EVENT_CONNECT =
+    String::intern("connect");
+const String::CPtr Server::EVENT_UPGRADE =
+    String::intern("upgrade");
+const String::CPtr Server::EVENT_CLIENT_ERROR =
+    String::intern("clientError");
 
 Server::Ptr Server::create() {
     return ServerImpl::create();

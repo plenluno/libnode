@@ -15,13 +15,6 @@
 
 namespace libj {
 namespace node {
-
-namespace http {
-
-class OutcomingMessage;
-
-}  // namespace http
-
 namespace net {
 
 class SocketImpl;
@@ -58,7 +51,9 @@ class SocketShutdownContext {
     }
 };
 
-class SocketImpl : LIBNODE_NET_SOCKET(SocketImpl)
+class SocketImpl
+    : public FlagMixin
+    , LIBNODE_NET_SOCKET(SocketImpl)
  public:
     static Ptr create() {
         return Ptr(new SocketImpl());
@@ -172,7 +167,9 @@ class SocketImpl : LIBNODE_NET_SOCKET(SocketImpl)
         }
     }
 
-    Boolean setTimeout(Int timeout, JsFunction::Ptr callback) {
+    Boolean setTimeout(
+        Int timeout,
+        JsFunction::Ptr callback = JsFunction::null()) {
         if (timeout < 0) return false;
 
         if (timeout) {
@@ -322,18 +319,20 @@ class SocketImpl : LIBNODE_NET_SOCKET(SocketImpl)
         }
     }
 
-    http::OutcomingMessage* getHttpMessage() const {
-        return message_;
+    void setOnData(JsFunction::Ptr onData) {
+        onData_ = onData;
     }
 
-    void setHttpMessage(http::OutcomingMessage* msg) {
-        message_ = msg;
+    void setOnEnd(JsFunction::Ptr onEnd) {
+        onEnd_ = onEnd;
     }
 
  private:
     Boolean destroy(libj::Error::CPtr err, JsFunction::Ptr cb) {
         if (hasFlag(DESTROYED))
             return false;
+
+        // removeAllListeners();
 
         unsetFlag(READABLE);
         unsetFlag(WRITABLE);
@@ -435,24 +434,22 @@ class SocketImpl : LIBNODE_NET_SOCKET(SocketImpl)
         HAD_ERROR       = 1 << 5,
     };
 
-    LIBNODE_FLAG_METHODS(Flag, flags_);
-
  private:
-    UInt flags_;
     uv_tcp_t* tcp_;
     Value timer_;
     Int timeout_;
     Buffer::Encoding enc_;
-    http::OutcomingMessage* message_;
+    JsFunction::Ptr onData_;
+    JsFunction::Ptr onEnd_;
     EventEmitter::Ptr ee_;
 
     SocketImpl()
-        : flags_(0)
-        , tcp_(new uv_tcp_t)
+        : tcp_(new uv_tcp_t)
         , timer_(UNDEFINED)
         , timeout_(0)
         , enc_(Buffer::NONE)
-        , message_(0)
+        , onData_(JsFunction::null())
+        , onEnd_(JsFunction::null())
         , ee_(events::EventEmitter::create()) {
         uv_tcp_init(uv_default_loop(), tcp_);
         tcp_->data = this;

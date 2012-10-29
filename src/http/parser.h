@@ -5,7 +5,6 @@
 
 #include <assert.h>
 #include <http_parser.h>
-#include <libj/string.h>
 
 #include "libnode/buffer.h"
 #include "./incoming_message.h"
@@ -15,20 +14,20 @@ namespace libj {
 namespace node {
 namespace http {
 
-class Parser {
+class Parser : public FlagMixin {
  public:
-    Parser(enum http_parser_type type)
-        : flags_(0)
-        , url_(String::null())
+    Parser(
+        enum http_parser_type type,
+        net::SocketImpl::Ptr sock)
+        : url_(String::null())
         , method_(String::null())
         , maxHeaderPairs_(0)
         , fields_(JsArray::create())
-        , values_(JsArray::create()) {
-        http_parser_init(&parser_, type);
-        parser_.data = this;
-    }
-
-    Int execute(Buffer::CPtr buf) {
+        , values_(JsArray::create())
+        , socket_(sock)
+        , incoming_(IncomingMessage::null())
+        , onIncoming_(JsFunction::null()) {
+        static http_parser_settings settings;
         static Boolean initSettings = false;
         if (!initSettings) {
             settings.on_message_begin = Parser::onMessageBegin;
@@ -38,12 +37,18 @@ class Parser {
             settings.on_headers_complete = Parser::onHeadersComplete;
             settings.on_body = Parser::onBody;
             settings.on_message_complete = Parser::onMessageComplete;
+            initSettings = true;
         }
+        http_parser_init(&parser_, type);
+        parser_.data = this;
+        settings_ = &settings;
+    }
 
+    Int execute(Buffer::CPtr buf) {
         size_t len = buf->length();
         size_t numParsed = http_parser_execute(
                                 &parser_,
-                                &settings,
+                                settings_,
                                 static_cast<const char*>(buf->data()),
                                 len);
         if (!parser_.upgrade && numParsed != len) {
@@ -56,10 +61,33 @@ class Parser {
     Boolean finish() {
         size_t numParsed = http_parser_execute(
                                 &parser_,
-                                &settings,
+                                settings_,
                                 NULL,
                                 0);
         return !numParsed;
+    }
+
+    void free() {
+        static const String::CPtr strParser = String::intern("parser");
+
+        fields_ = JsArray::create();
+        values_ = JsArray::create();
+        onIncoming_ = JsFunction::null();
+        if (socket_) {
+            socket_->setOnData(JsFunction::null());
+            socket_->setOnEnd(JsFunction::null());
+            socket_->remove(strParser);
+        }
+        socket_ = net::SocketImpl::null();
+        incoming_ = IncomingMessage::null();
+    }
+
+    IncomingMessage::Ptr incoming() {
+        return incoming_;
+    }
+
+    void setOnIncoming(JsFunction::Ptr onIncoming) {
+        onIncoming_ = onIncoming;
     }
 
  private:
@@ -186,6 +214,8 @@ class Parser {
         return 0;
     }
 
+    #undef LIBNODE_STR_UPDATE
+
  private:
     int onHeadersComplete() {
         StringBuffer::Ptr httpVer = StringBuffer::create();
@@ -278,14 +308,9 @@ class Parser {
         SHOULD_KEEP_ALIVE = 1 << 2,
     };
 
-    LIBNODE_FLAG_METHODS(Flag, flags_);
-
  private:
-    static http_parser_settings settings;
-
- private:
-    UInt flags_;
     http_parser parser_;
+    http_parser_settings* settings_;
     String::CPtr url_;
     String::CPtr method_;
     Int majorVer_;
@@ -297,8 +322,6 @@ class Parser {
     net::SocketImpl::Ptr socket_;
     IncomingMessage::Ptr incoming_;
     JsFunction::Ptr onIncoming_;
-
-    #undef LIBNODE_STR_UPDATE
 };
 
 }  // namespace http

@@ -1,7 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_HTTP_OUTCOMING_MESSAGE_H_
-#define LIBNODE_SRC_HTTP_OUTCOMING_MESSAGE_H_
+#ifndef LIBNODE_SRC_HTTP_OUTGOING_MESSAGE_H_
+#define LIBNODE_SRC_HTTP_OUTGOING_MESSAGE_H_
 
 #include <assert.h>
 #include <libj/typed_linked_list.h>
@@ -15,10 +15,12 @@ namespace libj {
 namespace node {
 namespace http {
 
-class OutcomingMessage : LIBNODE_WRITABLE_STREAM(OutcomingMessage)
+class OutgoingMessage
+    : public FlagMixin
+    , LIBNODE_WRITABLE_STREAM(OutgoingMessage)
  public:
     static Ptr create() {
-        return Ptr(new OutcomingMessage());
+        return Ptr(new OutgoingMessage());
     }
 
     Boolean destroy() {
@@ -114,6 +116,7 @@ class OutcomingMessage : LIBNODE_WRITABLE_STREAM(OutcomingMessage)
     }
 
     Boolean end(const Value& data, Buffer::Encoding enc) {
+        static const String::CPtr strHttpMessage = String::intern("httpMessage");
         static const String::CPtr strCRLF = String::intern("\r\n");
         static const String::CPtr str0CRLF = String::create("0\r\n");
         static const String::CPtr strCRLF0CRLF = String::create("\r\n0\r\n");
@@ -132,12 +135,15 @@ class OutcomingMessage : LIBNODE_WRITABLE_STREAM(OutcomingMessage)
         }
 
         String::CPtr str = toCPtr<String>(d);
+        OutgoingMessage* httpMessage = NULL;
+        to<OutgoingMessage*>(socket_->get(strHttpMessage), &httpMessage);
+
         Boolean hot =
             !hasFlag(HEADER_SENT) &&
             str && !str->isEmpty() &&
             output_->isEmpty() &&
             socket_ && socket_->writable() &&
-            socket_->getHttpMessage() == this;
+            httpMessage == this;
 
         Boolean ret;
         if (hot) {
@@ -171,7 +177,7 @@ class OutcomingMessage : LIBNODE_WRITABLE_STREAM(OutcomingMessage)
         }
 
         setFlag(FINISHED);
-        if (output_->length() == 0 && socket_->getHttpMessage() == this) {
+        if (output_->length() == 0 && httpMessage == this) {
             finish();
         }
         return ret;
@@ -242,14 +248,18 @@ class OutcomingMessage : LIBNODE_WRITABLE_STREAM(OutcomingMessage)
     }
 
     Boolean writeRaw(const Value& data, Buffer::Encoding enc) {
+        static const String::CPtr strHttpMessage = String::intern("httpMessage");
+
         String::CPtr str = toCPtr<String>(data);
         if (str && str->isEmpty()) return true;
 
         Buffer::CPtr buf = toCPtr<Buffer>(data);
         if (buf && buf->isEmpty()) return true;
 
+        OutgoingMessage* httpMessage = NULL;
+        to<OutgoingMessage*>(socket_->get(strHttpMessage), &httpMessage);
         if (socket_ &&
-            socket_->getHttpMessage() == this &&
+            httpMessage == this &&
             socket_->writable()) {
             while (output_->length()) {
                 if (!socket_->writable()) {
@@ -486,12 +496,9 @@ class OutcomingMessage : LIBNODE_WRITABLE_STREAM(OutcomingMessage)
         SERVER_RESPONSE                 = 1 << 11,
     };
 
-    LIBNODE_FLAG_METHODS(Flag, flags_);
-
  private:
     typedef TypedLinkedList<Buffer::Encoding> EncodingList;
 
-    UInt flags_;
     net::SocketImpl::Ptr socket_;
     Int statusCode_;
     String::CPtr header_;
@@ -503,9 +510,8 @@ class OutcomingMessage : LIBNODE_WRITABLE_STREAM(OutcomingMessage)
     EventEmitter::Ptr ee_;
 
  public:
-    OutcomingMessage()
-        : flags_(0)
-        , socket_(net::SocketImpl::null())
+    OutgoingMessage()
+        : socket_(net::SocketImpl::null())
         , statusCode_(Status::OK)
         , header_(String::create())
         , trailer_(String::create())
@@ -523,7 +529,7 @@ class OutcomingMessage : LIBNODE_WRITABLE_STREAM(OutcomingMessage)
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
 
-#define LIBNODE_HTTP_OUTCOMING_MESSAGE_IMPL(O) \
+#define LIBNODE_HTTP_OUTGOING_MESSAGE_IMPL(O) \
     LIBNODE_WRITABLE_STREAM_IMPL(O); \
     virtual void writeHead( \
         Int statusCode, \
@@ -548,4 +554,4 @@ class OutcomingMessage : LIBNODE_WRITABLE_STREAM(OutcomingMessage)
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_HTTP_OUTCOMING_MESSAGE_H_
+#endif  // LIBNODE_SRC_HTTP_OUTGOING_MESSAGE_H_

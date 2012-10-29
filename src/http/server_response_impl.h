@@ -11,7 +11,7 @@
 
 #include "libnode/http.h"
 
-#include "./outcoming_message.h"
+#include "./outgoing_message.h"
 #include "../net/socket_impl.h"
 
 namespace libj {
@@ -54,15 +54,15 @@ class ServerResponseImpl : LIBNODE_HTTP_SERVER_RESPONSE(ServerResponseImpl)
     }
 
  private:
-    OutcomingMessage::Ptr msg_;
+    OutgoingMessage::Ptr msg_;
 
  public:
     // ServerResponseImpl(ServerReqestImpl::CPtr req)
     ServerResponseImpl(net::SocketImpl::Ptr sock)
-        : msg_(OutcomingMessage::create()) {
+        : msg_(OutgoingMessage::create()) {
     }
 
-    LIBNODE_HTTP_OUTCOMING_MESSAGE_IMPL(msg_);
+    LIBNODE_HTTP_OUTGOING_MESSAGE_IMPL(msg_);
 };
 
 }  // namespace http
