@@ -116,7 +116,7 @@ class OutgoingMessage
     }
 
     Boolean end(const Value& data, Buffer::Encoding enc) {
-        static const String::CPtr strHttpMessage = String::intern("httpMessage");
+        static const String::CPtr strHttpMsg = String::intern("httpMessage");
         static const String::CPtr strCRLF = String::intern("\r\n");
         static const String::CPtr str0CRLF = String::create("0\r\n");
         static const String::CPtr strCRLF0CRLF = String::create("\r\n0\r\n");
@@ -136,7 +136,7 @@ class OutgoingMessage
 
         String::CPtr str = toCPtr<String>(d);
         OutgoingMessage* httpMessage = NULL;
-        to<OutgoingMessage*>(socket_->get(strHttpMessage), &httpMessage);
+        to<OutgoingMessage*>(socket_->get(strHttpMsg), &httpMessage);
 
         Boolean hot =
             !hasFlag(HEADER_SENT) &&
@@ -248,7 +248,7 @@ class OutgoingMessage
     }
 
     Boolean writeRaw(const Value& data, Buffer::Encoding enc) {
-        static const String::CPtr strHttpMessage = String::intern("httpMessage");
+        static const String::CPtr strHttpMsg = String::intern("httpMessage");
 
         String::CPtr str = toCPtr<String>(data);
         if (str && str->isEmpty()) return true;
@@ -257,7 +257,7 @@ class OutgoingMessage
         if (buf && buf->isEmpty()) return true;
 
         OutgoingMessage* httpMessage = NULL;
-        to<OutgoingMessage*>(socket_->get(strHttpMessage), &httpMessage);
+        to<OutgoingMessage*>(socket_->get(strHttpMsg), &httpMessage);
         if (socket_ &&
             httpMessage == this &&
             socket_->writable()) {
