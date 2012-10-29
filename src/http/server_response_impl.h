@@ -20,9 +20,6 @@ namespace http {
 
 class ServerResponseImpl : LIBNODE_HTTP_SERVER_RESPONSE(ServerResponseImpl)
  private:
-    static const String::CPtr HEADERS;
-    static const String::CPtr STATUS_CODE;
-
     class SocketEnd : LIBJ_JS_FUNCTION(SocketEnd)
      public:
         static Ptr create(
