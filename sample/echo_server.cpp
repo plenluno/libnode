@@ -77,7 +77,7 @@ class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
 
         res_->setHeader(
             http::HEADER_CONTENT_TYPE,
-            String::create("text/plain"));        
+            String::create("text/plain"));
         res_->setHeader(
             http::HEADER_CONTENT_LENGTH,
             String::valueOf(Buffer::byteLength(body)));
