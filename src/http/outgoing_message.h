@@ -7,8 +7,9 @@
 #include <libj/typed_linked_list.h>
 
 #include "libnode/http.h"
-#include "libnode/stream.h"
+#include "libnode/stream/writable_stream.h"
 
+#include "../flag.h"
 #include "../net/socket_impl.h"
 
 namespace libj {
@@ -48,7 +49,7 @@ class OutgoingMessage
     }
 
     Boolean setHeader(String::CPtr name, String::CPtr value) {
-        if (header_) return false;
+        if (header_ && !header_->isEmpty()) return false;
 
         if (name && value) {
             String::CPtr key = name->toLowerCase();
@@ -79,7 +80,7 @@ class OutgoingMessage
     Boolean write(const Value& chunk, Buffer::Encoding enc) {
         static const String::CPtr strCRLF = String::intern("\r\n");
 
-        if (!header_) {
+        if (!header_ || header_->isEmpty()) {
             implicitHeader();
         }
 
@@ -101,12 +102,12 @@ class OutgoingMessage
             if (str) {
                 Size len = Buffer::byteLength(str, enc);
                 // TODO(plenluno): toHex(len)
-                String::CPtr data = String::valueOf(len)->concat(strCRLF);
+                String::CPtr data = toHex(len)->concat(strCRLF);
                 data = data->concat(str)->concat(strCRLF);
                 return send(data, enc);
             } else {
                 Size len = buf->length();
-                send(String::valueOf(len)->concat(strCRLF));
+                send(toHex(len)->concat(strCRLF));
                 send(buf);
                 return send(strCRLF);
             }
@@ -116,14 +117,13 @@ class OutgoingMessage
     }
 
     Boolean end(const Value& data, Buffer::Encoding enc) {
-        static const String::CPtr strHttpMsg = String::intern("httpMessage");
         static const String::CPtr strCRLF = String::intern("\r\n");
         static const String::CPtr str0CRLF = String::create("0\r\n");
         static const String::CPtr strCRLF0CRLF = String::create("\r\n0\r\n");
 
         if (hasFlag(FINISHED)) return false;
 
-        if (!header_) {
+        if (!header_ || header_->isEmpty()) {
             implicitHeader();
         }
 
@@ -135,15 +135,12 @@ class OutgoingMessage
         }
 
         String::CPtr str = toCPtr<String>(d);
-        OutgoingMessage* httpMessage = NULL;
-        to<OutgoingMessage*>(socket_->get(strHttpMsg), &httpMessage);
-
         Boolean hot =
             !hasFlag(HEADER_SENT) &&
             str && !str->isEmpty() &&
             output_->isEmpty() &&
             socket_ && socket_->writable() &&
-            httpMessage == this;
+            socket_->httpMessage() == this;
 
         Boolean ret;
         if (hot) {
@@ -151,7 +148,7 @@ class OutgoingMessage
                 Size len = Buffer::byteLength(str, enc);
                 // TODO(plenluno): toHex(len)
                 String::CPtr chunk =
-                    header_->concat(String::valueOf(len))
+                    header_->concat(toHex(len))
                            ->concat(strCRLF)
                            ->concat(str)
                            ->concat(strCRLF0CRLF)
@@ -177,7 +174,7 @@ class OutgoingMessage
         }
 
         setFlag(FINISHED);
-        if (output_->length() == 0 && httpMessage == this) {
+        if (output_->length() == 0 && socket_->httpMessage() == this) {
             finish();
         }
         return ret;
@@ -207,11 +204,11 @@ class OutgoingMessage
         }
 
         StringBuffer::Ptr statusLine = StringBuffer::create();
-        // statusLine->appendCStr("HTTP/1.1 ");
+        statusLine->appendCStr("HTTP/1.1 ");
         statusLine->append(status->code());
-        // statusLine->appendChar(" ");
+        statusLine->appendChar(' ');
         statusLine->append(status->message());
-        // statusLine->appendCStr("\r\n");
+        statusLine->appendCStr("\r\n");
 
         if (statusCode == 204 || statusCode == 304 ||
             (statusCode >= 100 && statusCode < 200)) {
@@ -229,7 +226,62 @@ class OutgoingMessage
         return statusCode_;
     }
 
+    void assignSocket(net::SocketImpl::Ptr socket) {
+        assert(!socket->httpMessage());
+        socket->setHttpMessage(this);
+        socketOnClose_->setSocket(&(*socket));
+        socket->on(net::Socket::EVENT_CLOSE, socketOnClose_);
+        socket_ = socket;
+        flush();
+    }
+
+    void detachSocket(net::SocketImpl::Ptr socket) {
+        assert(socket->httpMessage() == this);
+        socketOnClose_->setSocket(NULL);
+        socket->removeListener(net::Socket::EVENT_CLOSE, socketOnClose_);
+        socket->setHttpMessage(NULL);
+        socket_ = net::SocketImpl::null();
+    }
+
+    void writeContinue() {
+        static const String::CPtr header =
+            String::create("HTTP/1.1 100 Continue\r\n\r\n");
+        writeRaw(header, Buffer::UTF8);
+        setFlag(SENT_100);
+    }
+
  private:
+    class SocketOnClose : LIBJ_JS_FUNCTION(SocketOnClose)
+     public:
+        static Ptr create() {
+            return Ptr(new SocketOnClose());
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            assert(socket_);
+            socket_->httpMessage()->emit(OutgoingMessage::EVENT_CLOSE);
+            return libj::Status::OK;
+        }
+
+        void setSocket(net::SocketImpl* socket) {
+            socket_ = socket;
+        }
+
+     private:
+        net::SocketImpl* socket_;
+
+        SocketOnClose() : socket_(NULL) {}
+    };
+
+    String::CPtr toHex(Size val) {
+        Size n;
+        to<Size>(val, &n);
+        const Size kLen = ((sizeof(Size) << 3) / 3) + 3;
+        char s[kLen];
+        snprintf(s, kLen, "%zx", n);
+        return String::create(s);
+    }
+
     Boolean send(const Value& data, Buffer::Encoding enc = Buffer::NONE) {
         Value d;
         if (!hasFlag(HEADER_SENT)) {
@@ -248,18 +300,14 @@ class OutgoingMessage
     }
 
     Boolean writeRaw(const Value& data, Buffer::Encoding enc) {
-        static const String::CPtr strHttpMsg = String::intern("httpMessage");
-
         String::CPtr str = toCPtr<String>(data);
         if (str && str->isEmpty()) return true;
 
         Buffer::CPtr buf = toCPtr<Buffer>(data);
         if (buf && buf->isEmpty()) return true;
 
-        OutgoingMessage* httpMessage = NULL;
-        to<OutgoingMessage*>(socket_->get(strHttpMsg), &httpMessage);
         if (socket_ &&
-            httpMessage == this &&
+            socket_->httpMessage() == this &&
             socket_->writable()) {
             while (output_->length()) {
                 if (!socket_->writable()) {
@@ -472,9 +520,9 @@ class OutgoingMessage
             assert(method && path);
             StringBuffer::Ptr sb = StringBuffer::create();
             sb->append(method);
-            // sb->appendChar(' ');
+            sb->appendChar(' ');
             sb->append(path);
-            // sb->appendCStr(" HTTP/1.1\r\n");
+            sb->appendCStr(" HTTP/1.1\r\n");
             String::CPtr firstLine = sb->toString();
             storeHeader(firstLine, renderHeaders());
         }
@@ -507,6 +555,7 @@ class OutgoingMessage
     JsObject::Ptr headerNames_;
     LinkedList::Ptr output_;
     EncodingList::Ptr outputEncodings_;
+    SocketOnClose::Ptr socketOnClose_;
     EventEmitter::Ptr ee_;
 
  public:
@@ -520,6 +569,9 @@ class OutgoingMessage
         , output_(LinkedList::create())
         , outputEncodings_(EncodingList::create())
         , ee_(EventEmitter::create()) {
+        static SocketOnClose::Ptr socketOnClose = SocketOnClose::create();
+        socketOnClose_ = socketOnClose;
+
         setFlag(WRITABLE);
         setFlag(SHOULD_KEEP_ALIVE);
         setFlag(USE_CHUNKED_ENCODING_BY_DEFAULT);

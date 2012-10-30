@@ -7,6 +7,7 @@
 #include <http_parser.h>
 
 #include "libnode/buffer.h"
+
 #include "./incoming_message.h"
 #include "../flag.h"
 
@@ -18,10 +19,11 @@ class Parser : public FlagMixin {
  public:
     Parser(
         enum http_parser_type type,
-        net::SocketImpl::Ptr sock)
+        net::SocketImpl::Ptr sock,
+        Size maxHeaders = 0)
         : url_(String::null())
         , method_(String::null())
-        , maxHeaderPairs_(0)
+        , maxHeadersCount_(maxHeaders)
         , fields_(JsArray::create())
         , values_(JsArray::create())
         , socket_(sock)
@@ -68,15 +70,13 @@ class Parser : public FlagMixin {
     }
 
     void free() {
-        static const String::CPtr strParser = String::intern("parser");
-
         fields_ = JsArray::create();
         values_ = JsArray::create();
         onIncoming_ = JsFunction::null();
         if (socket_) {
             socket_->setOnData(JsFunction::null());
             socket_->setOnEnd(JsFunction::null());
-            socket_->remove(strParser);
+            socket_->setParser(NULL);
         }
         socket_ = net::SocketImpl::null();
         incoming_ = IncomingMessage::null();
@@ -124,7 +124,9 @@ class Parser : public FlagMixin {
         }
 
         assert(fields->size() == numValues + 1);
-        LIBNODE_STR_UPDATE(fields->getCPtr<String>(numValues), at, len);
+        String::CPtr field = fields->getCPtr<String>(numValues);
+        LIBNODE_STR_UPDATE(field, at, len);
+        fields->set(numValues, field);
         return 0;
     }
 
@@ -140,7 +142,9 @@ class Parser : public FlagMixin {
         }
 
         assert(values->size() == numFields);
-        LIBNODE_STR_UPDATE(values->getCPtr<String>(numFields - 1), at, len);
+        String::CPtr value = values->getCPtr<String>(numFields - 1);
+        LIBNODE_STR_UPDATE(value, at, len);
+        values->set(numFields - 1, value);
         return 0;
     }
 
@@ -229,8 +233,8 @@ class Parser : public FlagMixin {
 
         Size n = fields_->length();
         assert(values_->length() == n);
-        if (!maxHeaderPairs_) {
-            n = n < maxHeaderPairs_ ? n : maxHeaderPairs_;
+        if (!maxHeadersCount_) {
+            n = n < maxHeadersCount_ ? n : maxHeadersCount_;
         }
         for (Size i = 0; i < n; i++) {
             incoming_->addHeaderLine(
@@ -316,7 +320,7 @@ class Parser : public FlagMixin {
     Int majorVer_;
     Int minorVer_;
     Int statusCode_;
-    Size maxHeaderPairs_;
+    Size maxHeadersCount_;
     JsArray::Ptr fields_;
     JsArray::Ptr values_;
     net::SocketImpl::Ptr socket_;

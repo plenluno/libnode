@@ -4,14 +4,23 @@
 #define LIBNODE_SRC_NET_SOCKET_IMPL_H_
 
 #include <assert.h>
-#include <uv.h>
-#include <cstring>
-#include <vector>
 
 #include "libnode/error.h"
 #include "libnode/net/socket.h"
 #include "libnode/timer.h"
+
 #include "../flag.h"
+
+namespace libj {
+namespace node {
+namespace http {
+
+class Parser;
+class OutgoingMessage;
+
+}  // namespace http
+}  // namespace node
+}  // namespace libj
 
 namespace libj {
 namespace node {
@@ -196,6 +205,8 @@ class SocketImpl
     Boolean write(const Value& data, Buffer::Encoding enc) {
         String::CPtr str = toCPtr<String>(data);
         if (str) {
+            if (enc == Buffer::NONE)
+                enc = Buffer::UTF8;
             Buffer::Ptr buf = Buffer::create(str, enc);
             return write(buf, JsFunction::null());
         }
@@ -320,11 +331,35 @@ class SocketImpl
     }
 
     void setOnData(JsFunction::Ptr onData) {
+        if (onData_)
+            removeListener(EVENT_DATA, onData_);
+        if (onData)
+            addListener(EVENT_DATA, onData);
         onData_ = onData;
     }
 
     void setOnEnd(JsFunction::Ptr onEnd) {
+        if (onEnd_)
+            removeListener(EVENT_END, onEnd_);
+        if (onEnd)
+            addListener(EVENT_END, onEnd);
         onEnd_ = onEnd;
+    }
+
+    http::Parser* parser() const {
+        return parser_;
+    }
+
+    void setParser(http::Parser* parser) {
+        parser_ = parser;
+    }
+
+    http::OutgoingMessage* httpMessage() const {
+        return httpMessage_;
+    }
+
+    void setHttpMessage(http::OutgoingMessage* msg) {
+        httpMessage_ = msg;
     }
 
  private:
@@ -441,6 +476,8 @@ class SocketImpl
     Buffer::Encoding enc_;
     JsFunction::Ptr onData_;
     JsFunction::Ptr onEnd_;
+    http::Parser* parser_;
+    http::OutgoingMessage* httpMessage_;
     EventEmitter::Ptr ee_;
 
     SocketImpl()
@@ -450,6 +487,7 @@ class SocketImpl
         , enc_(Buffer::NONE)
         , onData_(JsFunction::null())
         , onEnd_(JsFunction::null())
+        , httpMessage_(NULL)
         , ee_(events::EventEmitter::create()) {
         uv_tcp_init(uv_default_loop(), tcp_);
         tcp_->data = this;

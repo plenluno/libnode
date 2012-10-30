@@ -3,63 +3,27 @@
 #ifndef LIBNODE_SRC_HTTP_SERVER_RESPONSE_IMPL_H_
 #define LIBNODE_SRC_HTTP_SERVER_RESPONSE_IMPL_H_
 
-#include <libj/string_buffer.h>
-#include <string.h>
-#include <uv.h>
-#include <list>
-#include <string>
-
-#include "libnode/http.h"
+#include "libnode/http/server_response.h"
 
 #include "./outgoing_message.h"
-#include "../net/socket_impl.h"
 
 namespace libj {
 namespace node {
 namespace http {
 
 class ServerResponseImpl : LIBNODE_HTTP_SERVER_RESPONSE(ServerResponseImpl)
- private:
-    class SocketEnd : LIBJ_JS_FUNCTION(SocketEnd)
-     public:
-        static Ptr create(
-            ServerResponseImpl* res,
-            net::SocketImpl::Ptr sock) {
-            return Ptr(new SocketEnd(res, sock));
-        }
-
-        Value operator()(JsArray::Ptr args) {
-            response_->removeAllListeners(EVENT_CLOSE);
-            socket_->end();
-            return libj::Status::OK;
-        }
-
-     private:
-        ServerResponseImpl* response_;
-        net::SocketImpl::Ptr socket_;
-
-        SocketEnd(
-            ServerResponseImpl* res,
-            net::SocketImpl::Ptr sock)
-            : response_(res)
-            , socket_(sock) {}
-    };
-
  public:
-    static Ptr create(net::SocketImpl::Ptr sock) {
-        return Ptr(new ServerResponseImpl(sock));
+    static Ptr create(OutgoingMessage::Ptr msg) {
+        return Ptr(new ServerResponseImpl(msg));
     }
 
  private:
     OutgoingMessage::Ptr msg_;
 
  public:
-    // ServerResponseImpl(ServerReqestImpl::CPtr req)
-    ServerResponseImpl(net::SocketImpl::Ptr sock)
-        : msg_(OutgoingMessage::create()) {
-    }
+    ServerResponseImpl(OutgoingMessage::Ptr msg) : msg_(msg) {}
 
-    LIBNODE_HTTP_OUTGOING_MESSAGE_IMPL(msg_);
+    LIBNODE_HTTP_SERVER_RESPONSE_IMPL(msg_);
 };
 
 }  // namespace http

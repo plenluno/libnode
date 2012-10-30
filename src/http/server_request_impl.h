@@ -6,7 +6,6 @@
 #include "libnode/http/server_request.h"
 
 #include "./incoming_message.h"
-#include "../net/socket_impl.h"
 
 namespace libj {
 namespace node {
@@ -14,19 +13,17 @@ namespace http {
 
 class ServerRequestImpl : LIBNODE_HTTP_SERVER_REQUEST(ServerRequestImpl)
  public:
-    static Ptr create(net::SocketImpl::Ptr sock) {
-        return Ptr(new ServerRequestImpl(sock));
+    static Ptr create(IncomingMessage::Ptr msg) {
+        return Ptr(new ServerRequestImpl(msg));
     }
 
  private:
     IncomingMessage::Ptr msg_;
 
  public:
-    ServerRequestImpl(net::SocketImpl::Ptr sock)
-        : msg_(IncomingMessage::create(sock)) {
-    }
+    ServerRequestImpl(IncomingMessage::Ptr msg) : msg_(msg) {}
 
-    LIBNODE_HTTP_INCOMING_MESSAGE_IMPL(msg_);
+    LIBNODE_HTTP_SERVER_REQUEST_IMPL(msg_);
 };
 
 }  // namespace http

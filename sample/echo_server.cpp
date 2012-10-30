@@ -3,6 +3,7 @@
 #include <libj/console.h>
 #include <libj/json.h>
 #include <libj/status.h>
+#include <libnode/buffer.h>
 #include <libnode/http.h>
 #include <libnode/node.h>
 #include <libnode/timer.h>
@@ -72,10 +73,15 @@ class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
 
     Value operator()(JsArray::Ptr args) {
         req_->put(String::create("body"), onData_->getBody());
+        String::CPtr body = json::stringify(req_);
+
         res_->setHeader(
             http::HEADER_CONTENT_TYPE,
-            String::create("text/plain"));
-        res_->write(json::stringify(req_));
+            String::create("text/plain"));        
+        res_->setHeader(
+            http::HEADER_CONTENT_LENGTH,
+            String::valueOf(Buffer::byteLength(body)));
+        res_->write(body);
         Send::Ptr send(new Send(srv_, req_, res_));
         // 3 sec delay
         setTimeout(send, 3000, JsArray::create());
