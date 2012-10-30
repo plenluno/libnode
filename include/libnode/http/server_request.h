@@ -23,6 +23,25 @@ class ServerRequest : LIBNODE_READABLE_STREAM(ServerRequest)
     public libj::node::http::ServerRequest { \
     LIBJ_MUTABLE_DEFS(T, libj::node::http::ServerRequest)
 
+#define LIBNODE_HTTP_SERVER_REQUEST_IMPL(SR) \
+    LIBNODE_READABLE_STREAM_IMPL(SR); \
+public: \
+    String::CPtr method() const { \
+        return SR->method(); \
+    } \
+    String::CPtr url() const { \
+        return SR->url(); \
+    } \
+    JsObject::CPtr headers() const { \
+        return SR->headers(); \
+    } \
+    String::CPtr httpVersion() const { \
+        return SR->httpVersion(); \
+    } \
+    net::Socket::Ptr connection() const { \
+        return SR->connection(); \
+    }
+
 }  // namespace http
 }  // namespace node
 }  // namespace libj
