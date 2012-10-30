@@ -239,6 +239,7 @@ Boolean Buffer::isBuffer(const Value& val) {
 
 Size Buffer::byteLength(String::CPtr str, Encoding enc) {
     if (str) {
+        if (enc == NONE) enc = UTF8;
         return create(str, enc)->length();
     } else {
         return 0;
