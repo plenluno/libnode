@@ -6,9 +6,9 @@
 #include <assert.h>
 #include <libj/linked_list.h>
 
-#include "libnode/http.h"
+#include "libnode/http/header.h"
 #include "libnode/process.h"
-#include "libnode/stream.h"
+#include "libnode/stream/readable_stream.h"
 #include "libnode/string_decoder.h"
 
 #include "../flag.h"
@@ -91,6 +91,9 @@ class IncomingMessage
         static const String::CPtr comma = String::create(", ");
         static const String::CPtr extPrefix = String::create("x-");
         static Set::Ptr commaSeparated = Set::null();
+
+        assert(name && value);
+
         if (!commaSeparated) {
             commaSeparated = Set::create();
             commaSeparated->add(LHEADER_ACCEPT);
@@ -255,55 +258,6 @@ class IncomingMessage
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
-
-#define LIBNODE_HTTP_INCOMING_MESSAGE_IMPL(I) \
-    LIBNODE_READABLE_STREAM_IMPL(I); \
-public: \
-    net::Socket::Ptr socket() const { \
-        return I->socket(); \
-    } \
-    net::Socket::Ptr connection() const { \
-        return I->connection(); \
-    } \
-    Int statusCode() const { \
-        return I->statusCode(); \
-    } \
-    String::CPtr httpVersion() const { \
-        return I->httpVersion(); \
-    } \
-    JsObject::CPtr headers() const { \
-        return I->headers(); \
-    } \
-    String::CPtr url() const { \
-        return I->url(); \
-    } \
-    String::CPtr method() const { \
-        return I->method(); \
-    } \
-    void setHttpVersion(String::CPtr httpVersion) { \
-        I->setHttpVersion(httpVersion); \
-    } \
-    String::CPtr getHeader(String::CPtr name) const { \
-        return I->getHeader(name); \
-    } \
-    void setHeader(String::CPtr name, String::CPtr value) { \
-        I->setHeader(name, value); \
-    } \
-    void addHeaderLine(String::CPtr name, String::CPtr value) { \
-        I->addHeaderLine(name, value); \
-    } \
-    void setUrl(String::CPtr url) { \
-        I->setUrl(url); \
-    } \
-    void setMethod(String::CPtr method) { \
-        I->setMethod(method); \
-    } \
-    Boolean hasEncoding() const { \
-        return I->hasEncoding(); \
-    } \
-    Buffer::Encoding getEncoding() const { \
-        return I->getEncoding(); \
-    }
 
 }  // namespace http
 }  // namespace node
