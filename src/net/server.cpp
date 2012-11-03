@@ -6,9 +6,9 @@ namespace libj {
 namespace node {
 namespace net {
 
-const String::CPtr Server::IN_ADDR_ANY = String::intern("0.0.0.0");
-const String::CPtr Server::EVENT_LISTENING = String::intern("listening");
-const String::CPtr Server::EVENT_CONNECTION = String::intern("connection");
+LIBJ_SYMBOL_DEF(Server::IN_ADDR_ANY,      "0.0.0.0");
+LIBJ_SYMBOL_DEF(Server::EVENT_LISTENING,  "listening");
+LIBJ_SYMBOL_DEF(Server::EVENT_CONNECTION, "connection");
 
 Server::Ptr Server::create() {
     return ServerImpl::create();

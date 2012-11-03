@@ -11,9 +11,9 @@ namespace net {
 
 class Server : LIBNODE_NET_SOCKET(Server)
  public:
-    static const String::CPtr IN_ADDR_ANY;
-    static const String::CPtr EVENT_LISTENING;
-    static const String::CPtr EVENT_CONNECTION;
+    static Symbol::CPtr IN_ADDR_ANY;
+    static Symbol::CPtr EVENT_LISTENING;
+    static Symbol::CPtr EVENT_CONNECTION;
 
     static Ptr create();
 

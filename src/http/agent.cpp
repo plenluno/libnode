@@ -1,7 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <libj/string_buffer.h>
-#include <libj/symbol.h>
 
 #include "libnode/http/agent.h"
 #include "libnode/util.h"

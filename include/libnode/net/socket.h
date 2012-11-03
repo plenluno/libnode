@@ -11,8 +11,8 @@ namespace net {
 
 class Socket : LIBNODE_DUPLEX_STREAM(Socket)
  public:
-    static const String::CPtr EVENT_CONNECT;
-    static const String::CPtr EVENT_TIMEOUT;
+    static Symbol::CPtr EVENT_CONNECT;
+    static Symbol::CPtr EVENT_TIMEOUT;
 
     static Ptr create();
 
