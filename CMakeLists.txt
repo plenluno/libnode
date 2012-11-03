@@ -37,6 +37,7 @@ set(libnode-src
     src/fs.cpp
     src/fs/stats.cpp
     src/http.cpp
+    src/http/agent.cpp
     src/http/header.cpp
     src/http/server.cpp
     src/http/status.cpp
