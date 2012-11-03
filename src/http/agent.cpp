@@ -294,7 +294,7 @@ class AgentImpl : Agent {
     JsObject::Ptr requests_;
     JsObject::Ptr sockets_;
     JsObject::Ptr options_;
-    EventEmitter::Ptr ee_;
+    events::EventEmitter::Ptr ee_;
 
     AgentImpl(JsObject::Ptr options) {
         LIBJ_STATIC_SYMBOL_DEF(strMaxSocks, "maxSockets");
