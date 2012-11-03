@@ -15,6 +15,8 @@ Boolean isArray(const Value& val);
 Boolean isError(const Value& val);
 Boolean isRegExp(const Value& val);
 
+Boolean extend(JsObject::Ptr derived, JsObject::CPtr super);
+
 String::CPtr hexEncode(Buffer::CPtr buf);
 String::CPtr hexEncode(const void* data, Size length);
 Buffer::Ptr hexDecode(String::CPtr str);

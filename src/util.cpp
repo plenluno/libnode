@@ -27,6 +27,17 @@ Boolean isRegExp(const Value& val) {
     return val.instanceof(Type<JsRegExp>::id());
 }
 
+Boolean extend(JsObject::Ptr derived, JsObject::CPtr super) {
+    if (!derived) return false;
+
+    Set::CPtr keys = super->keySet();
+    Iterator::Ptr itr = keys->iterator();
+    while (itr->hasNext()) {
+        String::CPtr key = toCPtr<String>(itr->next());
+        derived->put(key, super->get(key));
+    }
+    return true;
+}
 
 // -- hexEncode & hexDecode --
 
