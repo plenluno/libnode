@@ -42,12 +42,12 @@ class ServerImpl : public FlagMixin, public Server {
     }
 
     static void abortIncoming(JsArray::Ptr incomings) {
-        static const String::CPtr strAborted = String::intern("aborted");
+        LIBJ_STATIC_SYMBOL_DEF(EVENT_ABORTED, "aborted");
 
         while (incomings->length()) {
             IncomingMessage::Ptr req =
                 toPtr<IncomingMessage>(incomings->shift());
-            req->emit(strAborted);
+            req->emit(EVENT_ABORTED);
             req->emit(IncomingMessage::EVENT_CLOSE);
         }
     }
@@ -146,7 +146,7 @@ class ServerImpl : public FlagMixin, public Server {
         }
 
         Value operator()(JsArray::Ptr args) {
-            static const String::CPtr methodConnect = String::create("CONNECT");
+            LIBJ_STATIC_SYMBOL_DEF(symConnect, "CONNECT");
 
             Buffer::CPtr buf = args->getCPtr<Buffer>(0);
             Int bytesParsed = parser_->execute(buf);
@@ -164,7 +164,7 @@ class ServerImpl : public FlagMixin, public Server {
                 freeParser(parser_);
                 parser_ = NULL;
 
-                Boolean isConnect = req->method()->equals(methodConnect);
+                Boolean isConnect = req->method()->equals(symConnect);
                 String::CPtr event = isConnect ? EVENT_CONNECT : EVENT_UPGRADE;
                 if (self_->listeners(event)->length()) {
                     self_->emit(
@@ -306,10 +306,10 @@ class ServerImpl : public FlagMixin, public Server {
         }
 
         Value operator()(JsArray::Ptr args) {
-            static const String::CPtr strExpect = String::intern("expect");
-            static const String::CPtr strFinish = String::intern("finish");
-            static const String::CPtr strV11    = String::intern("1.1");
-            static const String::CPtr contExp = String::create("100-continue");
+            LIBJ_STATIC_SYMBOL_DEF(EVENT_FINISH, "finish");
+            LIBJ_STATIC_SYMBOL_DEF(symV11,       "1.1");
+            LIBJ_STATIC_SYMBOL_DEF(symExpect,    "expect");
+            LIBJ_STATIC_SYMBOL_DEF(symContExp,   "100-continue");
 
             IncomingMessage::Ptr in = args->getPtr<IncomingMessage>(0);
             Boolean shouldKeepAlive = false;
@@ -329,16 +329,16 @@ class ServerImpl : public FlagMixin, public Server {
             }
 
             out->on(
-                strFinish,
+                EVENT_FINISH,
                 OutgoingMessageOnFinish::create(
                     out, socket_, incomings_, outgoings_));
 
             ServerRequest::Ptr req = ServerRequestImpl::create(in);
             ServerResponse::Ptr res = ServerResponseImpl::create(out);
-            String::CPtr expectHeader = in->getHeader(strExpect);
-            if (in->httpVersion()->equals(strV11) &&
+            String::CPtr expectHeader = in->getHeader(symExpect);
+            if (in->httpVersion()->equals(symV11) &&
                 expectHeader &&
-                expectHeader->toLowerCase()->equals(contExp)) {
+                expectHeader->toLowerCase()->equals(symContExp)) {
                 out->setFlag(OutgoingMessage::EXPECT_CONTINUE);
                 if (self_->listeners(EVENT_CHECK_CONTINUE)->length()) {
                     self_->emit(EVENT_CHECK_CONTINUE, req, res);
