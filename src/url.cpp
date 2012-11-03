@@ -21,11 +21,6 @@ LIBJ_SYMBOL_DEF(QUERY,    "query");
 LIBJ_SYMBOL_DEF(HASH,     "hash");
 
 JsObject::Ptr parse(String::CPtr urlStr) {
-    static const String::CPtr colon = String::create(":");
-    static const String::CPtr slash = String::create("/");
-    static const String::CPtr sharp = String::create("#");
-    static const String::CPtr question = String::create("?");
-
     if (!urlStr) {
         return JsObject::null();
     }
@@ -46,7 +41,11 @@ JsObject::Ptr parse(String::CPtr urlStr) {
         String::CPtr hostname = String::create(url->host)->toLowerCase();
         obj->put(HOSTNAME, hostname);
         if (port) {
-            obj->put(HOST, hostname->concat(colon)->concat(port));
+            StringBuffer::Ptr sb = StringBuffer::create();
+            sb->append(hostname);
+            sb->appendChar(':');
+            sb->append(port);
+            obj->put(HOST, sb->toString());
         } else {
             obj->put(HOST, hostname);
         }
@@ -57,23 +56,31 @@ JsObject::Ptr parse(String::CPtr urlStr) {
         obj->put(QUERY, query);
     }
     if (url->path) {
-        String::CPtr pathname = slash->concat(String::create(url->path));
+        StringBuffer::Ptr sb = StringBuffer::create();
+        sb->appendChar('/');
+        sb->appendCStr(url->path);
+        String::CPtr pathname = sb->toString();
         obj->put(PATHNAME, pathname);
         if (query) {
-            obj->put(PATH, pathname->concat(question)->concat(query));
+            sb->appendChar('?');
+            sb->append(query);
+            obj->put(PATH, sb->toString());
         } else {
             obj->put(PATH, pathname);
         }
     }
     if (url->username && url->password) {
-        String::CPtr auth = String::create(url->username);
-        auth = auth->concat(colon);
-        auth = auth->concat(String::create(url->password));
-        obj->put(AUTH, auth);
+        StringBuffer::Ptr sb = StringBuffer::create();
+        sb->appendCStr(url->username);
+        sb->appendChar(':');
+        sb->appendCStr(url->password);
+        obj->put(AUTH, sb->toString());
     }
     if (url->fragment) {
-        String::CPtr hash = sharp->concat(String::create(url->fragment));
-        obj->put(HASH, hash);
+        StringBuffer::Ptr sb = StringBuffer::create();
+        sb->appendChar('#');
+        sb->appendCStr(url->fragment);
+        obj->put(HASH, sb->toString());
     }
 
     parsed_url_free(url);
