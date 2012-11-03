@@ -4,25 +4,25 @@
 #define LIBNODE_FS_STATS_H_
 
 #include <libj/js_object.h>
-#include <libj/string.h>
+#include <libj/symbol.h>
 
 namespace libj {
 namespace node {
 namespace fs {
 
-extern const String::CPtr STAT_DEV;
-extern const String::CPtr STAT_INO;
-extern const String::CPtr STAT_MODE;
-extern const String::CPtr STAT_NLINK;
-extern const String::CPtr STAT_UID;
-extern const String::CPtr STAT_GID;
-extern const String::CPtr STAT_RDEV;
-extern const String::CPtr STAT_SIZE;
-extern const String::CPtr STAT_BLKSIZE;
-extern const String::CPtr STAT_BLOCKS;
-extern const String::CPtr STAT_ATIME;
-extern const String::CPtr STAT_MTIME;
-extern const String::CPtr STAT_CTIME;
+extern Symbol::CPtr STAT_DEV;
+extern Symbol::CPtr STAT_INO;
+extern Symbol::CPtr STAT_MODE;
+extern Symbol::CPtr STAT_NLINK;
+extern Symbol::CPtr STAT_UID;
+extern Symbol::CPtr STAT_GID;
+extern Symbol::CPtr STAT_RDEV;
+extern Symbol::CPtr STAT_SIZE;
+extern Symbol::CPtr STAT_BLKSIZE;
+extern Symbol::CPtr STAT_BLOCKS;
+extern Symbol::CPtr STAT_ATIME;
+extern Symbol::CPtr STAT_MTIME;
+extern Symbol::CPtr STAT_CTIME;
 
 class Stats : LIBJ_JS_OBJECT(Stats)
 };

@@ -8,17 +8,17 @@ namespace libj {
 namespace node {
 namespace url {
 
-const String::CPtr HREF = String::intern("href");
-const String::CPtr PROTOCOL = String::intern("protocol");
-const String::CPtr HOST = String::intern("host");
-const String::CPtr AUTH = String::intern("auth");
-const String::CPtr HOSTNAME = String::intern("hostname");
-const String::CPtr PORT = String::intern("port");
-const String::CPtr PATHNAME = String::intern("pathname");
-const String::CPtr SEARCH = String::intern("search");
-const String::CPtr PATH = String::intern("path");
-const String::CPtr QUERY = String::intern("query");
-const String::CPtr HASH = String::intern("hash");
+LIBJ_SYMBOL_DEF(HREF,     "href");
+LIBJ_SYMBOL_DEF(PROTOCOL, "protocol");
+LIBJ_SYMBOL_DEF(HOST,     "host");
+LIBJ_SYMBOL_DEF(AUTH,     "auth");
+LIBJ_SYMBOL_DEF(HOSTNAME, "hostname");
+LIBJ_SYMBOL_DEF(PORT,     "port");
+LIBJ_SYMBOL_DEF(PATHNAME, "pathname");
+LIBJ_SYMBOL_DEF(SEARCH,   "search");
+LIBJ_SYMBOL_DEF(PATH,     "path");
+LIBJ_SYMBOL_DEF(QUERY,    "query");
+LIBJ_SYMBOL_DEF(HASH,     "hash");
 
 JsObject::Ptr parse(String::CPtr urlStr) {
     static const String::CPtr colon = String::create(":");

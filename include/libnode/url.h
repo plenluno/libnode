@@ -4,23 +4,23 @@
 #define LIBNODE_URL_H_
 
 #include <libj/js_object.h>
-#include <libj/string.h>
+#include <libj/symbol.h>
 
 namespace libj {
 namespace node {
 namespace url {
 
-extern const String::CPtr HREF;
-extern const String::CPtr PROTOCOL;
-extern const String::CPtr HOST;
-extern const String::CPtr AUTH;
-extern const String::CPtr HOSTNAME;
-extern const String::CPtr PORT;
-extern const String::CPtr PATHNAME;
-extern const String::CPtr SEARCH;
-extern const String::CPtr PATH;
-extern const String::CPtr QUERY;
-extern const String::CPtr HASH;
+extern Symbol::CPtr HREF;
+extern Symbol::CPtr PROTOCOL;
+extern Symbol::CPtr HOST;
+extern Symbol::CPtr AUTH;
+extern Symbol::CPtr HOSTNAME;
+extern Symbol::CPtr PORT;
+extern Symbol::CPtr PATHNAME;
+extern Symbol::CPtr SEARCH;
+extern Symbol::CPtr PATH;
+extern Symbol::CPtr QUERY;
+extern Symbol::CPtr HASH;
 
 JsObject::Ptr parse(String::CPtr urlStr);
 String::CPtr format(JsObject::CPtr urlObj);

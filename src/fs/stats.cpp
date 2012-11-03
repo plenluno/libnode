@@ -6,19 +6,19 @@ namespace libj {
 namespace node {
 namespace fs {
 
-const String::CPtr STAT_DEV = String::intern("dev");
-const String::CPtr STAT_INO = String::intern("ino");
-const String::CPtr STAT_MODE = String::intern("mode");
-const String::CPtr STAT_NLINK = String::intern("nlink");
-const String::CPtr STAT_UID = String::intern("uid");
-const String::CPtr STAT_GID = String::intern("gid");
-const String::CPtr STAT_RDEV = String::intern("rdev");
-const String::CPtr STAT_SIZE = String::intern("size");
-const String::CPtr STAT_BLKSIZE = String::intern("blksize");
-const String::CPtr STAT_BLOCKS = String::intern("blocks");
-const String::CPtr STAT_ATIME = String::intern("atime");
-const String::CPtr STAT_MTIME = String::intern("mtime");
-const String::CPtr STAT_CTIME = String::intern("ctime");
+LIBJ_SYMBOL_DEF(STAT_DEV,	  "dev");
+LIBJ_SYMBOL_DEF(STAT_INO,	  "ino");
+LIBJ_SYMBOL_DEF(STAT_MODE,	  "mode");
+LIBJ_SYMBOL_DEF(STAT_NLINK,	  "nlink");
+LIBJ_SYMBOL_DEF(STAT_UID,	  "uid");
+LIBJ_SYMBOL_DEF(STAT_GID,	  "gid");
+LIBJ_SYMBOL_DEF(STAT_RDEV,	  "rdev");
+LIBJ_SYMBOL_DEF(STAT_SIZE,	  "size");
+LIBJ_SYMBOL_DEF(STAT_BLKSIZE, "blksize");
+LIBJ_SYMBOL_DEF(STAT_BLOCKS,  "blocks");
+LIBJ_SYMBOL_DEF(STAT_ATIME,   "atime");
+LIBJ_SYMBOL_DEF(STAT_MTIME,   "mtime");
+LIBJ_SYMBOL_DEF(STAT_CTIME,   "ctime");
 
 }  // namespace events
 }  // namespace node
