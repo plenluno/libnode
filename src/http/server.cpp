@@ -168,7 +168,10 @@ class ServerImpl : public FlagMixin, public Server {
                 String::CPtr event = isConnect ? EVENT_CONNECT : EVENT_UPGRADE;
                 if (self_->listeners(event)->length()) {
                     self_->emit(
-                        event, req, req->socket(), buf->slice(bytesParsed));
+                        event,
+                        ServerRequestImpl::create(req),
+                        req->socket(),
+                        buf->slice(bytesParsed));
                 } else {
                     socket_->destroy();
                 }
@@ -381,10 +384,12 @@ class ServerImpl : public FlagMixin, public Server {
 
             httpSocketSetup(socket);
 
+#if 0
             socket->setTimeout(2 * 60 * 1000);
             socket->once(
                 net::Socket::EVENT_TIMEOUT,
                 SocketOnTimeout::create(socket));
+#endif
 
             Size maxHeaders;
             if (self_->maxHeadersCount_) {
