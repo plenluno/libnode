@@ -7,10 +7,10 @@ namespace node {
 namespace http {
 
 #define LIBNODE_HTTP_HEADER_DEF_GEN(NAME, VAL) \
-    const String::CPtr NAME = String::intern(VAL);
+    LIBJ_SYMBOL_DEF(NAME, VAL)
 
 #define LIBNODE_HTTP_LHEADER_DEF_GEN(NAME, VAL) \
-    const String::CPtr L##NAME = String::intern(VAL)->toLowerCase();
+    Symbol::CPtr L##NAME = Symbol::create(VAL)->toLowerCase();
 
 LIBNODE_HTTP_HEADER_MAP(
     LIBNODE_HTTP_HEADER_DEF_GEN)

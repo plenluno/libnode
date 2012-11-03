@@ -3,7 +3,7 @@
 #ifndef LIBNODE_HTTP_HEADER_H_
 #define LIBNODE_HTTP_HEADER_H_
 
-#include <libj/string.h>
+#include <libj/symbol.h>
 
 namespace libj {
 namespace node {
@@ -84,10 +84,10 @@ namespace http {
     GEN(HEADER_SEC_WEBSOCKET_VERSION, "Sec-WebSocket-Version")
 
 #define LIBNODE_HTTP_HEADER_DECL_GEN(NAME, VAL) \
-    extern const String::CPtr NAME;
+    extern Symbol::CPtr NAME;
 
 #define LIBNODE_HTTP_LHEADER_DECL_GEN(NAME, VAL) \
-    extern const String::CPtr L##NAME;
+    extern Symbol::CPtr L##NAME;
 
 LIBNODE_HTTP_HEADER_MAP(
     LIBNODE_HTTP_HEADER_DECL_GEN)
