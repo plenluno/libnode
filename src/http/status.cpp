@@ -1,5 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <libj/symbol.h>
+
 #include "libnode/http/status.h"
 
 namespace libj {
@@ -68,13 +70,13 @@ class StatusImpl : public Status {
 
  public:
     static CPtr create(Int code, String::CPtr msg) {
-        static const String::CPtr strUnknown = String::intern("Unknown");
+        LIBJ_STATIC_SYMBOL_DEF(symUnknown, "Unknown");
 
         if (!msg) {
             switch (code) {
                 LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_CASE_GEN);
             default:
-                msg = strUnknown;
+                msg = symUnknown;
             }
         }
         return CPtr(new StatusImpl(code, msg));
