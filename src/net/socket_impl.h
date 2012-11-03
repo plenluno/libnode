@@ -71,11 +71,11 @@ class SocketImpl
     uv_tcp_t* getUvTcp() { return tcp_; }
 
     JsObject::Ptr address() {
-        static const String::CPtr strPort = String::create("port");
-        static const String::CPtr strFamily = String::create("family");
-        static const String::CPtr strAddress = String::create("address");
-        static const String::CPtr strIpV4 = String::create("IPv4");
-        static const String::CPtr strIpV6 = String::create("IPv6");
+        LIBJ_STATIC_SYMBOL_DEF(symIpV4,    "IPv4");
+        LIBJ_STATIC_SYMBOL_DEF(symIpV6,    "IPv6");
+        LIBJ_STATIC_SYMBOL_DEF(symPort,    "port");
+        LIBJ_STATIC_SYMBOL_DEF(symFamily,  "family");
+        LIBJ_STATIC_SYMBOL_DEF(symAddress, "address");
 
         struct sockaddr_storage addr;
         int len = sizeof(addr);
@@ -87,25 +87,25 @@ class SocketImpl
             char ip[INET6_ADDRSTRLEN];
             switch (addr.ss_family) {
             case AF_INET:
-                res->put(strFamily, strIpV4);
-                res->put(strPort, static_cast<int>(ntohs(
+                res->put(symFamily, symIpV4);
+                res->put(symPort, static_cast<int>(ntohs(
                     reinterpret_cast<struct sockaddr_in*>(&addr)->sin_port)));
                 if (!uv_ip4_name(
                         reinterpret_cast<struct sockaddr_in*>(&addr),
                         ip,
                         INET6_ADDRSTRLEN)) {
-                    res->put(strAddress, String::create(ip));
+                    res->put(symAddress, String::create(ip));
                 }
                 break;
             case AF_INET6:
-                res->put(strFamily, strIpV6);
-                res->put(strPort, static_cast<int>(ntohs(
+                res->put(symFamily, symIpV6);
+                res->put(symPort, static_cast<int>(ntohs(
                     reinterpret_cast<struct sockaddr_in6*>(&addr)->sin6_port)));
                 if (!uv_ip6_name(
                         reinterpret_cast<struct sockaddr_in6*>(&addr),
                         ip,
                         INET6_ADDRSTRLEN)) {
-                    res->put(strAddress, String::create(ip));
+                    res->put(symAddress, String::create(ip));
                 }
                 break;
             }
