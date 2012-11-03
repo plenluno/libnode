@@ -129,8 +129,7 @@ class EventEmitterImpl : public EventEmitter {
     LIBJ_JS_OBJECT_IMPL(listeners_);
 };
 
-const String::CPtr EventEmitter::EVENT_NEW_LISTENER =
-    String::intern("newListener");
+LIBJ_SYMBOL_DEF(EventEmitter::EVENT_NEW_LISTENER, "newListener");
 
 EventEmitter::Ptr EventEmitter::create() {
     return EventEmitterImpl::create();

@@ -11,11 +11,11 @@ namespace http {
 
 class ClientRequest : LIBNODE_WRITABLE_STREAM(ClientRequest)
  public:
-    static const String::CPtr EVENT_RESPONSE;
-    static const String::CPtr EVENT_SOCKET;
-    static const String::CPtr EVENT_CONNECT;
-    static const String::CPtr EVENT_UPGRADE;
-    static const String::CPtr EVENT_CONTINUE;
+    static Symbol::CPtr EVENT_RESPONSE;
+    static Symbol::CPtr EVENT_SOCKET;
+    static Symbol::CPtr EVENT_CONNECT;
+    static Symbol::CPtr EVENT_UPGRADE;
+    static Symbol::CPtr EVENT_CONTINUE;
 
     virtual void abort() = 0;
     virtual Boolean setNoDelay(Boolean noDelay = true) = 0;
