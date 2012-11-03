@@ -6,6 +6,16 @@
 namespace libj {
 namespace node {
 
+TEST(GTestUtil, TestExtend) {
+    JsObject::Ptr super = JsObject::create();
+    super->put(String::create("a"), 3);
+    super->put(String::create("b"), String::create("c"));
+    JsObject::Ptr derived = JsObject::create();
+    ASSERT_TRUE(util::extend(derived, super));
+    ASSERT_TRUE(derived->get(String::create("a")).equals(3));
+    ASSERT_TRUE(derived->get(String::create("b")).equals(String::create("c")));
+}
+
 TEST(GTestUtil, TestHexEncode) {
     String::CPtr encoded = util::hexEncode(Buffer::create());
     ASSERT_TRUE(encoded && encoded->isEmpty());
