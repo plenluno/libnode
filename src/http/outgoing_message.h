@@ -78,7 +78,7 @@ class OutgoingMessage
     }
 
     Boolean write(const Value& chunk, Buffer::Encoding enc) {
-        static const String::CPtr strCRLF = String::intern("\r\n");
+        LIBJ_STATIC_SYMBOL_DEF(symCRLF, "\r\n");
 
         if (!header_ || header_->isEmpty()) {
             implicitHeader();
@@ -101,14 +101,17 @@ class OutgoingMessage
         if (hasFlag(CHUNKED_ENCODING)) {
             if (str) {
                 Size len = Buffer::byteLength(str, enc);
-                String::CPtr data = toHex(len)->concat(strCRLF);
-                data = data->concat(str)->concat(strCRLF);
-                return send(data, enc);
+                StringBuffer::Ptr data = StringBuffer::create();
+                data->append(toHex(len));
+                data->appendCStr("\r\n");
+                data->append(str);
+                data->appendCStr("\r\n");
+                return send(data->toString(), enc);
             } else {
                 Size len = buf->length();
-                send(toHex(len)->concat(strCRLF));
+                send(toHex(len)->concat(symCRLF));
                 send(buf);
-                return send(strCRLF);
+                return send(symCRLF);
             }
         } else {
             return send(chunk, enc);
@@ -364,9 +367,8 @@ class OutgoingMessage
     }
 
     void storeHeader(String::CPtr firstLine, JsObject::CPtr headers) {
-        static const String::CPtr strClose = String::intern("close");
-        static const String::CPtr strKeepAlive = String::intern("keep-alive");
-        static const String::CPtr strChunked = String::intern("chunked");
+        LIBJ_STATIC_SYMBOL_DEF(symClose,     "close");
+        LIBJ_STATIC_SYMBOL_DEF(symChunked,   "chunked");
 
         Boolean sentConnectionHeader = false;
         Boolean sentContentLengthHeader = false;
@@ -387,14 +389,14 @@ class OutgoingMessage
             String::CPtr lowerField = F->toLowerCase(); \
             if (lowerField->equals(LHEADER_CONNECTION)) { \
                 sentConnectionHeader = true; \
-                if (V.equals(strClose)) { \
+                if (V.equals(symClose)) { \
                     setFlag(LAST); \
                 } else { \
                     setFlag(SHOULD_KEEP_ALIVE); \
                 } \
             } else if (lowerField->equals(LHEADER_TRANSFER_ENCODING)) { \
                 sentTransferEncodingHeader = true; \
-                if (V.equals(strChunked)) { \
+                if (V.equals(symChunked)) { \
                     setFlag(CHUNKED_ENCODING); \
                 } \
             } else if (lowerField->equals(LHEADER_CONTENT_LENGTH)) { \
@@ -440,10 +442,10 @@ class OutgoingMessage
             messageHader->append(HEADER_CONNECTION);
             messageHader->appendCStr(": ");
             if (shouldSendKeepAlive) {
-                messageHader->append(strKeepAlive);
+                messageHader->appendCStr("keep-alive");
             } else {
                 setFlag(LAST);
-                messageHader->append(strClose);
+                messageHader->appendCStr("close");
             }
             messageHader->appendCStr("\r\n");
         }
@@ -452,9 +454,7 @@ class OutgoingMessage
             if (hasFlag(HAS_BODY)) {
                 if (hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT)) {
                     messageHader->append(HEADER_TRANSFER_ENCODING);
-                    messageHader->appendCStr(": ");
-                    messageHader->append(strChunked);
-                    messageHader->appendCStr("\r\n");
+                    messageHader->appendCStr(": chunked\r\n");
                     setFlag(CHUNKED_ENCODING);
                 } else {
                     setFlag(LAST);
@@ -483,9 +483,9 @@ class OutgoingMessage
     }
 
     void finish() {
-        static const String::CPtr strFinish = String::intern("finish");
+        LIBJ_STATIC_SYMBOL_DEF(EVENT_FINISH, "finish");
         assert(socket_);
-        emit(strFinish);
+        emit(EVENT_FINISH);
     }
 
     void flush() {
@@ -508,19 +508,14 @@ class OutgoingMessage
     }
 
     void implicitHeader() {
-        static const String::CPtr strMethod = String::intern("method");
-        static const String::CPtr strPath = String::intern("path");
-
         if (hasFlag(SERVER_RESPONSE)) {
             writeHead(statusCode_);
         } else {
-            String::CPtr method = getCPtr<String>(strMethod);
-            String::CPtr path = getCPtr<String>(strPath);
-            assert(method && path);
+            assert(method_ && path_);
             StringBuffer::Ptr sb = StringBuffer::create();
-            sb->append(method);
+            sb->append(method_);
             sb->appendChar(' ');
-            sb->append(path);
+            sb->append(path_);
             sb->appendCStr(" HTTP/1.1\r\n");
             String::CPtr firstLine = sb->toString();
             storeHeader(firstLine, renderHeaders());
@@ -548,6 +543,8 @@ class OutgoingMessage
 
     net::SocketImpl::Ptr socket_;
     Int statusCode_;
+    String::CPtr method_;
+    String::CPtr path_;
     String::CPtr header_;
     String::CPtr trailer_;
     JsObject::Ptr headers_;
@@ -560,6 +557,8 @@ class OutgoingMessage
     OutgoingMessage()
         : socket_(net::SocketImpl::null())
         , statusCode_(Status::OK)
+        , method_(String::null())
+        , path_(String::null())
         , header_(String::create())
         , trailer_(String::create())
         , headers_(JsObject::create())
