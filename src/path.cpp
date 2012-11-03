@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <unistd.h>
+#include <libj/symbol.h>
 #include <libj/string_buffer.h>
 
 #include "libnode/path.h"
@@ -11,11 +12,10 @@ namespace node {
 namespace path {
 
 String::CPtr normalize(String::CPtr path) {
-    static const String::CPtr empty = String::create();
-    static const String::CPtr current = String::intern(".");
-    static const String::CPtr parent = String::intern("..");
+    LIBJ_STATIC_SYMBOL_DEF(symCurrent, ".");
+    LIBJ_STATIC_SYMBOL_DEF(symParent,  "..");
 
-    if (!path) return empty;
+    if (!path) return String::create();
 
     Boolean absolute = false;
     Boolean endsWithSep = false;
@@ -32,15 +32,15 @@ String::CPtr normalize(String::CPtr path) {
             } else {
                 dir = path->substring(i, idx);
             }
-            if (dir->compareTo(parent) == 0) {
+            if (dir->compareTo(symParent) == 0) {
                 Size numDirs = dirs->size();
                 if (numDirs > 0 &&
-                    dirs->get(numDirs - 1).compareTo(parent) != 0) {
+                    dirs->get(numDirs - 1).compareTo(symParent) != 0) {
                     dirs->remove(numDirs - 1);
                 } else {
                     dirs->add(dir);
                 }
-            } else if (dir->compareTo(current) != 0) {
+            } else if (dir->compareTo(symCurrent) != 0) {
                 dirs->add(dir);
             }
         }
@@ -65,16 +65,16 @@ String::CPtr normalize(String::CPtr path) {
     if (numDirs > 0 && endsWithSep)
         normal->append(sep());
     if (normal->length() == 0) {
-        return current;
+        return symCurrent;
     } else {
         return normal->toString();
     }
 }
 
 String::CPtr join(JsArray::CPtr paths) {
-    static const String::CPtr current = String::intern(".");
+    LIBJ_STATIC_SYMBOL_DEF(symCurrent, ".");
 
-    if (!paths) return current;
+    if (!paths) return symCurrent;
 
     StringBuffer::Ptr joined = StringBuffer::create();
     Size len = paths->length();
@@ -127,15 +127,15 @@ String::CPtr relative(String::CPtr from, String::CPtr to) {
 }
 
 String::CPtr dirname(String::CPtr path) {
-    static const String::CPtr current = String::intern(".");
+    LIBJ_STATIC_SYMBOL_DEF(symCurrent, ".");
 
-    if (!path) return current;
+    if (!path) return symCurrent;
 
     String::CPtr base = basename(path);
     Size baseLen = base->length();
     Size pathLen = path->length();
     if (baseLen == pathLen) {
-        return current;
+        return symCurrent;
     } else {
         Size sepPos = pathLen - baseLen - 1;
         assert(path->charAt(sepPos) == '/');
@@ -148,12 +148,11 @@ String::CPtr dirname(String::CPtr path) {
 }
 
 String::CPtr basename(String::CPtr path) {
-    static const String::CPtr empty = String::create();
     static const String::CPtr doubleSep = sep()->concat(sep());
 
-    if (!path) return empty;
-    if (path->compareTo(sep()) == 0) return empty;
-    if (path->compareTo(doubleSep) == 0) return empty;
+    if (!path) return String::create();
+    if (path->compareTo(sep()) == 0) return String::create();
+    if (path->compareTo(doubleSep) == 0) return String::create();
 
     Size lastIndex;
     Size len = path->length();
@@ -173,19 +172,17 @@ String::CPtr basename(String::CPtr path) {
 }
 
 String::CPtr extname(String::CPtr path) {
-    static const String::CPtr empty = String::create();
-
-    if (!path) return empty;
+    if (!path) return String::create();
 
     String::CPtr base = basename(path);
-    if (base->endsWith(sep())) return empty;
+    if (base->endsWith(sep())) return String::create();
 
     Size lastIndex = NO_POS;
     if (base->length() > 1)
         lastIndex = base->lastIndexOf('.');
     String::CPtr ext;
     if (lastIndex == NO_POS) {
-        ext = empty;
+        ext = String::create();
     } else {
         ext = base->substring(lastIndex);
     }
@@ -193,8 +190,8 @@ String::CPtr extname(String::CPtr path) {
 }
 
 String::CPtr sep() {
-    static const String::CPtr separator = String::intern("/");
-    return separator;
+    LIBJ_STATIC_SYMBOL_DEF(symSep, "/");
+    return symSep;
 }
 
 }  // namespace path
