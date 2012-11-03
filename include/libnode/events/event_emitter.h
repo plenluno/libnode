@@ -7,6 +7,7 @@
 #include <libj/js_function.h>
 #include <libj/js_object.h>
 #include <libj/string.h>
+#include <libj/symbol.h>
 
 namespace libj {
 namespace node {
@@ -14,7 +15,7 @@ namespace events {
 
 class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
  public:
-    static const String::CPtr EVENT_NEW_LISTENER;
+    static Symbol::CPtr EVENT_NEW_LISTENER;
 
     static Ptr create();
 
