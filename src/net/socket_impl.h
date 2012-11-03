@@ -4,6 +4,7 @@
 #define LIBNODE_SRC_NET_SOCKET_IMPL_H_
 
 #include <assert.h>
+#include <string.h>
 
 #include "libnode/error.h"
 #include "libnode/net/socket.h"
