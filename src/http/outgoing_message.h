@@ -101,7 +101,6 @@ class OutgoingMessage
         if (hasFlag(CHUNKED_ENCODING)) {
             if (str) {
                 Size len = Buffer::byteLength(str, enc);
-                // TODO(plenluno): toHex(len)
                 String::CPtr data = toHex(len)->concat(strCRLF);
                 data = data->concat(str)->concat(strCRLF);
                 return send(data, enc);
@@ -146,7 +145,6 @@ class OutgoingMessage
         if (hot) {
             if (hasFlag(CHUNKED_ENCODING)) {
                 Size len = Buffer::byteLength(str, enc);
-                // TODO(plenluno): toHex(len)
                 String::CPtr chunk =
                     header_->concat(toHex(len))
                            ->concat(strCRLF)
@@ -283,28 +281,32 @@ class OutgoingMessage
     }
 
     Boolean send(const Value& data, Buffer::Encoding enc = Buffer::NONE) {
-        Value d;
-        if (!hasFlag(HEADER_SENT)) {
+        if (hasFlag(HEADER_SENT)) {
+            return writeRaw(data, enc);
+        } else {
+            setFlag(HEADER_SENT);
             String::CPtr str = toCPtr<String>(data);
             if (str) {
                 assert(header_);
-                d = header_->concat(str);
+                return writeRaw(header_->concat(str), enc);
             } else {
-                d = data;
                 output_->add(0, header_);
                 outputEncodings_->addTyped(0, Buffer::UTF8);
+                return writeRaw(data, enc);
             }
-            setFlag(HEADER_SENT);
         }
-        return writeRaw(d, enc);
     }
 
     Boolean writeRaw(const Value& data, Buffer::Encoding enc) {
         String::CPtr str = toCPtr<String>(data);
-        if (str && str->isEmpty()) return true;
-
         Buffer::CPtr buf = toCPtr<Buffer>(data);
-        if (buf && buf->isEmpty()) return true;
+        if (str) {
+            if (str->isEmpty()) return true;
+        } else if (buf) {
+            if (buf->isEmpty()) return true;
+        } else {
+            return false;
+        }
 
         if (socket_ &&
             socket_->httpMessage() == this &&
@@ -558,7 +560,6 @@ class OutgoingMessage
     SocketOnClose::Ptr socketOnClose_;
     EventEmitter::Ptr ee_;
 
- public:
     OutgoingMessage()
         : socket_(net::SocketImpl::null())
         , statusCode_(Status::OK)
