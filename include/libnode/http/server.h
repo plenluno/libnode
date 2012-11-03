@@ -11,11 +11,11 @@ namespace http {
 
 class Server : LIBNODE_NET_SERVER(Server)
  public:
-    static const String::CPtr EVENT_REQUEST;
-    static const String::CPtr EVENT_CHECK_CONTINUE;
-    static const String::CPtr EVENT_CONNECT;
-    static const String::CPtr EVENT_UPGRADE;
-    static const String::CPtr EVENT_CLIENT_ERROR;
+    static Symbol::CPtr EVENT_REQUEST;
+    static Symbol::CPtr EVENT_CHECK_CONTINUE;
+    static Symbol::CPtr EVENT_CONNECT;
+    static Symbol::CPtr EVENT_UPGRADE;
+    static Symbol::CPtr EVENT_CLIENT_ERROR;
 
     static Ptr create();
 };

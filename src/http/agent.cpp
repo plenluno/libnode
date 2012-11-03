@@ -283,9 +283,9 @@ class AgentImpl : Agent {
     };
 
  private:
-    static const String::CPtr EVENT_CLOSE;
-    static const String::CPtr EVENT_FREE;
-    static const String::CPtr EVENT_AGENT_REMOVE;
+    static Symbol::CPtr EVENT_CLOSE;
+    static Symbol::CPtr EVENT_FREE;
+    static Symbol::CPtr EVENT_AGENT_REMOVE;
 
     static const UInt defaultPort_;
     static const Size defaultMaxSockets_;

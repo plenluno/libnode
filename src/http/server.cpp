@@ -460,16 +460,11 @@ class ServerImpl : public FlagMixin, public Server {
     LIBNODE_NET_SERVER_IMPL(server_);
 };
 
-const String::CPtr Server::EVENT_REQUEST =
-    String::intern("request");
-const String::CPtr Server::EVENT_CHECK_CONTINUE =
-    String::intern("checkContinue");
-const String::CPtr Server::EVENT_CONNECT =
-    String::intern("connect");
-const String::CPtr Server::EVENT_UPGRADE =
-    String::intern("upgrade");
-const String::CPtr Server::EVENT_CLIENT_ERROR =
-    String::intern("clientError");
+LIBJ_SYMBOL_DEF(Server::EVENT_REQUEST,        "request");
+LIBJ_SYMBOL_DEF(Server::EVENT_CHECK_CONTINUE, "checkContinue");
+LIBJ_SYMBOL_DEF(Server::EVENT_CONNECT,        "connect");
+LIBJ_SYMBOL_DEF(Server::EVENT_UPGRADE,        "upgrade");
+LIBJ_SYMBOL_DEF(Server::EVENT_CLIENT_ERROR,   "clientError");
 
 Server::Ptr Server::create() {
     return ServerImpl::create();

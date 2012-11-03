@@ -149,42 +149,42 @@ class Parser : public FlagMixin {
     }
 
     static int onHeadersComplete(http_parser* parser) {
-        static const String::CPtr methodDelete = String::intern("DELETE");
-        static const String::CPtr methodGet = String::intern("GET");
-        static const String::CPtr methodHead = String::intern("HEAD");
-        static const String::CPtr methodPost = String::intern("POST");
-        static const String::CPtr methodPut = String::intern("PUT");
-        static const String::CPtr methodConnect = String::intern("CONNECT");
-        static const String::CPtr methodOptions = String::intern("OPTIONS");
-        static const String::CPtr methodTrace = String::intern("TRACE");
+        LIBJ_STATIC_SYMBOL_DEF(symDelete,  "DELETE");
+        LIBJ_STATIC_SYMBOL_DEF(symGet,     "GET");
+        LIBJ_STATIC_SYMBOL_DEF(symHead,    "HEAD");
+        LIBJ_STATIC_SYMBOL_DEF(symPost,    "POST");
+        LIBJ_STATIC_SYMBOL_DEF(symPut,     "PUT");
+        LIBJ_STATIC_SYMBOL_DEF(symConnect, "CONNECT");
+        LIBJ_STATIC_SYMBOL_DEF(symOptions, "OPTIONS");
+        LIBJ_STATIC_SYMBOL_DEF(symTrace,   "TRACE");
 
         Parser* self = static_cast<Parser*>(parser->data);
         if (parser->type == HTTP_REQUEST) {
             String::CPtr method;
             switch (parser->method) {
             case HTTP_DELETE:
-                method = methodDelete;
+                method = symDelete;
                 break;
             case HTTP_GET:
-                method = methodGet;
+                method = symGet;
                 break;
             case HTTP_HEAD:
-                method = methodHead;
+                method = symHead;
                 break;
             case HTTP_POST:
-                method = methodPost;
+                method = symPost;
                 break;
             case HTTP_PUT:
-                method = methodPut;
+                method = symPut;
                 break;
             case HTTP_CONNECT:
-                method = methodConnect;
+                method = symConnect;
                 break;
             case HTTP_OPTIONS:
-                method = methodOptions;
+                method = symOptions;
                 break;
             case HTTP_TRACE:
-                method = methodTrace;
+                method = symTrace;
                 break;
             default:
                 method = String::create();
