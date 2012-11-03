@@ -116,10 +116,6 @@ class OutgoingMessage
     }
 
     Boolean end(const Value& data, Buffer::Encoding enc) {
-        static const String::CPtr strCRLF = String::intern("\r\n");
-        static const String::CPtr str0CRLF = String::create("0\r\n");
-        static const String::CPtr strCRLF0CRLF = String::create("\r\n0\r\n");
-
         if (hasFlag(FINISHED)) return false;
 
         if (!header_ || header_->isEmpty()) {
@@ -145,14 +141,15 @@ class OutgoingMessage
         if (hot) {
             if (hasFlag(CHUNKED_ENCODING)) {
                 Size len = Buffer::byteLength(str, enc);
-                String::CPtr chunk =
-                    header_->concat(toHex(len))
-                           ->concat(strCRLF)
-                           ->concat(str)
-                           ->concat(strCRLF0CRLF)
-                           ->concat(trailer_)
-                           ->concat(strCRLF);
-                ret = socket_->write(chunk, enc);
+                StringBuffer::Ptr chunk = StringBuffer::create();
+                chunk->append(header_);
+                chunk->append(toHex(len));
+                chunk->appendCStr("\r\n");
+                chunk->append(str);
+                chunk->appendCStr("\r\n0\r\n");
+                chunk->append(trailer_);
+                chunk->appendCStr("\r\n");
+                ret = socket_->write(chunk->toString(), enc);
             } else {
                 ret = socket_->write(header_->concat(str), enc);
             }
@@ -163,9 +160,11 @@ class OutgoingMessage
 
         if (!hot) {
             if (hasFlag(CHUNKED_ENCODING)) {
-                String::CPtr chunk =
-                    str0CRLF->concat(trailer_)->concat(strCRLF);
-                ret = send(chunk);
+                StringBuffer::Ptr chunk = StringBuffer::create();
+                chunk->appendCStr("0\r\n");
+                chunk->append(trailer_);
+                chunk->appendCStr("\r\n");
+                ret = send(chunk->toString());
             } else {
                 ret = send(String::create());
             }
@@ -365,8 +364,6 @@ class OutgoingMessage
     }
 
     void storeHeader(String::CPtr firstLine, JsObject::CPtr headers) {
-        static const String::CPtr strColon = String::intern(": ");
-        static const String::CPtr strCRLF = String::intern("\r\n");
         static const String::CPtr strClose = String::intern("close");
         static const String::CPtr strKeepAlive = String::intern("keep-alive");
         static const String::CPtr strChunked = String::intern("chunked");
@@ -384,9 +381,9 @@ class OutgoingMessage
 
         #define LIBNODE_OUTMSG_STORE(F, V) { \
             messageHader->append(F); \
-            messageHader->append(strColon); \
+            messageHader->appendCStr(": "); \
             messageHader->append(V); \
-            messageHader->append(strCRLF); \
+            messageHader->appendCStr("\r\n"); \
             String::CPtr lowerField = F->toLowerCase(); \
             if (lowerField->equals(LHEADER_CONNECTION)) { \
                 sentConnectionHeader = true; \
@@ -441,23 +438,23 @@ class OutgoingMessage
                  hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT) ||
                  true);  // this.agent
             messageHader->append(HEADER_CONNECTION);
-            messageHader->append(strColon);
+            messageHader->appendCStr(": ");
             if (shouldSendKeepAlive) {
                 messageHader->append(strKeepAlive);
             } else {
                 setFlag(LAST);
                 messageHader->append(strClose);
             }
-            messageHader->append(strCRLF);
+            messageHader->appendCStr("\r\n");
         }
 
         if (!sentContentLengthHeader && !sentTransferEncodingHeader) {
             if (hasFlag(HAS_BODY)) {
                 if (hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT)) {
                     messageHader->append(HEADER_TRANSFER_ENCODING);
-                    messageHader->append(strColon);
+                    messageHader->appendCStr(": ");
                     messageHader->append(strChunked);
-                    messageHader->append(strCRLF);
+                    messageHader->appendCStr("\r\n");
                     setFlag(CHUNKED_ENCODING);
                 } else {
                     setFlag(LAST);
@@ -467,7 +464,7 @@ class OutgoingMessage
             }
         }
 
-        messageHader->append(strCRLF);
+        messageHader->appendCStr("\r\n");
         header_ = messageHader->toString();
         unsetFlag(HEADER_SENT);
 
