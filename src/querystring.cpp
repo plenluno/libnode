@@ -23,9 +23,6 @@ static String::CPtr toString(Value val) {
 }
 
 String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
-    const String::CPtr strSep = String::create(sep);
-    const String::CPtr strEq = String::create(eq);
-
     if (!obj) return String::create();
 
     StringBuffer::Ptr res = StringBuffer::create();
@@ -36,7 +33,7 @@ String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
         if (first) {
             first = false;
         } else {
-            res->append(strSep);
+            res->appendChar(sep);
         }
         Value key = i->next();
         Value val = obj->get(key);
@@ -44,15 +41,15 @@ String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
             JsArray::CPtr ary = toCPtr<JsArray>(val);
             for (Size i = 0; i < ary->length(); i++) {
                 if (i) {
-                    res->append(strSep);
+                    res->appendChar(sep);
                 }
                 res->append(toString(key));
-                res->append(strEq);
+                res->appendChar(eq);
                 res->append(toString(ary->get(i)));
             }
         } else {
             res->append(toString(key));
-            res->append(strEq);
+            res->appendChar(eq);
             res->append(toString(val));
         }
     }
