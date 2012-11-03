@@ -367,8 +367,6 @@ class SocketImpl
         if (hasFlag(DESTROYED))
             return false;
 
-        // removeAllListeners();
-
         unsetFlag(READABLE);
         unsetFlag(WRITABLE);
 
