@@ -4,6 +4,7 @@
 #define LIBNODE_SRC_HTTP_OUTGOING_MESSAGE_H_
 
 #include <assert.h>
+#include <stdio.h>
 #include <libj/typed_linked_list.h>
 
 #include "libnode/http.h"
