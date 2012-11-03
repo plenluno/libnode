@@ -88,8 +88,7 @@ class IncomingMessage
     }
 
     void addHeaderLine(String::CPtr name, String::CPtr value) {
-        static const String::CPtr comma = String::create(", ");
-        static const String::CPtr extPrefix = String::create("x-");
+        LIBJ_STATIC_SYMBOL_DEF(symExtPrefix, "x-");
         static Set::Ptr commaSeparated = Set::null();
 
         assert(name && value);
@@ -122,10 +121,14 @@ class IncomingMessage
                 dest->put(field, vals);
             }
         } else if (commaSeparated->contains(field) ||
-                   field->startsWith(extPrefix)) {
+                   field->startsWith(symExtPrefix)) {
             String::CPtr vals = headers_->getCPtr<String>(field);
             if (vals) {
-                dest->put(field, vals->concat(comma)->concat(value));
+                StringBuffer::Ptr sb = StringBuffer::create();
+                sb->append(vals);
+                sb->appendCStr(", ");
+                sb->append(value);
+                dest->put(field, sb->toString());
             } else {
                 dest->put(field, value);
             }
