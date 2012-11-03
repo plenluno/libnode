@@ -5,16 +5,16 @@
 namespace libj {
 namespace node {
 
-const String::CPtr Stream::EVENT_ERROR = String::intern("error");
-const String::CPtr Stream::EVENT_CLOSE = String::intern("close");
-const String::CPtr ReadableStream::EVENT_DATA = String::intern("data");
-const String::CPtr ReadableStream::EVENT_END = String::intern("end");
-const String::CPtr WritableStream::EVENT_DRAIN = String::intern("drain");
-const String::CPtr WritableStream::EVENT_PIPE = String::intern("pipe");
-const String::CPtr DuplexStream::EVENT_DATA = String::intern("data");
-const String::CPtr DuplexStream::EVENT_END = String::intern("end");
-const String::CPtr DuplexStream::EVENT_DRAIN = String::intern("drain");
-const String::CPtr DuplexStream::EVENT_PIPE = String::intern("pipe");
+LIBJ_SYMBOL_DEF(Stream::EVENT_ERROR,         "error");
+LIBJ_SYMBOL_DEF(Stream::EVENT_CLOSE,         "close");
+LIBJ_SYMBOL_DEF(ReadableStream::EVENT_DATA,  "data");
+LIBJ_SYMBOL_DEF(ReadableStream::EVENT_END,   "end");
+LIBJ_SYMBOL_DEF(WritableStream::EVENT_DRAIN, "drain");
+LIBJ_SYMBOL_DEF(WritableStream::EVENT_PIPE,  "pipe");
+LIBJ_SYMBOL_DEF(DuplexStream::EVENT_DATA,    "data");
+LIBJ_SYMBOL_DEF(DuplexStream::EVENT_END,     "end");
+LIBJ_SYMBOL_DEF(DuplexStream::EVENT_DRAIN,   "drain");
+LIBJ_SYMBOL_DEF(DuplexStream::EVENT_PIPE,    "pipe");
 
 }  // namespace node
 }  // namespace libj

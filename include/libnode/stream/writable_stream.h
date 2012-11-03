@@ -11,8 +11,8 @@ namespace node {
 
 class WritableStream : LIBNODE_STREAM(WritableStream)
  public:
-    static const String::CPtr EVENT_DRAIN;
-    static const String::CPtr EVENT_PIPE;
+    static Symbol::CPtr EVENT_DRAIN;
+    static Symbol::CPtr EVENT_PIPE;
 
     virtual Boolean writable() const = 0;
     virtual Boolean write(

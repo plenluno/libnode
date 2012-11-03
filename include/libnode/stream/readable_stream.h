@@ -11,8 +11,8 @@ namespace node {
 
 class ReadableStream : LIBNODE_STREAM(ReadableStream)
  public:
-    static const String::CPtr EVENT_DATA;
-    static const String::CPtr EVENT_END;
+    static Symbol::CPtr EVENT_DATA;
+    static Symbol::CPtr EVENT_END;
 
     virtual Boolean readable() const = 0;
     virtual Boolean setEncoding(Buffer::Encoding enc) = 0;

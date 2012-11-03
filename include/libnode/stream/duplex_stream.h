@@ -11,10 +11,10 @@ namespace node {
 
 class DuplexStream : LIBNODE_STREAM(DuplexStream)
  public:
-    static const String::CPtr EVENT_DATA;
-    static const String::CPtr EVENT_END;
-    static const String::CPtr EVENT_DRAIN;
-    static const String::CPtr EVENT_PIPE;
+    static Symbol::CPtr EVENT_DATA;
+    static Symbol::CPtr EVENT_END;
+    static Symbol::CPtr EVENT_DRAIN;
+    static Symbol::CPtr EVENT_PIPE;
 
     // ReadableStream
     virtual Boolean readable() const = 0;

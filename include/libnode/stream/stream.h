@@ -10,8 +10,8 @@ namespace node {
 
 class Stream : LIBNODE_EVENT_EMITTER(Stream)
  public:
-    static const String::CPtr EVENT_ERROR;
-    static const String::CPtr EVENT_CLOSE;
+    static Symbol::CPtr EVENT_ERROR;
+    static Symbol::CPtr EVENT_CLOSE;
 
     virtual Boolean destroy() = 0;
 };
