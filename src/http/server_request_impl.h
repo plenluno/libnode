@@ -20,7 +20,6 @@ class ServerRequestImpl : LIBNODE_HTTP_SERVER_REQUEST(ServerRequestImpl)
  private:
     IncomingMessage::Ptr msg_;
 
- public:
     ServerRequestImpl(IncomingMessage::Ptr msg) : msg_(msg) {}
 
     LIBNODE_HTTP_SERVER_REQUEST_IMPL(msg_);

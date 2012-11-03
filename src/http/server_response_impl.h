@@ -20,7 +20,6 @@ class ServerResponseImpl : LIBNODE_HTTP_SERVER_RESPONSE(ServerResponseImpl)
  private:
     OutgoingMessage::Ptr msg_;
 
- public:
     ServerResponseImpl(OutgoingMessage::Ptr msg) : msg_(msg) {}
 
     LIBNODE_HTTP_SERVER_RESPONSE_IMPL(msg_);
