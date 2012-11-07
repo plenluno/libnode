@@ -32,7 +32,6 @@ set(libnode-src
     src/buffer.cpp
     src/crypto.cpp
     src/crypto/hash.cpp
-    src/error.cpp
     src/events/event_emitter.cpp
     src/fs.cpp
     src/fs/stats.cpp
@@ -53,6 +52,8 @@ set(libnode-src
     src/timer.cpp
     src/url.cpp
     src/util.cpp
+    src/uv/error.cpp
+    src/uv/stream.cpp
 )
 
 set(libnode-deps
@@ -227,7 +228,6 @@ if(LIBNODE_BUILD_GTEST)
         gtest/gtest_main.cpp
         gtest/gtest_buffer.cpp
         gtest/gtest_crypto_hash.cpp
-        gtest/gtest_error.cpp
         gtest/gtest_event_emitter.cpp
         gtest/gtest_http_server.cpp
         gtest/gtest_http_status.cpp
@@ -236,6 +236,7 @@ if(LIBNODE_BUILD_GTEST)
         gtest/gtest_url.cpp
         gtest/gtest_url_parser.cpp
         gtest/gtest_util.cpp
+        gtest/gtest_uv_error.cpp
         ${libnode-src}
     )
     target_link_libraries(libnode-gtest
