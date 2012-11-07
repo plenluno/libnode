@@ -20,7 +20,7 @@ void Stream::onReadCommon(
             stream->buffer_ = Buffer::null();
         }
         setLastError();
-        stream->onRead_->call(Buffer::null(), NULL);
+        stream->onRead_->call(Buffer::null(), 0);
         return;
     }
 
