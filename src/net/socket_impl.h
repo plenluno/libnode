@@ -4,12 +4,16 @@
 #define LIBNODE_SRC_NET_SOCKET_IMPL_H_
 
 #include <assert.h>
+#include <string.h>
 
-#include "libnode/error.h"
 #include "libnode/net/socket.h"
 #include "libnode/timer.h"
+#include "libnode/uv/error.h"
 
 #include "../flag.h"
+
+#include "../uv/pipe.h"
+#include "../uv/tcp.h"
 
 namespace libj {
 namespace node {
@@ -402,7 +406,7 @@ class SocketImpl
 
         if (status) {
             uv_err_t err = uv_last_error(uv_default_loop());
-            socket->destroy(Error::valueOf(err.code));
+            socket->destroy(uv::Error::valueOf(err.code));
             return;
         }
 

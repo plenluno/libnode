@@ -2,12 +2,12 @@
 
 #include <fcntl.h>
 #include <libj/js_array.h>
-#include <uv.h>
 #include <string>
 
 #include "libnode/buffer.h"
-#include "libnode/error.h"
 #include "libnode/fs.h"
+#include "libnode/uv/error.h"
+
 #include "./fs/stats_impl.h"
 
 namespace libj {
@@ -90,7 +90,7 @@ static void onError(uv_fs_t* req) {
     Context* context = static_cast<Context*>(req->data);
     if (context->callback) {
         JsArray::Ptr args = JsArray::create();
-        args->add(Error::valueOf(static_cast<uv_err_code>(req->errorno)));
+        args->add(uv::Error::valueOf(static_cast<uv_err_code>(req->errorno)));
         (*(context->callback))(args);
     }
     delete context;
@@ -170,7 +170,7 @@ void open(String::CPtr path, Flag flag, JsFunction::Ptr callback) {
         438,
         after);
     if (r < 0) {
-        req->errorno = r;
+        req->errorno = uv_last_error(uv_default_loop()).code;
         onError(req);
     }
 }
@@ -189,7 +189,7 @@ void close(const Value& fd, JsFunction::Ptr callback) {
         context->file,
         after);
     if (r < 0) {
-        req->errorno = r;
+        req->errorno = uv_last_error(uv_default_loop()).code;
         onError(req);
     }
 }
@@ -229,7 +229,7 @@ void read(
         position,
         after);
     if (r < 0) {
-        req->errorno = r;
+        req->errorno = uv_last_error(uv_default_loop()).code;
         onError(req);
     }
 }
@@ -247,7 +247,7 @@ void stat(String::CPtr path, JsFunction::Ptr callback) {
         context->path.c_str(),
         after);
     if (r < 0) {
-        req->errorno = r;
+        req->errorno = uv_last_error(uv_default_loop()).code;
         onError(req);
     }
 }

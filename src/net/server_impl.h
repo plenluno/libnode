@@ -4,6 +4,7 @@
 #define LIBNODE_SRC_NET_SERVER_IMPL_H_
 
 #include "libnode/net/server.h"
+
 #include "./socket_impl.h"
 #include "../flag.h"
 
@@ -55,7 +56,7 @@ class ServerImpl
                 sock->emit(EVENT_END);
                 if (!sock->writable()) sock->destroy();
             } else {
-                sock->destroy(Error::valueOf(err.code));
+                sock->destroy(uv::Error::valueOf(err.code));
             }
         }
         free(buf.base);
