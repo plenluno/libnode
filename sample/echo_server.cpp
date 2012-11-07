@@ -33,17 +33,21 @@ class Send : LIBJ_JS_FUNCTION(Send)
     http::Server::Ptr srv_;
     http::ServerRequest::Ptr req_;
     http::ServerResponse::Ptr res_;
+    String::CPtr body_;
 
  public:
     Send(
         http::Server::Ptr srv,
         http::ServerRequest::Ptr req,
-        http::ServerResponse::Ptr res)
+        http::ServerResponse::Ptr res,
+        String::CPtr body)
         : srv_(srv)
         , req_(req)
-        , res_(res) {}
+        , res_(res)
+        , body_(body) {}
 
     Value operator()(JsArray::Ptr args) {
+        res_->write(body_);
         res_->end();
         req_->removeAllListeners();
         // only one reply
@@ -81,8 +85,7 @@ class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
         res_->setHeader(
             http::HEADER_CONTENT_LENGTH,
             String::valueOf(Buffer::byteLength(body)));
-        res_->write(body);
-        Send::Ptr send(new Send(srv_, req_, res_));
+        Send::Ptr send(new Send(srv_, req_, res_, body));
         // 3 sec delay
         setTimeout(send, 3000, JsArray::create());
         return Status::OK;

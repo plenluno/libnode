@@ -1,107 +1,74 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include <uv.h>
-#include <map>
-
 #include "libnode/timer.h"
+
+#include "./uv/timer.h"
 
 namespace libj {
 namespace node {
 
 namespace {
-    Int nextTimeoutId = 1;
-    Int nextIntervalId = -1;
 
-    struct TimerContext {
-        Int id;
-        uv_timer_t timer;
-        int64_t timeout;
-        JsFunction::Ptr callback;
-        JsArray::Ptr args;
-        bool isCleared;
+    class OnTimeout : LIBJ_JS_FUNCTION(OnTimeout)
+     public:
+        static Ptr create(
+            JsFunction::Ptr callback,
+            JsArray::Ptr args) {
+            return Ptr(new OnTimeout(callback, args));
+        }
+
+        Value operator()(JsArray::Ptr args) {
+            (*callback_)(args_);
+            return libj::Status::OK;
+        }
+
+     private:
+        JsFunction::Ptr callback_;
+        JsArray::Ptr args_;
+
+        OnTimeout(
+            JsFunction::Ptr callback,
+            JsArray::Ptr args)
+            : callback_(callback)
+            , args_(args) {}
     };
 
-    std::map<Int, TimerContext*> timers;
-
-    void onTimerClose(uv_handle_t* handle) {
-        TimerContext* context = static_cast<TimerContext*>(handle->data);
-        delete context;
-    }
-
-    void clearTimer(Value timerId) {
-        Int id;
-        if (!to<Int>(timerId, &id))
-            return;
-        std::map<Int, TimerContext*>::const_iterator itr = timers.find(id);
-        if (itr != timers.end()) {
-            TimerContext* context = itr->second;
-            uv_timer_stop(&context->timer);
-            uv_close(
-                reinterpret_cast<uv_handle_t*>(&context->timer),
-                onTimerClose);
-            timers.erase(id);
-        }
-    }
-
-    void onTimeout(uv_timer_t* handle, int status) {
-        TimerContext* context = static_cast<TimerContext*>(handle->data);
-        if (!context->isCleared)
-            (*context->callback)(context->args);
-        clearTimer(context->id);
-    }
-
-    void onInterval(uv_timer_t* handle, int status) {
-        TimerContext* context = static_cast<TimerContext*>(handle->data);
-        if (context->isCleared) {
-            clearTimer(context->id);
-        } else {
-            (*context->callback)(context->args);
-            uv_timer_stop(&context->timer);
-            uv_timer_start(&context->timer, onInterval, context->timeout, 1);
-        }
-    }
-
-    Int setTimer(
-        Int id,
-        Int delay,
-        JsFunction::Ptr callback,
-        JsArray::Ptr args,
-        uv_timer_cb cb) {
-        TimerContext* context = new TimerContext;
-        context->id = id;
-        context->timeout = delay < 0 ? 0 : delay;
-        context->callback = callback;
-        context->args = args;
-        context->isCleared = false;
-        timers[context->id] = context;
-        uv_timer_init(uv_default_loop(), &context->timer);
-        context->timer.data = context;
-        uv_timer_start(&context->timer, cb, context->timeout, 1);
-        return context->id;
-    }
-}
+}  // namespace
 
 Value setTimeout(JsFunction::Ptr callback, Int delay, JsArray::Ptr args) {
-    return setTimer(nextTimeoutId++, delay, callback, args, onTimeout);
+    if (!callback) return UNDEFINED;
+
+    if (delay <= 0) delay = 1;
+    uv::Timer* timer = new uv::Timer();
+    timer->setOnTimeout(OnTimeout::create(callback, args));
+    timer->start(delay, 0);
+    return timer;
 }
 
 Value setInterval(JsFunction::Ptr callback, Int delay, JsArray::Ptr args) {
-    return setTimer(nextIntervalId--, delay, callback, args, onInterval);
+    if (!callback) return UNDEFINED;
+
+    if (delay <= 0) delay = 1;
+    uv::Timer* timer = new uv::Timer();
+    timer->setOnTimeout(OnTimeout::create(callback, args));
+    timer->start(delay, delay);
+    return timer;
 }
 
 void clearTimeout(Value timeoutId) {
-    Int id;
-    if (!to<Int>(timeoutId, &id))
-        return;
-    std::map<Int, TimerContext*>::const_iterator itr = timers.find(id);
-    if (itr != timers.end()) {
-        TimerContext* context = itr->second;
-        context->isCleared = true;
+    uv::Timer* timer = NULL;
+    if (to<uv::Timer*>(timeoutId, &timer) && timer) {
+        timer->setOnTimeout(JsFunction::null());
+        timer->close();
     }
 }
 
 void clearInterval(Value intervalId) {
-    clearTimeout(intervalId);
+    uv::Timer* timer = NULL;
+    if (to<uv::Timer*>(intervalId, &timer) && timer) {
+        timer->setOnTimeout(JsFunction::null());
+        timer->close();
+    }
 }
 
 }  // namespace node
