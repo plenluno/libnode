@@ -49,10 +49,14 @@ class EventEmitterImpl : public EventEmitter {
     }
 
     void once(String::CPtr event, JsFunction::Ptr listener) {
+        if (!listener) return;
+
         addListener(event, Once::create(event, listener, this));
     }
 
     void addListener(String::CPtr event, JsFunction::Ptr listener) {
+        if (!listener) return;
+
         JsArray::Ptr a;
         Value v = listeners_->get(event);
         if (v.isUndefined()) {
