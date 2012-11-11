@@ -492,7 +492,7 @@ class OutgoingMessage
     void flush() {
         if (!socket_) return;
 
-        Boolean ret;
+        Boolean ret = false;
         while (output_->length()) {
             if (!socket_->writable()) return;
 
