@@ -14,18 +14,20 @@ void Stream::onReadCommon(
     uv_buf_t buf,
     uv_handle_type pending) {
     Stream* stream = static_cast<Stream*>(handle->data);
+    JsFunction::Ptr onRead = stream->onRead_;
 
     if (nread < 0)  {
         if (buf.base != NULL) {
             stream->buffer_ = Buffer::null();
         }
         setLastError();
-        stream->onRead_->call(Buffer::null(), 0);
+
+        if (onRead) onRead->call(Buffer::null(), 0);
         return;
     }
 
     assert(buf.base != NULL);
-    // stream->buffer_->shrink(nread);
+    stream->buffer_->shrink(nread);
 
     if (nread == 0) return;
     assert(static_cast<size_t>(nread) <= buf.len);
@@ -38,7 +40,7 @@ void Stream::onReadCommon(
     } else {
         assert(pending == UV_UNKNOWN_HANDLE);
     }
-    stream->onRead_->call(stream->buffer_, pendingObj);
+    if (onRead) onRead->call(stream->buffer_, pendingObj);
 }
 
 }  // namespace uv

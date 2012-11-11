@@ -13,10 +13,13 @@ namespace uv {
 
 class Write : public Req<uv_write_t> {
  public:
-    Write() : buffer(Buffer::null()) {}
+    Write()
+        : buffer(Buffer::null())
+        , cb(JsFunction::null()) {}
 
     Size bytes;
     Buffer::CPtr buffer;
+    JsFunction::Ptr cb;
 };
 
 }  // namespace uv

@@ -17,23 +17,14 @@ class Stream : public Handle {
  public:
     uv_stream_t* uvStream() const { return stream_; }
 
+    virtual Int listen(Int backlog) = 0;
+
     void setOnRead(JsFunction::Ptr callback) {
         onRead_ = callback;
     }
 
     void setOnConnection(JsFunction::Ptr callback) {
         onConnection_ = callback;
-    }
-
- protected:
-    Stream(uv_stream_t* stream)
-        : Handle(reinterpret_cast<uv_handle_t*>(stream))
-        , stream_(stream)
-        , buffer_(Buffer::null())
-        , onRead_(JsFunction::null())
-        , onConnection_(JsFunction::null()) {
-        assert(stream_);
-        stream_->data = this;
     }
 
     virtual void setHandle(uv_handle_t* handle) {
@@ -63,7 +54,7 @@ class Stream : public Handle {
         return r;
     }
 
-    void writeBuffer(Buffer::CPtr buf) {
+    Write* writeBuffer(Buffer::CPtr buf) {
         Write* req = new Write();
         req->buffer = buf;
 
@@ -84,10 +75,13 @@ class Stream : public Handle {
         if (r) {
             setLastError();
             delete req;
+            return NULL;
+        } else {
+            return req;
         }
     }
 
-    void writeString(
+    Write* writeString(
         String::CPtr str,
         Buffer::Encoding enc,
         uv_stream_t* sendStream = NULL) {
@@ -128,10 +122,13 @@ class Stream : public Handle {
         if (r) {
             setLastError();
             delete req;
+            return NULL;
+        } else {
+            return req;
         }
     }
 
-    void shutdown() {
+    Shutdown* shutdown() {
         Shutdown* req = new Shutdown();
         Int r = uv_shutdown(&req->req, stream_, afterShutdown);
         req->dispatched();
@@ -139,6 +136,9 @@ class Stream : public Handle {
         if (r) {
             setLastError();
             delete req;
+            return NULL;
+        } else {
+            return req;
         }
     }
 
@@ -218,6 +218,16 @@ class Stream : public Handle {
     Buffer::Ptr buffer_;
     JsFunction::Ptr onRead_;
     JsFunction::Ptr onConnection_;
+
+    Stream(uv_stream_t* stream)
+        : Handle(reinterpret_cast<uv_handle_t*>(stream))
+        , stream_(stream)
+        , buffer_(Buffer::null())
+        , onRead_(JsFunction::null())
+        , onConnection_(JsFunction::null()) {
+        assert(stream_);
+        stream_->data = this;
+    }
 };
 
 }  // namespace uv

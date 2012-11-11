@@ -50,15 +50,17 @@ class Tcp : public Stream {
         }
     }
 
-    void setNoDelay(Boolean enable) {
+    Int setNoDelay(Boolean enable) {
         Int r = uv_tcp_nodelay(&tcp_, enable ? 1 : 0);
         if (r) setLastError();
+        return r;
     }
 
-    void setKeepAlive(Boolean enable, UInt delay) {
+    Int setKeepAlive(Boolean enable, UInt delay) {
         Int r = uv_tcp_keepalive(
             &tcp_, enable ? 1 : 0, delay);
         if (r) setLastError();
+        return r;
     }
 
     Int bind(String::CPtr ip, Int port) {
@@ -86,7 +88,7 @@ class Tcp : public Stream {
         return r;
     }
 
-    void connect(String::CPtr ip, Int port) {
+    Int connect(String::CPtr ip, Int port) {
         struct sockaddr_in address =
             uv_ip4_addr(ip->toStdString().c_str(), port);
         Connect* creq = new Connect();
@@ -97,9 +99,10 @@ class Tcp : public Stream {
             setLastError();
             delete creq;
         }
+        return r;
     }
 
-    void connect6(const char* ip6, Int port) {
+    Int connect6(const char* ip6, Int port) {
         struct sockaddr_in6 address = uv_ip6_addr(ip6, port);
         Connect* conn = new Connect();
         Int r = uv_tcp_connect6(&conn->req, &tcp_, address, afterConnect);
@@ -109,6 +112,7 @@ class Tcp : public Stream {
             setLastError();
             delete conn;
         }
+        return r;
     }
 
  private:

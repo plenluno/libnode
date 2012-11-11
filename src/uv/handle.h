@@ -16,6 +16,8 @@ class Handle {
  public:
     uv_handle_t* uvHandle() const { return handle_; }
 
+    uv_handle_type type() const { return handle_->type; }
+
     virtual ~Handle() {}
 
     void ref() {
