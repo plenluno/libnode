@@ -227,9 +227,12 @@ class OutgoingMessage
         return statusCode_;
     }
 
-    void assignSocket(net::SocketImpl::Ptr socket) {
+    void assignSocket(Ptr self, net::SocketImpl::Ptr socket) {
+        LIBJ_STATIC_SYMBOL_DEF(symHttpMessage, "httpMessage");
+
         assert(!socket->httpMessage());
         socket->setHttpMessage(this);
+        socket->put(symHttpMessage, self);
         socketOnClose_->setSocket(&(*socket));
         socket->on(net::Socket::EVENT_CLOSE, socketOnClose_);
         socket_ = socket;
@@ -237,10 +240,13 @@ class OutgoingMessage
     }
 
     void detachSocket(net::SocketImpl::Ptr socket) {
+        LIBJ_STATIC_SYMBOL_DEF(symHttpMessage, "httpMessage");
+
         assert(socket->httpMessage() == this);
         socketOnClose_->setSocket(NULL);
         socket->removeListener(net::Socket::EVENT_CLOSE, socketOnClose_);
         socket->setHttpMessage(NULL);
+        socket->remove(symHttpMessage);
         socket_ = net::SocketImpl::null();
     }
 

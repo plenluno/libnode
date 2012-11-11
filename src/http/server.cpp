@@ -271,7 +271,7 @@ class ServerImpl : public FlagMixin, public Server {
                 OutgoingMessage::Ptr msg =
                     toPtr<OutgoingMessage>(outgoings_->shift());
                 if (msg) {
-                    msg->assignSocket(socket_);
+                    msg->assignSocket(msg, socket_);
                 }
             }
             return libj::Status::OK;
@@ -325,7 +325,7 @@ class ServerImpl : public FlagMixin, public Server {
             if (httpMessage) {
                 outgoings_->push(out);
             } else {
-                out->assignSocket(socket_);
+                out->assignSocket(out, socket_);
             }
 
             out->on(
