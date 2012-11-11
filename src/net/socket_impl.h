@@ -4,14 +4,15 @@
 #define LIBNODE_SRC_NET_SOCKET_IMPL_H_
 
 #include <assert.h>
-#include <string.h>
+#include <libj/linked_list.h>
 
 #include "libnode/net/socket.h"
+#include "libnode/process.h"
+#include "libnode/string_decoder.h"
 #include "libnode/timer.h"
 #include "libnode/uv/error.h"
 
 #include "../flag.h"
-
 #include "../uv/pipe.h"
 #include "../uv/tcp.h"
 
@@ -30,154 +31,55 @@ namespace libj {
 namespace node {
 namespace net {
 
-class SocketImpl;
-
-class SocketWriteContext {
- public:
-    uv_write_t uvWrite;
-    uv_buf_t uvBuf;
-    SocketImpl* socket;
-    Buffer::CPtr buffer;
-    JsFunction::Ptr callback;
-
-    SocketWriteContext(SocketImpl* sock)
-        : socket(sock)
-        , buffer(Buffer::null())
-        , callback(JsFunction::null()) {
-        uvWrite.data = this;
-        uvBuf.base = NULL;
-    }
-
-    ~SocketWriteContext() {
-        free(uvBuf.base);
-    }
-};
-
-class SocketShutdownContext {
- public:
-    uv_shutdown_t uvShutdown;
-    SocketImpl* socket;
-
-    SocketShutdownContext(SocketImpl* sock)
-        : socket(sock) {
-        uvShutdown.data = this;
-    }
-};
-
 class SocketImpl
     : public FlagMixin
     , LIBNODE_NET_SOCKET(SocketImpl)
  public:
-    static Ptr create() {
-        return Ptr(new SocketImpl());
-    }
+    static Ptr create(JsObject::Ptr options = JsObject::null()) {
+        LIBJ_STATIC_SYMBOL_DEF(symFd,            "fd");
+        LIBJ_STATIC_SYMBOL_DEF(symHandle,        "handle");
+        LIBJ_STATIC_SYMBOL_DEF(symAllowHalfOpen, "allowHalfOpen");
 
-    uv_tcp_t* getUvTcp() { return tcp_; }
+        if (options) {
+            Boolean allowHalfOpen = false;
+            to<Boolean>(options->get(symAllowHalfOpen), &allowHalfOpen);
 
-    JsObject::Ptr address() {
-        LIBJ_STATIC_SYMBOL_DEF(symIpV4,    "IPv4");
-        LIBJ_STATIC_SYMBOL_DEF(symIpV6,    "IPv6");
-        LIBJ_STATIC_SYMBOL_DEF(symPort,    "port");
-        LIBJ_STATIC_SYMBOL_DEF(symFamily,  "family");
-        LIBJ_STATIC_SYMBOL_DEF(symAddress, "address");
-
-        struct sockaddr_storage addr;
-        int len = sizeof(addr);
-        if (!uv_tcp_getsockname(
-                tcp_,
-                reinterpret_cast<struct sockaddr*>(&addr),
-                &len)) {
-            JsObject::Ptr res = JsObject::create();
-            char ip[INET6_ADDRSTRLEN];
-            switch (addr.ss_family) {
-            case AF_INET:
-                res->put(symFamily, symIpV4);
-                res->put(symPort, static_cast<int>(ntohs(
-                    reinterpret_cast<struct sockaddr_in*>(&addr)->sin_port)));
-                if (!uv_ip4_name(
-                        reinterpret_cast<struct sockaddr_in*>(&addr),
-                        ip,
-                        INET6_ADDRSTRLEN)) {
-                    res->put(symAddress, String::create(ip));
-                }
-                break;
-            case AF_INET6:
-                res->put(symFamily, symIpV6);
-                res->put(symPort, static_cast<int>(ntohs(
-                    reinterpret_cast<struct sockaddr_in6*>(&addr)->sin6_port)));
-                if (!uv_ip6_name(
-                        reinterpret_cast<struct sockaddr_in6*>(&addr),
-                        ip,
-                        INET6_ADDRSTRLEN)) {
-                    res->put(symAddress, String::create(ip));
-                }
-                break;
+            int fd;
+            if (to<int>(options->get(symFd), &fd)) {
+                return create(fd, allowHalfOpen);
+            } else {
+                uv::Stream* handle = NULL;
+                to<uv::Stream*>(options->get(symHandle), &handle);
+                return create(handle, allowHalfOpen);
             }
-            return res;
-        }
-        return JsObject::null();
-    }
-
-    String::CPtr remoteAddress() {
-        struct sockaddr_storage addr;
-        int len = sizeof(addr);
-        if (!uv_tcp_getpeername(
-                tcp_,
-                reinterpret_cast<struct sockaddr*>(&addr),
-                &len)) {
-            char ip[INET6_ADDRSTRLEN];
-            switch (addr.ss_family) {
-            case AF_INET:
-                if (!uv_ip4_name(
-                        reinterpret_cast<struct sockaddr_in*>(&addr),
-                        ip,
-                        INET6_ADDRSTRLEN)) {
-                    return String::create(ip);
-                }
-                break;
-            case AF_INET6:
-                if (!uv_ip6_name(
-                        reinterpret_cast<struct sockaddr_in6*>(&addr),
-                        ip,
-                        INET6_ADDRSTRLEN)) {
-                    return String::create(ip);
-                }
-                break;
-            }
-        }
-        return String::null();
-    }
-
-    Int remotePort() {
-        struct sockaddr_storage addr;
-        int len = sizeof(addr);
-        if (!uv_tcp_getpeername(
-                tcp_,
-                reinterpret_cast<struct sockaddr*>(&addr),
-                &len)) {
-            switch (addr.ss_family) {
-            case AF_INET:
-                return static_cast<int>(ntohs(
-                    reinterpret_cast<struct sockaddr_in*>(&addr)->sin_port));
-            case AF_INET6:
-                return static_cast<int>(ntohs(
-                    reinterpret_cast<struct sockaddr_in6*>(&addr)->sin6_port));
-            }
-        }
-        return -1;
-    }
-
-    Boolean setNoDelay(Boolean noDelay) {
-        return !uv_tcp_nodelay(tcp_, noDelay ? 1 : 0);
-    }
-
-    Boolean setKeepAlive(Boolean enable, Int initialDelay) {
-        if (initialDelay < 0) {
-            return false;
         } else {
-            return !uv_tcp_keepalive(
-                tcp_, enable ? 1 : 0, initialDelay / 1000);
+            return create(static_cast<uv::Stream*>(NULL), false);
         }
+    }
+
+    static Ptr create(int fd, Boolean allowHalfOpen) {
+        SocketImpl* sock = new SocketImpl();
+        uv::Pipe* pipe = new uv::Pipe();
+        pipe->open(fd);
+        OnRead::Ptr onRead(new OnRead(sock, pipe));
+        pipe->setOnRead(onRead);
+
+        sock->handle_ = pipe;
+        sock->setFlag(READABLE);
+        sock->setFlag(WRITABLE);
+        if (allowHalfOpen) sock->setFlag(ALLOW_HALF_OPEN);
+        return Ptr(sock);
+    }
+
+    static Ptr create(uv::Stream* handle, Boolean allowHalfOpen) {
+        SocketImpl* sock = new SocketImpl();
+        if (handle) {
+            OnRead::Ptr onRead(new OnRead(sock, handle));
+            handle->setOnRead(onRead);
+            sock->handle_ = handle;
+        }
+        if (allowHalfOpen) sock->setFlag(ALLOW_HALF_OPEN);
+        return Ptr(sock);
     }
 
     Boolean setTimeout(
@@ -199,6 +101,77 @@ class SocketImpl
         return true;
     }
 
+    Boolean setNoDelay(Boolean noDelay) {
+        if (handle_ && handle_->type() == UV_TCP) {
+            uv::Tcp* tcp = static_cast<uv::Tcp*>(handle_);
+            return !tcp->setNoDelay(noDelay);
+        } else {
+            return false;
+        }
+    }
+
+    Boolean setKeepAlive(
+        Boolean enable = false,
+        UInt initialDelay = 0) {
+        if (handle_ && handle_->type() == UV_TCP) {
+            uv::Tcp* tcp = static_cast<uv::Tcp*>(handle_);
+            return !tcp->setKeepAlive(enable, initialDelay / 1000);
+        } else {
+            return false;
+        }
+    }
+
+    JsObject::Ptr address() {
+        if (handle_ && handle_->type() == UV_TCP) {
+            uv::Tcp* tcp = static_cast<uv::Tcp*>(handle_);
+            return tcp->getSockName();
+        } else {
+            return JsObject::null();
+        }
+    }
+
+    String::CPtr remoteAddress() {
+        LIBJ_STATIC_SYMBOL_DEF(symAddress, "address");
+
+        if (handle_ && handle_->type() == UV_TCP) {
+            uv::Tcp* tcp = static_cast<uv::Tcp*>(handle_);
+            return tcp->getPeerName()->getCPtr<String>(symAddress);
+        } else {
+            return String::null();
+        }
+    }
+
+    Int remotePort() {
+        LIBJ_STATIC_SYMBOL_DEF(symPort, "port");
+
+        if (handle_ && handle_->type() == UV_TCP) {
+            uv::Tcp* tcp = static_cast<uv::Tcp*>(handle_);
+            Int port = -1;
+            to<Int>(tcp->getPeerName()->get(symPort), &port);
+            return port;
+        } else {
+            return -1;
+        }
+    }
+
+    Boolean pause() {
+        setFlag(PAUSED);
+        return handle_ && !hasFlag(CONNECTING) && !handle_->readStop();
+    }
+
+    Boolean resume() {
+        unsetFlag(PAUSED);
+        return handle_ && !hasFlag(CONNECTING) && !handle_->readStart();
+    }
+
+    void ref() {
+        if (handle_) handle_->ref();
+    }
+
+    void unref() {
+        if (handle_) handle_->unref();
+    }
+
     void active() {
         if (hasTimer()) {
             finishTimer();
@@ -206,79 +179,81 @@ class SocketImpl
         }
     }
 
-    Boolean write(const Value& data, Buffer::Encoding enc) {
+    Boolean write(
+        const Value& data,
+        Buffer::Encoding enc = Buffer::NONE) {
+        return write(data, enc, JsFunction::null());
+    }
+
+    Boolean write(
+        const Value& data,
+        JsFunction::Ptr cb) {
+        return write(data, Buffer::NONE, cb);
+    }
+
+    Boolean write(
+        const Value& data,
+        Buffer::Encoding enc,
+        JsFunction::Ptr cb) {
+        Buffer::CPtr buf;
         String::CPtr str = toCPtr<String>(data);
         if (str) {
-            if (enc == Buffer::NONE)
-                enc = Buffer::UTF8;
-            Buffer::Ptr buf = Buffer::create(str, enc);
-            return write(buf, JsFunction::null());
+            if (enc == Buffer::NONE) enc = Buffer::UTF8;
+            buf = Buffer::create(str, enc);
+        } else {
+            buf = toCPtr<Buffer>(data);
+        }
+        if (!buf) return false;
+
+        if (hasFlag(CONNECTING)) {
+            connectQueueSize_ += buf->length();
+            if (!connectBufQueue_) {
+                assert(!connectCbQueue_);
+                connectBufQueue_ = LinkedList::create();
+                connectCbQueue_ = LinkedList::create();
+            }
+            connectBufQueue_->push(buf);
+            connectCbQueue_->push(cb);
+            return false;
         }
 
-        Buffer::CPtr buf = toCPtr<Buffer>(data);
-        if (buf) {
-            return write(buf, JsFunction::null());
-        }
-
-        return false;
-    }
-
-    Boolean write(String::CPtr str, Buffer::Encoding enc, JsFunction::Ptr cb) {
-        Buffer::Ptr buf = Buffer::create(str, enc);
-        return write(buf, cb);
-    }
-
-    Boolean write(Buffer::CPtr buf, JsFunction::Ptr cb) {
-        if (!tcp_) return false;
-
-        active();
-        SocketWriteContext* context = new SocketWriteContext(this);
-        context->buffer = buf;
-        context->callback = cb;
-        uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(tcp_);
-        Int len = buf->length();
-        context->uvBuf.base = static_cast<char*>(malloc(len));
-        context->uvBuf.len = len;
-        strncpy(
-            context->uvBuf.base,
-            reinterpret_cast<const char*>(buf->data()),
-            len);
-        int err = uv_write(
-            &(context->uvWrite),
-            stream,
-            &(context->uvBuf),
-            1,
-            afterWrite);
-        assert(!err);
-        return true;
+        return writeBuffer(buf, cb);
     }
 
     Boolean end(
         const Value& data = UNDEFINED,
         Buffer::Encoding enc = Buffer::NONE) {
+        if (hasFlag(CONNECTING) && !hasFlag(SHUTDOWN_QUEUED)) {
+            if (!data.isUndefined()) write(data, enc);
+            unsetFlag(WRITABLE);
+            setFlag(SHUTDOWN_QUEUED);
+        }
+
         if (!hasFlag(WRITABLE)) {
             return false;
         } else {
             unsetFlag(WRITABLE);
         }
 
+        if (!data.isUndefined()) write(data, enc);
+
         if (!hasFlag(READABLE)) {
             return destroySoon();
         } else {
-            setFlag(SHUTDOWN);
-            SocketShutdownContext* context = new SocketShutdownContext(this);
-            uv_stream_t* stream = reinterpret_cast<uv_stream_t*>(tcp_);
-            int err = uv_shutdown(
-                &(context->uvShutdown),
-                stream,
-                afterShutdown);
-            assert(!err);
+            uv::Shutdown* req = handle_->shutdown();
+            if (req) {
+                AfterShutdown::Ptr afterShutdown(new AfterShutdown(this));
+                req->onComplete = afterShutdown;
             return true;
+            } else {
+                destroy(uv::Error::last());
+                return false;
+            }
         }
     }
 
     Boolean destroy() {
-        return destroy(Error::null());
+        return destroy(libj::Error::null());
     }
 
     Boolean destroy(libj::Error::CPtr err) {
@@ -286,8 +261,7 @@ class SocketImpl
     }
 
     Boolean destroySoon() {
-        if (hasFlag(DESTROYED))
-            return false;
+        if (hasFlag(DESTROYED)) return false;
 
         unsetFlag(WRITABLE);
         setFlag(DESTROY_SOON);
@@ -302,20 +276,8 @@ class SocketImpl
         return hasFlag(WRITABLE);
     }
 
-    void stopReading() {
-        unsetFlag(READABLE);
-    }
-
-    void stopWriting() {
-        unsetFlag(WRITABLE);
-    }
-
-    Boolean hasEncoding() const {
-        return enc_ != Buffer::NONE;
-    }
-
-    Buffer::Encoding getEncoding() const {
-        return enc_;
+    Buffer::Encoding encoding() const {
+        return decoder_ ? decoder_->encoding() : Buffer::NONE;
     }
 
     Boolean setEncoding(Buffer::Encoding enc) {
@@ -327,9 +289,10 @@ class SocketImpl
         case Buffer::UTF32LE:
         case Buffer::HEX:
         case Buffer::NONE:
-            enc_ = enc;
+            decoder_ = StringDecoder::create(enc);
             return true;
         default:
+            decoder_ = StringDecoder::null();
             return false;
         }
     }
@@ -367,69 +330,238 @@ class SocketImpl
     }
 
  private:
+    void connectQueueCleanUp() {
+        unsetFlag(CONNECTING);
+        connectQueueSize_ = 0;
+        connectBufQueue_ = LinkedList::null();
+        connectCbQueue_ = LinkedList::null();
+    }
+
     Boolean destroy(libj::Error::CPtr err, JsFunction::Ptr cb) {
-        if (hasFlag(DESTROYED))
+        #define FIRE_ERROR_CALLBACKS \
+            if (cb) cb->call(err); \
+            if (err && !hasFlag(ERROR_EMITTED)) { \
+                EmitError::Ptr emitErr(new EmitError(this, err)); \
+                process::nextTick(emitErr); \
+                setFlag(ERROR_EMITTED); \
+            }
+
+        if (hasFlag(DESTROYED)) {
+            FIRE_ERROR_CALLBACKS;
             return false;
-
-        unsetFlag(READABLE);
-        unsetFlag(WRITABLE);
-
-        if (err)
-            setFlag(HAD_ERROR);
-        if (tcp_) {
-            uv_handle_t* handle = reinterpret_cast<uv_handle_t*>(tcp_);
-            assert(handle->data == this);
-            uv_close(handle, afterClose);
         }
 
+        connectQueueCleanUp();
+        unsetFlag(READABLE);
+        unsetFlag(WRITABLE);
+        finishTimer();
+
+        if (handle_) {
+            handle_->close();
+            handle_->setOnRead(JsFunction::null());
+            handle_ = NULL;
+        }
+
+        FIRE_ERROR_CALLBACKS;
+        EmitClose::Ptr emitClose(new EmitClose(this, err));
+        process::nextTick(emitClose);
         setFlag(DESTROYED);
+
+        #if 0
+        if (this.server) {
+            this.server._connections--;
+            if (this.server._emitCloseIfDrained) {
+                this.server._emitCloseIfDrained();
+            }
+        }
+        #endif
+
+        return true;
+
+        #undef FIRE_ERROR_CALLBACKS
+    }
+
+    Boolean writeBuffer(Buffer::CPtr buf, JsFunction::Ptr cb) {
+        active();
+
+        if (!handle_) {
+            destroy(libj::Error::create(Error::ILLEGAL_STATE), cb);
+            return false;
+        }
+
+        uv::Write* req = handle_->writeBuffer(buf);
+
+        if (!req) {
+            destroy(uv::Error::last(), cb);
+            return false;
+        }
+
+        AfterWrite::Ptr afterWrite(new AfterWrite(this, req));
+        req->onComplete = afterWrite;
+        req->cb = cb;
+
+        pendingWriteReqs_++;
+        bytesDispatched_ += req->bytes;
         return true;
     }
 
-    static void afterClose(uv_handle_t* handle) {
-        SocketImpl* socket = static_cast<SocketImpl*>(handle->data);
-        assert(socket && socket->tcp_);
-        delete socket->tcp_;
-        socket->tcp_ = NULL;
-        socket->emit(Socket::EVENT_CLOSE, socket->hasFlag(HAD_ERROR));
-    }
-
-    static void afterWrite(uv_write_t* write, int status) {
-        SocketWriteContext* context =
-            static_cast<SocketWriteContext*>(write->data);
-        assert(context && context->socket);
-        SocketImpl* socket = context->socket;
-        JsFunction::Ptr callback = context->callback;
-        delete context;
-
-        if (socket->hasFlag(DESTROYED)) return;
-
-        if (status) {
-            uv_err_t err = uv_last_error(uv_default_loop());
-            socket->destroy(uv::Error::valueOf(err.code));
-            return;
-        }
-
-        socket->active();
-
-        if (callback) {
-            (*callback)();
-        }
-    }
-
-    static void afterShutdown(uv_shutdown_t* req, int status) {
-        SocketShutdownContext* context =
-            static_cast<SocketShutdownContext*>(req->data);
-        assert(context && context->socket);
-        SocketImpl* socket = context->socket;
-        delete context;
-
-        if (!socket->hasFlag(DESTROYED) && !socket->hasFlag(READABLE)) {
-            socket->destroy();
-        }
-    }
-
  private:
+    class OnRead : LIBJ_JS_FUNCTION(OnRead)
+     private:
+        SocketImpl* self_;
+        uv::Stream* handle_;
+
+     public:
+        OnRead(
+            SocketImpl* sock,
+            uv::Stream* handle)
+            : self_(sock)
+            , handle_(handle) {}
+
+        Value operator()(JsArray::Ptr args) {
+            assert(self_->handle_ == handle_);
+
+            self_->active();
+
+            Buffer::CPtr buffer = args->getCPtr<Buffer>(0);
+            if (buffer) {
+                if (self_->decoder_) {
+                    String::CPtr str = self_->decoder_->write(buffer);
+                    if (str && str->length()) {
+                        self_->emit(EVENT_DATA, str);
+                    }
+                } else {
+                    self_->emit(EVENT_DATA, buffer);
+                }
+
+                self_->bytesRead_ += buffer->length();
+                // if (self_->onData_) self_->onData_->call(buffer);
+            } else {
+                uv::Error::CPtr err = uv::Error::last();
+                if (err->code() == uv::Error::_EOF) {
+                    self_->unsetFlag(READABLE);
+                    assert(!self_->hasFlag(GOT_EOF));
+                    self_->setFlag(GOT_EOF);
+
+                    if (!self_->hasFlag(WRITABLE)) self_->destroy();
+                    if (!self_->hasFlag(ALLOW_HALF_OPEN)) self_->end();
+
+                    #if 0
+                    if (self_->decoder_) {
+                        ret = self_->decoder_->end();
+                        if (ret) self_->emit(EVENT_DATA, ret);
+                    }
+                    #endif
+
+                    self_->emit(EVENT_END);
+                    // if (self_->onEnd_) (*self_->onEnd_)();
+                } else if (err->code() == uv::Error::_ECONNRESET) {
+                    self_->destroy();
+                } else {
+                    self_->destroy(err);
+                }
+            }
+            return Status::OK;
+        }
+    };
+
+    class AfterShutdown : LIBJ_JS_FUNCTION(AfterShutdown)
+     private:
+        SocketImpl* self_;
+
+     public:
+        AfterShutdown(SocketImpl* self) : self_(self) {}
+
+        Value operator()(JsArray::Ptr args) {
+            if (self_->hasFlag(DESTROYED)) {
+                return Status::OK;
+            }
+
+            if (!self_->hasFlag(DESTROYED) &&
+                (self_->hasFlag(GOT_EOF) || !self_->hasFlag(READABLE))) {
+                self_->destroy();
+            }
+            return Status::OK;
+        }
+    };
+
+    class AfterWrite : LIBJ_JS_FUNCTION(AfterWrite)
+     private:
+        SocketImpl* self_;
+        uv::Write* req_;
+
+     public:
+        AfterWrite(
+            SocketImpl* sock,
+            uv::Write* req)
+            : self_(sock)
+            , req_(req) {}
+
+        Value operator()(JsArray::Ptr args) {
+            if (self_->hasFlag(DESTROYED)) {
+                return libj::Error::ILLEGAL_STATE;
+            }
+
+            int status;
+            to<int>(args->get(0), &status);
+            if (status) {
+                uv::Error::CPtr err = uv::Error::last();
+                self_->destroy(err, req_->cb);
+                return err->code();
+            }
+
+            self_->active();
+            self_->pendingWriteReqs_--;
+            if (self_->pendingWriteReqs_ == 0) {
+                self_->emit(EVENT_DRAIN);
+            }
+
+            if (req_->cb) (*req_->cb)();
+
+            if (self_->pendingWriteReqs_ == 0 &&
+                self_->hasFlag(DESTROY_SOON)) {
+                self_->destroy();
+            }
+            return Status::OK;
+        }
+    };
+
+    class EmitError : LIBJ_JS_FUNCTION(EmitError)
+     private:
+        SocketImpl* self_;
+        libj::Error::CPtr error_;
+
+     public:
+        EmitError(
+            SocketImpl* sock,
+            libj::Error::CPtr err)
+            : self_(sock)
+            , error_(err) {}
+
+        Value operator()(JsArray::Ptr args) {
+            self_->emit(EVENT_ERROR);
+            return Status::OK;
+        }
+    };
+
+    class EmitClose : LIBJ_JS_FUNCTION(EmitClose)
+     private:
+        SocketImpl* self_;
+        libj::Error::CPtr error_;
+
+     public:
+        EmitClose(
+            SocketImpl* sock,
+            libj::Error::CPtr err)
+            : self_(sock)
+            , error_(err) {}
+
+        Value operator()(JsArray::Ptr args) {
+            self_->emit(EVENT_CLOSE, !!error_);
+            return Status::OK;
+        }
+    };
+
     class OnTimeout : LIBJ_JS_FUNCTION(OnTimeout)
      private:
         SocketImpl* self_;
@@ -461,46 +593,54 @@ class SocketImpl
         timeout_ = 0;
     }
 
- private:
+ public:
     enum Flag {
         READABLE        = 1 << 0,
         WRITABLE        = 1 << 1,
-        DESTROYED       = 1 << 2,
-        DESTROY_SOON    = 1 << 3,
-        SHUTDOWN        = 1 << 4,
-        HAD_ERROR       = 1 << 5,
+        CONNECTING      = 1 << 2,
+        PAUSED          = 1 << 3,
+        GOT_EOF         = 1 << 4,
+        DESTROYED       = 1 << 5,
+        DESTROY_SOON    = 1 << 6,
+        SHUTDOWN        = 1 << 7,
+        SHUTDOWN_QUEUED = 1 << 8,
+        ERROR_EMITTED   = 1 << 9,
+        ALLOW_HALF_OPEN = 1 << 10,
     };
 
  private:
-    uv_tcp_t* tcp_;
+    uv::Stream* handle_;
     Value timer_;
     Int timeout_;
-    Buffer::Encoding enc_;
+    Size pendingWriteReqs_;
+    Size connectQueueSize_;
+    LinkedList::Ptr connectBufQueue_;
+    LinkedList::Ptr connectCbQueue_;
+    Size bytesRead_;
+    Size bytesDispatched_;
+    StringDecoder::Ptr decoder_;
     JsFunction::Ptr onData_;
     JsFunction::Ptr onEnd_;
     http::Parser* parser_;
     http::OutgoingMessage* httpMessage_;
-    EventEmitter::Ptr ee_;
+    events::EventEmitter::Ptr ee_;
 
     SocketImpl()
-        : tcp_(new uv_tcp_t)
+        : handle_(NULL)
         , timer_(UNDEFINED)
         , timeout_(0)
-        , enc_(Buffer::NONE)
+        , pendingWriteReqs_(0)
+        , connectQueueSize_(0)
+        , connectBufQueue_(LinkedList::null())
+        , connectCbQueue_(LinkedList::null())
+        , bytesRead_(0)
+        , bytesDispatched_(0)
+        , decoder_(StringDecoder::null())
         , onData_(JsFunction::null())
         , onEnd_(JsFunction::null())
+        , parser_(NULL)
         , httpMessage_(NULL)
-        , ee_(events::EventEmitter::create()) {
-        uv_tcp_init(uv_default_loop(), tcp_);
-        tcp_->data = this;
-        setFlag(READABLE);
-        setFlag(WRITABLE);
-    }
-
- public:
-    ~SocketImpl() {
-        delete tcp_;
-    }
+        , ee_(events::EventEmitter::create()) {}
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };

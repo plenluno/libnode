@@ -25,7 +25,7 @@ class Socket : LIBNODE_DUPLEX_STREAM(Socket)
     virtual Int remotePort() = 0;
     virtual Boolean setNoDelay(Boolean noDelay = true) = 0;
     virtual Boolean setKeepAlive(
-        Boolean enable = false, Int initialDelay = 0) = 0;
+        Boolean enable = false, UInt initialDelay = 0) = 0;
     virtual Boolean setTimeout(
         Int timeout,
         JsFunction::Ptr callback = JsFunction::null()) = 0;
@@ -51,7 +51,7 @@ public: \
         return S->setNoDelay(noDelay); \
     } \
     virtual Boolean setKeepAlive( \
-        Boolean enable = false, Int initialDelay = 0) { \
+        Boolean enable = false, UInt initialDelay = 0) { \
         return S->setKeepAlive(enable, initialDelay); \
     } \
     virtual Boolean setTimeout( \

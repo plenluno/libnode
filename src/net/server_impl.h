@@ -20,82 +20,208 @@ class ServerImpl
         return Ptr(new ServerImpl());
     }
 
-    static void onConnection(uv_stream_t* stream, int status) {
-        ServerImpl* srv = static_cast<ServerImpl*>(stream->data);
-        SocketImpl::Ptr socket = SocketImpl::create();
-        uv_stream_t* tcp = reinterpret_cast<uv_stream_t*>(socket->getUvTcp());
-        if (uv_accept(stream, tcp))
-            return;
-        uv_read_start(tcp, onAlloc, onRead);
-        srv->emit(EVENT_CONNECTION, socket);
+    Value address() {
+        if (handle_ && handle_->type() == UV_TCP) {
+            uv::Tcp* tcp = static_cast<uv::Tcp*>(handle_);
+            return tcp->getSockName();
+        } else if (pipeName_) {
+            return pipeName_;
+        } else {
+            return JsObject::null();
+        }
     }
 
-    static uv_buf_t onAlloc(uv_handle_t* handle, size_t suggestedSize) {
-        uv_buf_t buf;
-        buf.base = static_cast<char*>(malloc(suggestedSize));
-        buf.len = suggestedSize;
-        return buf;
+    Boolean listen(
+        Int port,
+        String::CPtr host = IN_ADDR_ANY,
+        Int backlog = 511,
+        JsFunction::Ptr callback = JsFunction::null()) {
+        if (callback) once(EVENT_LISTENING, callback);
+        return listen(host, port, 4, backlog);
     }
 
-    static void onRead(uv_stream_t* stream, ssize_t nread, uv_buf_t buf) {
-        SocketImpl* sock = static_cast<SocketImpl*>(stream->data);
-        sock->active();
-        if (nread > 0) {
-            Buffer::Ptr buffer = Buffer::create(buf.base, nread);
-            JsArray::Ptr args = JsArray::create();
-            if (sock->hasEncoding()) {
-                args->add(buffer->toString(sock->getEncoding()));
+    Boolean close(
+        JsFunction::Ptr callback = JsFunction::null()) {
+        if (!handle_) return false;
+
+        if (callback) once(EVENT_CLOSE, callback);
+
+        handle_->close();
+        handle_ = NULL;
+        emitCloseIfDrained();
+        return true;
+    }
+
+    void ref() {
+        if (handle_) handle_->ref();
+    }
+
+    void unref() {
+        if (handle_) handle_->unref();
+    }
+
+ private:
+    static uv::Stream* createServerHandle(
+        String::CPtr address,
+        Int port = -1,
+        Int addressType = -1,
+        int fd = -1) {
+        uv::Stream* handle;
+        if (fd >= 0) {
+            uv::Pipe* pipe = new uv::Pipe();
+            pipe->open(fd);
+            return pipe;
+        } else if (port == -1 && addressType == -1) {
+            handle = new uv::Pipe();
+        } else {
+            handle = new uv::Tcp();
+        }
+
+        Int r = 0;
+        if (address || port) {
+            uv::Tcp* tcp = static_cast<uv::Tcp*>(handle);
+            if (addressType == 6) {
+                r = tcp->bind6(address, port);
             } else {
-                args->add(buffer);
-            }
-            sock->emit(EVENT_DATA, args);
-        } else if (nread < 0) {
-            uv_err_t err = uv_last_error(uv_default_loop());
-            if (err.code == UV_EOF) {
-                sock->stopReading();
-                sock->emit(EVENT_END);
-                if (!sock->writable()) sock->destroy();
-            } else {
-                sock->destroy(uv::Error::valueOf(err.code));
+                r = tcp->bind(address, port);
             }
         }
-        free(buf.base);
+
+        if (r) {
+            handle->close();
+            return NULL;
+        } else {
+            return handle;
+        }
     }
 
-    static void onClose(uv_handle_t* handle) {
-        ServerImpl* srv = static_cast<ServerImpl*>(handle->data);
-        srv->emit(EVENT_CLOSE);
-    }
+    Boolean listen(
+        String::CPtr address,
+        Int port,
+        Int addressType,
+        Int backlog = 0,
+        int fd = -1) {
+        if (!handle_) {
+            handle_ = createServerHandle(address, port, addressType, fd);
+            if (!handle_) {
+                EmitError::Ptr emitError(new EmitError(this));
+                process::nextTick(emitError);
+                return false;
+            }
+        }
 
-    uv_tcp_t* getUvTcp() {
-        return sock_->getUvTcp();
-    }
+        OnConnection::Ptr onConnection(new OnConnection(this));
+        handle_->setOnConnection(onConnection);
 
-    Boolean listen(Int port, String::CPtr hostName, Int backlog) {
-        if (isOpen_ || !hostName || backlog <= 0)
+        Int r = handle_->listen(backlog ? backlog : 511);
+        if (r) {
+            handle_->close();
+            handle_ = NULL;
+            EmitError::Ptr emitError(new EmitError(this));
+            process::nextTick(emitError);
             return false;
-        uv_tcp_t* tcp = getUvTcp();
-        isOpen_ = !(uv_tcp_bind(
-                        tcp,
-                        uv_ip4_addr(hostName->toStdString().c_str(), port))) &&
-                  !uv_listen(
-                        reinterpret_cast<uv_stream_t*>(tcp),
-                        backlog,
-                        onConnection);
-        if (isOpen_) {
-            emit(EVENT_LISTENING);
+        } else {
+            // connectionKey = addressType + ':' + address + ':' + port;
+            EmitListening::Ptr emitListening(new EmitListening(this));
+            process::nextTick(emitListening);
+            return true;
         }
-        return isOpen_;
     }
 
-    void close() {
-        if (isOpen_) {
-            uv_tcp_t* tcp =  getUvTcp();
-            assert(tcp->data == this);
-            uv_close(reinterpret_cast<uv_handle_t*>(tcp), onClose);
-            isOpen_ = false;
-        }
+    void emitCloseIfDrained() {
+        if (handle_ || connections_) return;
+
+        EmitClose::Ptr emitClose(new EmitClose(this));
+        process::nextTick(emitClose);
     }
+
+ private:
+    class OnConnection : LIBJ_JS_FUNCTION(OnConnection)
+     private:
+        ServerImpl* self_;
+
+     public:
+        OnConnection(ServerImpl* srv) : self_(srv) {}
+
+        Value operator()(JsArray::Ptr args) {
+            Value client = args->get(0);
+            uv::Stream* clientHandle = NULL;
+            uv::Pipe* pipe;
+            uv::Tcp* tcp;
+            if (to<uv::Pipe*>(client, &pipe)) {
+                clientHandle = pipe;
+            } else if (to<uv::Tcp*>(client, &tcp)) {
+                clientHandle = tcp;
+            }
+            if (!clientHandle) {
+                EmitError::Ptr emitError(new EmitError(self_));
+                process::nextTick(emitError);
+                return Error::ILLEGAL_STATE;
+            }
+
+            #if 0
+            if (self_->maxConnections &&
+                self_->connections >= self_->maxConnections) {
+                clientHandle->close();
+                return;
+            }
+            #endif
+
+            SocketImpl::Ptr socket = SocketImpl::create(
+                clientHandle,
+                self_->hasFlag(ALLOW_HALF_OPEN));
+            socket->setFlag(SocketImpl::READABLE);
+            socket->setFlag(SocketImpl::WRITABLE);
+
+            clientHandle->readStart();
+
+            self_->connections_++;
+            // socket.server = self;
+
+            self_->emit(EVENT_CONNECTION, socket);
+            socket->emit(SocketImpl::EVENT_CONNECT);
+            return Status::OK;
+        }
+    };
+
+    class EmitClose : LIBJ_JS_FUNCTION(EmitClose)
+     private:
+        ServerImpl* self_;
+
+     public:
+        EmitClose(ServerImpl* srv) : self_(srv) {}
+
+        Value operator()(JsArray::Ptr args) {
+            self_->emit(EVENT_CLOSE);
+            return Status::OK;
+        }
+    };
+
+    class EmitError : LIBJ_JS_FUNCTION(EmitError)
+     private:
+        ServerImpl* self_;
+
+     public:
+        EmitError(ServerImpl* srv) : self_(srv) {}
+
+        Value operator()(JsArray::Ptr args) {
+            self_->emit(EVENT_ERROR, uv::Error::last());
+            return Status::OK;
+        }
+    };
+
+    class EmitListening : LIBJ_JS_FUNCTION(EmitListening)
+     private:
+        ServerImpl* self_;
+
+     public:
+        EmitListening(ServerImpl* srv) : self_(srv) {}
+
+        Value operator()(JsArray::Ptr args) {
+            self_->emit(EVENT_LISTENING);
+            return Status::OK;
+        }
+    };
 
  public:
     enum Flag {
@@ -103,17 +229,18 @@ class ServerImpl
     };
 
  private:
-    Boolean isOpen_;
-    SocketImpl::Ptr sock_;
+    uv::Stream* handle_;
+    Size connections_;
+    String::CPtr pipeName_;
+    events::EventEmitter::Ptr ee_;
 
     ServerImpl()
-        : isOpen_(false)
-        , sock_(SocketImpl::create()) {
-        uv_tcp_t* tcp = sock_->getUvTcp();
-        tcp->data = this;
-    }
+        : handle_(NULL)
+        , connections_(0)
+        , pipeName_(String::null())
+        , ee_(events::EventEmitter::create()) {}
 
-    LIBNODE_NET_SOCKET_IMPL(sock_);
+    LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
 
 }  // namespace net

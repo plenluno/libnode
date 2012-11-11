@@ -9,19 +9,24 @@ namespace libj {
 namespace node {
 namespace net {
 
-class Server : LIBNODE_NET_SOCKET(Server)
+class Server : LIBNODE_EVENT_EMITTER(Server)
  public:
     static Symbol::CPtr IN_ADDR_ANY;
+    static Symbol::CPtr EVENT_CLOSE;
+    static Symbol::CPtr EVENT_ERROR;
     static Symbol::CPtr EVENT_LISTENING;
     static Symbol::CPtr EVENT_CONNECTION;
 
     static Ptr create();
 
+    virtual Value address() = 0;
     virtual Boolean listen(
         Int port,
-        String::CPtr hostName = IN_ADDR_ANY,
-        Int backlog = 511) = 0;
-    virtual void close() = 0;
+        String::CPtr host = IN_ADDR_ANY,
+        Int backlog = 511,
+        JsFunction::Ptr callback = JsFunction::null()) = 0;
+    virtual Boolean close(
+        JsFunction::Ptr callback = JsFunction::null()) = 0;
 };
 
 #define LIBNODE_NET_SERVER(T) \
@@ -29,15 +34,20 @@ class Server : LIBNODE_NET_SOCKET(Server)
     LIBJ_MUTABLE_DEFS(T, libj::node::net::Server)
 
 #define LIBNODE_NET_SERVER_IMPL(S) \
-    LIBNODE_NET_SOCKET_IMPL(S) \
+    LIBNODE_EVENT_EMITTER_IMPL(S) \
+    virtual Value address() { \
+        return S->address(); \
+    } \
     virtual Boolean listen( \
         Int port, \
-        String::CPtr hostName = IN_ADDR_ANY, \
-        Int backlog = 511) { \
-        return S->listen(port, hostName, backlog); \
+        String::CPtr host = IN_ADDR_ANY, \
+        Int backlog = 511, \
+        JsFunction::Ptr callback = JsFunction::null()) { \
+        return S->listen(port, host, backlog, callback); \
     } \
-    virtual void close() { \
-        S->close(); \
+    virtual Boolean close( \
+        JsFunction::Ptr callback = JsFunction::null()) { \
+        return S->close(callback); \
     }
 
 }  // namespace net
