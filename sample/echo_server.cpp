@@ -86,8 +86,12 @@ class OnEnd : LIBJ_JS_FUNCTION(OnEnd)
             http::HEADER_CONTENT_LENGTH,
             String::valueOf(Buffer::byteLength(body)));
         Send::Ptr send(new Send(srv_, req_, res_, body));
+#ifdef USE_SET_TIMEOUT
         // 3 sec delay
-        setTimeout(send, 3000, JsArray::create());
+        setTimeout(send, 3000);
+#else
+        send->call();
+#endif
         return Status::OK;
     }
 };
