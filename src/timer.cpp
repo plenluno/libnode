@@ -42,7 +42,7 @@ namespace {
             : callback_(callback)
             , args_(args)
             , timer_(timer)
-            , repeat_(false) {}
+            , repeat_(repeat) {}
     };
 
 }  // namespace
