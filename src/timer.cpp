@@ -22,7 +22,6 @@ namespace {
         Value operator()(JsArray::Ptr args) {
             (*callback_)(args_);
             if (!repeat_) {
-                timer_->setOnTimeout(JsFunction::null());
                 timer_->close();
             }
             return libj::Status::OK;
@@ -70,7 +69,6 @@ Value setInterval(JsFunction::Ptr callback, Int delay, JsArray::Ptr args) {
 void clearTimeout(Value timeoutId) {
     uv::Timer* timer = NULL;
     if (to<uv::Timer*>(timeoutId, &timer) && timer) {
-        timer->setOnTimeout(JsFunction::null());
         timer->close();
     }
 }
@@ -78,7 +76,6 @@ void clearTimeout(Value timeoutId) {
 void clearInterval(Value intervalId) {
     uv::Timer* timer = NULL;
     if (to<uv::Timer*>(intervalId, &timer) && timer) {
-        timer->setOnTimeout(JsFunction::null());
         timer->close();
     }
 }
