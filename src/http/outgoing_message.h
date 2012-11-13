@@ -265,8 +265,11 @@ class OutgoingMessage
         }
 
         Value operator()(JsArray::Ptr args) {
+            LIBJ_STATIC_SYMBOL_DEF(symHttpMessage, "httpMessage");
+
             assert(socket_);
             socket_->httpMessage()->emit(OutgoingMessage::EVENT_CLOSE);
+            socket_->remove(symHttpMessage);
             return libj::Status::OK;
         }
 
