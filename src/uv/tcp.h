@@ -63,7 +63,7 @@ class Tcp : public Stream {
         return r;
     }
 
-    Int bind(String::CPtr ip, Int port) {
+    Int bind(String::CPtr ip, Int port = 0) {
         struct sockaddr_in address =
             uv_ip4_addr(ip->toStdString().c_str(), port);
         Int r = uv_tcp_bind(&tcp_, address);
@@ -71,7 +71,7 @@ class Tcp : public Stream {
         return r;
     }
 
-    Int bind6(String::CPtr ip6, Int port) {
+    Int bind6(String::CPtr ip6, Int port = 0) {
         struct sockaddr_in6 address =
             uv_ip6_addr(ip6->toStdString().c_str(), port);
         Int r = uv_tcp_bind6(&tcp_, address);
@@ -88,7 +88,7 @@ class Tcp : public Stream {
         return r;
     }
 
-    Int connect(String::CPtr ip, Int port) {
+    Connect* connect(String::CPtr ip, Int port) {
         struct sockaddr_in address =
             uv_ip4_addr(ip->toStdString().c_str(), port);
         Connect* creq = new Connect();
@@ -98,21 +98,25 @@ class Tcp : public Stream {
         if (r) {
             setLastError();
             delete creq;
+            return NULL;
+        } else {
+            return creq;
         }
-        return r;
     }
 
-    Int connect6(const char* ip6, Int port) {
+    Connect* connect6(const char* ip6, Int port) {
         struct sockaddr_in6 address = uv_ip6_addr(ip6, port);
-        Connect* conn = new Connect();
-        Int r = uv_tcp_connect6(&conn->req, &tcp_, address, afterConnect);
-        conn->dispatched();
+        Connect* creq = new Connect();
+        Int r = uv_tcp_connect6(&creq->req, &tcp_, address, afterConnect);
+        creq->dispatched();
 
         if (r) {
             setLastError();
-            delete conn;
+            delete creq;
+            return NULL;
+        } else {
+            return creq;
         }
-        return r;
     }
 
  private:
