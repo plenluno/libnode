@@ -41,6 +41,7 @@ set(libnode-src
     src/http/header.cpp
     src/http/server.cpp
     src/http/status.cpp
+    src/net.cpp
     src/net/server.cpp
     src/net/socket.cpp
     src/node.cpp

@@ -4,9 +4,8 @@
 #define LIBNODE_SRC_NET_SOCKET_IMPL_H_
 
 #include <assert.h>
-#include <libj/linked_list.h>
 
-#include "libnode/net/socket.h"
+#include "libnode/net.h"
 #include "libnode/process.h"
 #include "libnode/string_decoder.h"
 #include "libnode/timer.h"
@@ -35,7 +34,7 @@ class SocketImpl
     : public FlagMixin
     , LIBNODE_NET_SOCKET(SocketImpl)
  public:
-    static Ptr create(JsObject::Ptr options = JsObject::null()) {
+    static Ptr create(JsObject::CPtr options = JsObject::null()) {
         LIBJ_STATIC_SYMBOL_DEF(symFd,            "fd");
         LIBJ_STATIC_SYMBOL_DEF(symHandle,        "handle");
         LIBJ_STATIC_SYMBOL_DEF(symAllowHalfOpen, "allowHalfOpen");
@@ -209,8 +208,8 @@ class SocketImpl
             connectQueueSize_ += buf->length();
             if (!connectBufQueue_) {
                 assert(!connectCbQueue_);
-                connectBufQueue_ = LinkedList::create();
-                connectCbQueue_ = LinkedList::create();
+                connectBufQueue_ = JsArray::create();
+                connectCbQueue_ = JsArray::create();
             }
             connectBufQueue_->push(buf);
             connectCbQueue_->push(cb);
@@ -244,7 +243,7 @@ class SocketImpl
             if (req) {
                 AfterShutdown::Ptr afterShutdown(new AfterShutdown(this));
                 req->onComplete = afterShutdown;
-            return true;
+                return true;
             } else {
                 destroy(uv::Error::last());
                 return false;
@@ -329,12 +328,175 @@ class SocketImpl
         httpMessage_ = msg;
     }
 
+    Boolean connect(
+        String::CPtr path,
+        JsFunction::Ptr cb = JsFunction::null()) {
+        if (path) {
+            connect(0, String::null(), String::null(), path, cb);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    Boolean connect(
+        Int port,
+        String::CPtr host = String::null(),
+        JsFunction::Ptr cb = JsFunction::null()) {
+        if (port < 0) {
+            return false;
+        } else {
+            connect(port, host, String::null(), String::null(), cb);
+            return true;
+        }
+    }
+
+    Boolean connect(
+        JsObject::CPtr options,
+        JsFunction::Ptr cb = JsFunction::null()) {
+        LIBJ_STATIC_SYMBOL_DEF(symPath,         "path");
+        LIBJ_STATIC_SYMBOL_DEF(symPort,         "port");
+        LIBJ_STATIC_SYMBOL_DEF(symHost,         "host");
+        LIBJ_STATIC_SYMBOL_DEF(symLocalAddress, "localAddress");
+
+        if (!options) return false;
+
+        Int port = -1;
+        to<Int>(options->get(symPort), &port);
+        String::CPtr path = options->getCPtr<String>(symPath);
+        String::CPtr host = options->getCPtr<String>(symHost);
+        String::CPtr localAddress = options->getCPtr<String>(symLocalAddress);
+
+        if (path) {
+            return connect(path, cb);
+        } else if (port >= 0) {
+            connect(port, host, localAddress, String::null(), cb);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
  private:
+    static void initSocketHandle(SocketImpl* self) {
+        self->flags_ = 0;
+        self->pendingWriteReqs_ = 0;
+        self->connectQueueSize_ = 0;
+        self->bytesRead_ = 0;
+        self->bytesDispatched_ = 0;
+
+        uv::Stream* handle  = self->handle_;
+        if (handle) {
+            OnRead::Ptr onRead(new OnRead(self, handle));
+            handle->setOnRead(onRead);
+        }
+    }
+
+    static void connect(
+        SocketImpl* self,
+        uv::Pipe* handle,
+        String::CPtr path) {
+        assert(self->hasFlag(CONNECTING));
+
+        uv::Connect* creq = handle->connect(path);
+
+        if (creq) {
+            AfterConnect::Ptr afterConnect(new AfterConnect(self, creq));
+            creq->onComplete = afterConnect;
+        } else {
+            self->destroy(uv::Error::last());
+        }
+    }
+
+    static void connect(
+        SocketImpl* self,
+        uv::Tcp* handle,
+        String::CPtr address,
+        Int port,
+        Int addressType,
+        String::CPtr localAddress) {
+        assert(self->hasFlag(CONNECTING));
+
+        if (localAddress) {
+            Int r;
+            if (addressType == 6) {
+                r = handle->bind6(localAddress);
+            } else {
+                r = handle->bind(localAddress);
+            }
+
+            if (r) {
+                self->destroy(uv::Error::last());
+                return;
+            }
+        }
+
+        uv::Connect* creq;
+        if (addressType == 6) {
+            creq = handle->connect6(address, port);
+        } else {  // addressType == 4
+            creq = handle->connect(address, port);
+        }
+
+        if (creq) {
+            AfterConnect::Ptr afterConnect(new AfterConnect(self, creq));
+            creq->onComplete = afterConnect;
+        } else {
+            self->destroy(uv::Error::last());
+        }
+    }
+
+    void connect(
+        Int port,
+        String::CPtr host,
+        String::CPtr localAddress,
+        String::CPtr path,
+        JsFunction::Ptr cb) {
+        LIBJ_STATIC_SYMBOL_DEF(symLocalhost4, "127.0.0.1");
+
+        Boolean pipe = !!path;
+
+        if (hasFlag(DESTROYED) || !handle_) {
+            handle_ = pipe
+                ? reinterpret_cast<uv::Stream*>(new uv::Pipe())
+                : reinterpret_cast<uv::Stream*>(new uv::Tcp());
+            initSocketHandle(this);
+        }
+
+        if (cb) on(EVENT_CONNECT, cb);
+
+        active();
+        setFlag(CONNECTING);
+        setFlag(WRITABLE);
+
+        if (pipe) {
+            uv::Pipe* pipe = reinterpret_cast<uv::Pipe*>(handle_);
+            connect(this, pipe, path);
+        } else {
+            uv::Tcp* tcp = reinterpret_cast<uv::Tcp*>(handle_);
+            if (!host) {
+                connect(this, tcp, symLocalhost4, port, 4, String::null());
+            } else {
+                // TODO(plenluno): dns lookup
+
+                Int addressType = net::isIP(host);
+                if (addressType) {
+                    connect(this, tcp, host, port, addressType, localAddress);
+                } else {
+                    libj::Error::CPtr err =
+                        libj::Error::create(libj::Error::ILLEGAL_ARGUMENT);
+                    EmitError2::Ptr emitErr(new EmitError2(this, err));
+                    process::nextTick(emitErr);
+                }
+            }
+        }
+    }
+
     void connectQueueCleanUp() {
         unsetFlag(CONNECTING);
         connectQueueSize_ = 0;
-        connectBufQueue_ = LinkedList::null();
-        connectCbQueue_ = LinkedList::null();
+        connectBufQueue_ = JsArray::null();
+        connectCbQueue_ = JsArray::null();
     }
 
     Boolean destroy(libj::Error::CPtr err, JsFunction::Ptr cb) {
@@ -526,6 +688,75 @@ class SocketImpl
         }
     };
 
+    class AfterConnect : LIBJ_JS_FUNCTION(AfterConnect)
+     private:
+        SocketImpl* self_;
+        uv::Connect* req_;
+
+     public:
+        AfterConnect(
+            SocketImpl* sock,
+            uv::Connect* req)
+            : self_(sock)
+            , req_(req) {}
+
+        Value operator()(JsArray::Ptr args) {
+            if (self_->hasFlag(DESTROYED)) return Status::OK;
+
+            assert(self_->hasFlag(CONNECTING));
+            self_->setFlag(CONNECTING);
+
+            int status;
+            Boolean readable;
+            Boolean writable;
+            to<int>(args->get(0), &status);
+            to<Boolean>(args->get(3), &readable);
+            to<Boolean>(args->get(4), &writable);
+            if (!status) {
+                if (readable) {
+                    self_->setFlag(READABLE);
+                } else {
+                    self_->unsetFlag(READABLE);
+                }
+                if (writable) {
+                    self_->setFlag(WRITABLE);
+                } else {
+                    self_->unsetFlag(WRITABLE);
+                }
+
+                self_->active();
+
+                if (readable && !self_->hasFlag(PAUSED)) {
+                    self_->handle_->readStart();
+                }
+
+                if (self_->connectQueueSize_) {
+                    JsArray::Ptr connectBufQueue = self_->connectBufQueue_;
+                    JsArray::Ptr connectCbQueue = self_->connectCbQueue_;
+                    Size len = connectBufQueue->length();
+                    assert(connectCbQueue->length() == len);
+                    for (Size i = 0; i < len; i++) {
+                        JsFunction::Ptr cb =
+                            connectCbQueue->getPtr<JsFunction>(i);
+                        self_->write(connectBufQueue->get(i), cb);
+                    }
+                    self_->connectQueueCleanUp();
+                }
+
+                self_->emit(EVENT_CONNECT);
+
+                if (self_->hasFlag(SHUTDOWN_QUEUED)) {
+                    self_->unsetFlag(SHUTDOWN_QUEUED);
+                    self_->end();
+                }
+            } else {
+                self_->connectQueueCleanUp();
+                self_->destroy(uv::Error::last());
+            }
+            return Status::OK;
+        }
+    };
+
     class EmitError : LIBJ_JS_FUNCTION(EmitError)
      private:
         SocketImpl* self_;
@@ -540,6 +771,25 @@ class SocketImpl
 
         Value operator()(JsArray::Ptr args) {
             self_->emit(EVENT_ERROR);
+            return Status::OK;
+        }
+    };
+
+    class EmitError2 : LIBJ_JS_FUNCTION(EmitError2)
+     private:
+        SocketImpl* self_;
+        libj::Error::CPtr error_;
+
+     public:
+        EmitError2(
+            SocketImpl* sock,
+            libj::Error::CPtr err)
+            : self_(sock)
+            , error_(err) {}
+
+        Value operator()(JsArray::Ptr args) {
+            self_->emit(EVENT_ERROR, error_);
+            self_->destroy();
             return Status::OK;
         }
     };
@@ -614,8 +864,8 @@ class SocketImpl
     Int timeout_;
     Size pendingWriteReqs_;
     Size connectQueueSize_;
-    LinkedList::Ptr connectBufQueue_;
-    LinkedList::Ptr connectCbQueue_;
+    JsArray::Ptr connectBufQueue_;
+    JsArray::Ptr connectCbQueue_;
     Size bytesRead_;
     Size bytesDispatched_;
     StringDecoder::Ptr decoder_;
@@ -631,8 +881,8 @@ class SocketImpl
         , timeout_(0)
         , pendingWriteReqs_(0)
         , connectQueueSize_(0)
-        , connectBufQueue_(LinkedList::null())
-        , connectCbQueue_(LinkedList::null())
+        , connectBufQueue_(JsArray::null())
+        , connectCbQueue_(JsArray::null())
         , bytesRead_(0)
         , bytesDispatched_(0)
         , decoder_(StringDecoder::null())

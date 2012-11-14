@@ -39,7 +39,8 @@ class Pipe : public Stream {
         uv_pipe_open(&pipe_, fd);
     }
 
-    void connect(String::CPtr name) {
+    Connect* connect(String::CPtr name) {
+        assert(name);
         Connect* creq = new Connect();
         uv_pipe_connect(
             &creq->req,
@@ -47,6 +48,7 @@ class Pipe : public Stream {
             name->toStdString().c_str(),
             afterConnect);
         creq->dispatched();
+        return creq;
     }
 
  private:

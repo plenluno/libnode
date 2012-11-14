@@ -14,15 +14,20 @@ class Socket : LIBNODE_DUPLEX_STREAM(Socket)
     static Symbol::CPtr EVENT_CONNECT;
     static Symbol::CPtr EVENT_TIMEOUT;
 
-    static Ptr create();
-
-    // TODO(plenluno): implement
-    // virtual void connect(Int port) = 0;
-    // virtual void connect(String::CPtr path) = 0;
+    static Ptr create(JsObject::CPtr options = JsObject::null());
 
     virtual JsObject::Ptr address() = 0;
     virtual String::CPtr remoteAddress() = 0;
     virtual Int remotePort() = 0;
+
+    virtual Boolean connect(
+        Int port,
+        String::CPtr host = String::null(),
+        JsFunction::Ptr callback = JsFunction::null()) = 0;
+    virtual Boolean connect(
+        String::CPtr path,
+        JsFunction::Ptr callback = JsFunction::null()) = 0;
+
     virtual Boolean setNoDelay(Boolean noDelay = true) = 0;
     virtual Boolean setKeepAlive(
         Boolean enable = false, UInt initialDelay = 0) = 0;

@@ -3,10 +3,10 @@
 #include <libj/string_buffer.h>
 
 #include "libnode/http/agent.h"
+#include "libnode/net.h"
 #include "libnode/util.h"
 
 #include "./outgoing_message.h"
-#include "../net/socket_impl.h"
 
 namespace libj {
 namespace node {
@@ -48,7 +48,7 @@ class AgentImpl : Agent {
         }
     }
 
-    net::SocketImpl::Ptr createSocket(
+    net::Socket::Ptr createSocket(
         String::CPtr name,
         String::CPtr host,
         String::CPtr port,
@@ -74,8 +74,7 @@ class AgentImpl : Agent {
             }
         }
 
-        net::SocketImpl::Ptr socket;
-            // = net::createConnection(options);
+        net::Socket::Ptr socket = net::createConnection(options);
         JsArray::Ptr ss = sockets_->getPtr<JsArray>(name);
         if (!ss) {
             ss = JsArray::create();
@@ -96,7 +95,7 @@ class AgentImpl : Agent {
     }
 
     void removeSocket(
-        net::SocketImpl::Ptr socket,
+        net::Socket::Ptr socket,
         String::CPtr name,
         String::CPtr host,
         String::CPtr port,
@@ -123,7 +122,7 @@ class AgentImpl : Agent {
         }
 
         Value operator()(JsArray::Ptr args) {
-            net::SocketImpl::Ptr socket = args->getPtr<net::SocketImpl>(0);
+            net::Socket::Ptr socket = args->getPtr<net::Socket>(0);
             String::CPtr host = args->getCPtr<String>(1);
             String::CPtr port = args->getCPtr<String>(2);
             String::CPtr localAddress = args->getCPtr<String>(3);
@@ -160,7 +159,7 @@ class AgentImpl : Agent {
     class OnFree : LIBJ_JS_FUNCTION(OnFree)
         static Ptr create(
             AgentImpl* self,
-            net::SocketImpl::Ptr socket,
+            net::Socket::Ptr socket,
             String::CPtr host,
             String::CPtr port,
             String::CPtr localAddress) {
@@ -174,14 +173,14 @@ class AgentImpl : Agent {
 
      private:
         AgentImpl* self_;
-        net::SocketImpl::Ptr socket_;
+        net::Socket::Ptr socket_;
         String::CPtr host_;
         String::CPtr port_;
         String::CPtr localAddress_;
 
         OnFree(
             AgentImpl* self,
-            net::SocketImpl::Ptr socket,
+            net::Socket::Ptr socket,
             String::CPtr host,
             String::CPtr port,
             String::CPtr localAddress)
@@ -194,7 +193,7 @@ class AgentImpl : Agent {
     class OnClose : LIBJ_JS_FUNCTION(OnClose)
         static Ptr create(
             AgentImpl* self,
-            net::SocketImpl::Ptr socket,
+            net::Socket::Ptr socket,
             String::CPtr name,
             String::CPtr host,
             String::CPtr port,
@@ -210,7 +209,7 @@ class AgentImpl : Agent {
 
      private:
         AgentImpl* self_;
-        net::SocketImpl::Ptr socket_;
+        net::Socket::Ptr socket_;
         String::CPtr name_;
         String::CPtr host_;
         String::CPtr port_;
@@ -218,7 +217,7 @@ class AgentImpl : Agent {
 
         OnClose(
             AgentImpl* self,
-            net::SocketImpl::Ptr socket,
+            net::Socket::Ptr socket,
             String::CPtr name,
             String::CPtr host,
             String::CPtr port,
@@ -233,7 +232,7 @@ class AgentImpl : Agent {
     class OnRemove : LIBJ_JS_FUNCTION(OnRemove)
         static Ptr create(
             AgentImpl* self,
-            net::SocketImpl::Ptr socket,
+            net::Socket::Ptr socket,
             String::CPtr name,
             String::CPtr host,
             String::CPtr port,
@@ -255,7 +254,7 @@ class AgentImpl : Agent {
 
      private:
         AgentImpl* self_;
-        net::SocketImpl::Ptr socket_;
+        net::Socket::Ptr socket_;
         String::CPtr name_;
         String::CPtr host_;
         String::CPtr port_;
@@ -265,7 +264,7 @@ class AgentImpl : Agent {
 
         OnRemove(
             AgentImpl* self,
-            net::SocketImpl::Ptr socket,
+            net::Socket::Ptr socket,
             String::CPtr name,
             String::CPtr host,
             String::CPtr port,

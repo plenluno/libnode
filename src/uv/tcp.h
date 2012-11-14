@@ -89,6 +89,7 @@ class Tcp : public Stream {
     }
 
     Connect* connect(String::CPtr ip, Int port) {
+        assert(ip);
         struct sockaddr_in address =
             uv_ip4_addr(ip->toStdString().c_str(), port);
         Connect* creq = new Connect();
@@ -104,8 +105,10 @@ class Tcp : public Stream {
         }
     }
 
-    Connect* connect6(const char* ip6, Int port) {
-        struct sockaddr_in6 address = uv_ip6_addr(ip6, port);
+    Connect* connect6(String::CPtr ip6, Int port) {
+        assert(ip6);
+        struct sockaddr_in6 address =
+            uv_ip6_addr(ip6->toStdString().c_str(), port);
         Connect* creq = new Connect();
         Int r = uv_tcp_connect6(&creq->req, &tcp_, address, afterConnect);
         creq->dispatched();
