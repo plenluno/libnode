@@ -13,8 +13,7 @@ namespace libj {
 namespace node {
 namespace http {
 
-Server::Ptr createServer();
-Server::Ptr createServer(JsFunction::Ptr requestListener);
+Server::Ptr createServer(JsFunction::Ptr requestListener = JsFunction::null());
 
 }  // namespace http
 }  // namespace node

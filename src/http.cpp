@@ -6,13 +6,11 @@ namespace libj {
 namespace node {
 namespace http {
 
-Server::Ptr createServer() {
-    return Server::create();
-}
-
 Server::Ptr createServer(JsFunction::Ptr requestListener) {
     Server::Ptr srv = Server::create();
-    srv->on(Server::EVENT_REQUEST, requestListener);
+    if (requestListener) {
+        srv->on(Server::EVENT_REQUEST, requestListener);
+    }
     return srv;
 }
 
