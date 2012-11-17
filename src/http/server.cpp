@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include "libnode/http/method.h"
 #include "libnode/http/server.h"
 
 #include "./parser.h"
@@ -37,7 +38,7 @@ class ServerImpl : public FlagMixin, public Server {
 
     static void httpSocketSetup(net::SocketImpl::Ptr socket) {
         SocketOnDrain::Ptr onDrain = SocketOnDrain::create(socket);
-        socket->removeListener(net::Socket::EVENT_DRAIN, onDrain);
+        socket->removeAllListeners(net::Socket::EVENT_DRAIN);
         socket->on(net::Socket::EVENT_DRAIN, onDrain);
     }
 
@@ -146,8 +147,6 @@ class ServerImpl : public FlagMixin, public Server {
         }
 
         Value operator()(JsArray::Ptr args) {
-            LIBJ_STATIC_SYMBOL_DEF(symConnect, "CONNECT");
-
             Buffer::CPtr buf = args->getCPtr<Buffer>(0);
             Int bytesParsed = parser_->execute(buf);
             IncomingMessage::Ptr req = parser_->incoming();
@@ -164,7 +163,7 @@ class ServerImpl : public FlagMixin, public Server {
                 freeParser(parser_);
                 parser_ = NULL;
 
-                Boolean isConnect = req->method()->equals(symConnect);
+                Boolean isConnect = req->method()->equals(METHOD_CONNECT);
                 String::CPtr event = isConnect ? EVENT_CONNECT : EVENT_UPGRADE;
                 if (self_->listeners(event)->length()) {
                     self_->emit(

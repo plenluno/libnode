@@ -10,6 +10,8 @@ namespace node {
 namespace http {
 
 class Agent : LIBNODE_EVENT_EMITTER(Agent)
+ public:
+    static Ptr create(JsObject::CPtr options = JsObject::null());
 };
 
 }  // namespace http

@@ -39,6 +39,8 @@ set(libnode-src
     src/http/agent.cpp
     src/http/client.cpp
     src/http/header.cpp
+    src/http/method.cpp
+    src/http/outgoing_message.cpp
     src/http/server.cpp
     src/http/status.cpp
     src/net.cpp

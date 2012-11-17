@@ -18,6 +18,8 @@ namespace libj {
 namespace node {
 namespace http {
 
+class OutgoingMessage;
+
 class IncomingMessage
     : public FlagMixin
     , LIBNODE_READABLE_STREAM(IncomingMessage)
@@ -48,6 +50,10 @@ class IncomingMessage
 
     JsObject::CPtr headers() const {
         return headers_;
+    }
+
+    JsObject::CPtr trailers() const {
+        return trailers_;
     }
 
     String::CPtr url() const {
@@ -145,12 +151,16 @@ class IncomingMessage
         method_ = method;
     }
 
-    Boolean hasEncoding() const {
-        return !!decoder_;
+    Buffer::Encoding encoding() const {
+        return decoder_ ? decoder_->encoding() : Buffer::NONE;
     }
 
-    Buffer::Encoding getEncoding() const {
-        return decoder_ ? decoder_->encoding() : Buffer::NONE;
+    OutgoingMessage* req() {
+        return req_;
+    }
+
+    void setReq(OutgoingMessage* req) {
+        req_ = req;
     }
 
     LinkedList::Ptr getPendings() const {
@@ -243,6 +253,7 @@ class IncomingMessage
     String::CPtr method_;
     LinkedList::Ptr pendings_;
     StringDecoder::Ptr decoder_;
+    OutgoingMessage* req_;
     EventEmitter::Ptr ee_;
 
     IncomingMessage(net::SocketImpl::Ptr sock)
@@ -255,6 +266,7 @@ class IncomingMessage
         , method_(String::null())
         , pendings_(LinkedList::create())
         , decoder_(StringDecoder::null())
+        , req_(NULL)
         , ee_(EventEmitter::create()) {
         setFlag(READABLE);
     }

@@ -7,6 +7,7 @@
 #include <http_parser.h>
 
 #include "libnode/buffer.h"
+#include "libnode/http/method.h"
 
 #include "./incoming_message.h"
 #include "../flag.h"
@@ -149,42 +150,33 @@ class Parser : public FlagMixin {
     }
 
     static int onHeadersComplete(http_parser* parser) {
-        LIBJ_STATIC_SYMBOL_DEF(symDelete,  "DELETE");
-        LIBJ_STATIC_SYMBOL_DEF(symGet,     "GET");
-        LIBJ_STATIC_SYMBOL_DEF(symHead,    "HEAD");
-        LIBJ_STATIC_SYMBOL_DEF(symPost,    "POST");
-        LIBJ_STATIC_SYMBOL_DEF(symPut,     "PUT");
-        LIBJ_STATIC_SYMBOL_DEF(symConnect, "CONNECT");
-        LIBJ_STATIC_SYMBOL_DEF(symOptions, "OPTIONS");
-        LIBJ_STATIC_SYMBOL_DEF(symTrace,   "TRACE");
-
         Parser* self = static_cast<Parser*>(parser->data);
         if (parser->type == HTTP_REQUEST) {
             String::CPtr method;
             switch (parser->method) {
             case HTTP_DELETE:
-                method = symDelete;
+                method = METHOD_DELETE;
                 break;
             case HTTP_GET:
-                method = symGet;
+                method = METHOD_GET;
                 break;
             case HTTP_HEAD:
-                method = symHead;
+                method = METHOD_HEAD;
                 break;
             case HTTP_POST:
-                method = symPost;
+                method = METHOD_POST;
                 break;
             case HTTP_PUT:
-                method = symPut;
+                method = METHOD_PUT;
                 break;
             case HTTP_CONNECT:
-                method = symConnect;
+                method = METHOD_CONNECT;
                 break;
             case HTTP_OPTIONS:
-                method = symOptions;
+                method = METHOD_OPTIONS;
                 break;
             case HTTP_TRACE:
-                method = symTrace;
+                method = METHOD_TRACE;
                 break;
             default:
                 method = String::create();
