@@ -11,17 +11,17 @@ namespace node {
 
 Value setTimeout(
     JsFunction::Ptr callback,
-    Int delay,
+    UInt delay,
     JsArray::Ptr args = JsArray::null());
 
 Value setInterval(
     JsFunction::Ptr callback,
-    Int delay,
+    UInt delay,
     JsArray::Ptr args = JsArray::null());
 
-void clearTimeout(Value timeoutId);
+Boolean clearTimeout(Value timeoutId);
 
-void clearInterval(Value intervalId);
+Boolean clearInterval(Value intervalId);
 
 }  // namespace node
 }  // namespace libj

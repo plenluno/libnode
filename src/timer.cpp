@@ -9,6 +9,8 @@ namespace node {
 
 namespace {
 
+    const UInt TIMEOUT_MAX = 2147483647;  // 2^31-1
+
     class OnTimeout : LIBJ_JS_FUNCTION(OnTimeout)
      public:
         static Ptr create(
@@ -46,37 +48,43 @@ namespace {
 
 }  // namespace
 
-Value setTimeout(JsFunction::Ptr callback, Int delay, JsArray::Ptr args) {
+Value setTimeout(JsFunction::Ptr callback, UInt delay, JsArray::Ptr args) {
     if (!callback) return UNDEFINED;
 
-    if (delay <= 0) delay = 1;
+    if (delay == 0 || delay > TIMEOUT_MAX) delay = 1;
     uv::Timer* timer = new uv::Timer();
     timer->setOnTimeout(OnTimeout::create(callback, args, timer, false));
     timer->start(delay, 0);
     return timer;
 }
 
-Value setInterval(JsFunction::Ptr callback, Int delay, JsArray::Ptr args) {
+Value setInterval(JsFunction::Ptr callback, UInt delay, JsArray::Ptr args) {
     if (!callback) return UNDEFINED;
 
-    if (delay <= 0) delay = 1;
+    if (delay == 0 || delay > TIMEOUT_MAX) delay = 1;
     uv::Timer* timer = new uv::Timer();
     timer->setOnTimeout(OnTimeout::create(callback, args, timer, true));
     timer->start(delay, delay);
     return timer;
 }
 
-void clearTimeout(Value timeoutId) {
+Boolean clearTimeout(Value timeoutId) {
     uv::Timer* timer = NULL;
     if (to<uv::Timer*>(timeoutId, &timer) && timer) {
         timer->close();
+        return true;
+    } else {
+        return false;
     }
 }
 
-void clearInterval(Value intervalId) {
+Boolean clearInterval(Value intervalId) {
     uv::Timer* timer = NULL;
     if (to<uv::Timer*>(intervalId, &timer) && timer) {
         timer->close();
+        return true;
+    } else {
+        return false;
     }
 }
 
