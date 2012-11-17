@@ -24,10 +24,13 @@ class Hash : LIBJ_JS_OBJECT(Hash)
     static Ptr create(Algorithm algo);
 
     virtual Boolean update(Buffer::CPtr buf) = 0;
+
     virtual Boolean update(
         String::CPtr str,
         Buffer::Encoding enc = Buffer::UTF8) = 0;
+
     virtual Buffer::CPtr digest() = 0;
+
     virtual String::CPtr digest(Buffer::Encoding enc) = 0;
 };
 
