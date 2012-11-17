@@ -20,18 +20,30 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
     static Ptr create();
 
     virtual void on(
-        String::CPtr event, JsFunction::Ptr listener) = 0;
+        String::CPtr event,
+        JsFunction::Ptr listener) = 0;
+
     virtual void once(
-        String::CPtr event, JsFunction::Ptr listener) = 0;
+        String::CPtr event,
+        JsFunction::Ptr listener) = 0;
+
     virtual void addListener(
-        String::CPtr event, JsFunction::Ptr listener) = 0;
+        String::CPtr event,
+        JsFunction::Ptr listener) = 0;
+
     virtual void removeListener(
-        String::CPtr event, JsFunction::CPtr listener) = 0;
+        String::CPtr event,
+        JsFunction::CPtr listener) = 0;
+
     virtual void removeAllListeners() = 0;
+
     virtual void removeAllListeners(String::CPtr event) = 0;
+
     virtual JsArray::Ptr listeners(String::CPtr event) = 0;
+
     virtual void emit(
-        String::CPtr event, JsArray::Ptr args = JsArray::null()) = 0;
+        String::CPtr event,
+        JsArray::Ptr args = JsArray::null()) = 0;
 
  public:
     void emit(
