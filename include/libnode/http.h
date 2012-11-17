@@ -20,13 +20,9 @@ Agent::Ptr globalAgent();
 
 Server::Ptr createServer(JsFunction::Ptr requestListener = JsFunction::null());
 
-ClientRequest::Ptr request(
-    JsObject::CPtr options = JsObject::null(),
-    JsFunction::Ptr callback = JsFunction::null());
+ClientRequest::Ptr request(const Value& options, JsFunction::Ptr callback);
 
-ClientRequest::Ptr get(
-    JsObject::CPtr options = JsObject::null(),
-    JsFunction::Ptr callback = JsFunction::null());
+ClientRequest::Ptr get(const Value& options, JsFunction::Ptr callback);
 
 }  // namespace http
 }  // namespace node
