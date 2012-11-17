@@ -17,22 +17,27 @@ class Socket : LIBNODE_DUPLEX_STREAM(Socket)
     static Ptr create(JsObject::CPtr options = JsObject::null());
 
     virtual JsObject::Ptr address() = 0;
+
     virtual String::CPtr remoteAddress() = 0;
+
     virtual Int remotePort() = 0;
 
     virtual Boolean connect(
         Int port,
         String::CPtr host = String::null(),
         JsFunction::Ptr callback = JsFunction::null()) = 0;
+
     virtual Boolean connect(
         String::CPtr path,
         JsFunction::Ptr callback = JsFunction::null()) = 0;
 
     virtual Boolean setNoDelay(Boolean noDelay = true) = 0;
+
     virtual Boolean setKeepAlive(
         Boolean enable = false, UInt initialDelay = 0) = 0;
-    virtual Boolean setTimeout(
-        Int timeout,
+
+    virtual void setTimeout(
+        UInt timeout,
         JsFunction::Ptr callback = JsFunction::null()) = 0;
 };
 
@@ -59,10 +64,10 @@ public: \
         Boolean enable = false, UInt initialDelay = 0) { \
         return S->setKeepAlive(enable, initialDelay); \
     } \
-    virtual Boolean setTimeout( \
-        Int timeout, \
+    virtual void setTimeout( \
+        UInt timeout, \
         JsFunction::Ptr callback = JsFunction::null()) { \
-        return S->setTimeout(timeout, callback); \
+        S->setTimeout(timeout, callback); \
     }
 
 }  // namespace net

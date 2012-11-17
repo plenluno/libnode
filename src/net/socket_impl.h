@@ -81,11 +81,9 @@ class SocketImpl
         return Ptr(sock);
     }
 
-    Boolean setTimeout(
-        Int timeout,
+    void setTimeout(
+        UInt timeout,
         JsFunction::Ptr callback = JsFunction::null()) {
-        if (timeout < 0) return false;
-
         if (timeout) {
             startTimer(timeout);
             if (callback) {
@@ -97,7 +95,6 @@ class SocketImpl
                 removeListener(EVENT_TIMEOUT, callback);
             }
         }
-        return true;
     }
 
     Boolean setNoDelay(Boolean noDelay) {
