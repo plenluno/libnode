@@ -14,7 +14,11 @@ namespace http {
 class ServerResponseImpl : LIBNODE_HTTP_SERVER_RESPONSE(ServerResponseImpl)
  public:
     static Ptr create(OutgoingMessage::Ptr msg) {
-        return Ptr(new ServerResponseImpl(msg));
+    	if (msg) {
+        	return Ptr(new ServerResponseImpl(msg));
+        } else {
+        	return ServerResponseImpl::null();
+        }
     }
 
  private:
