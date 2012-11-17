@@ -14,10 +14,10 @@ namespace http {
 class ClientResponseImpl : LIBNODE_HTTP_CLIENT_RESPONSE(ClientResponseImpl)
  public:
     static Ptr create(IncomingMessage::Ptr msg) {
-    	if (msg) {
-        	return Ptr(new ClientResponseImpl(msg));
+        if (msg) {
+            return Ptr(new ClientResponseImpl(msg));
         } else {
-        	return ClientResponseImpl::null();
+            return ClientResponseImpl::null();
         }
     }
 

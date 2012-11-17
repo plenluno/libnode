@@ -14,10 +14,10 @@ namespace http {
 class ServerRequestImpl : LIBNODE_HTTP_SERVER_REQUEST(ServerRequestImpl)
  public:
     static Ptr create(IncomingMessage::Ptr msg) {
-    	if (msg) {
-        	return Ptr(new ServerRequestImpl(msg));
+        if (msg) {
+            return Ptr(new ServerRequestImpl(msg));
         } else {
-        	return ServerRequestImpl::null();
+            return ServerRequestImpl::null();
         }
     }
 
