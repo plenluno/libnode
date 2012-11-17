@@ -9,7 +9,10 @@ namespace libj {
 namespace node {
 namespace http {
 
-Agent::Ptr globalAgent = Agent::create();
+Agent::Ptr globalAgent() {
+    static Agent::Ptr agent = Agent::create();
+    return agent;
+}
 
 Server::Ptr createServer(JsFunction::Ptr requestListener) {
     Server::Ptr srv = Server::create();

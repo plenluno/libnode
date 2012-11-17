@@ -29,6 +29,8 @@ class AgentImpl : public Agent {
             agent->options_ = options;
             to<Size>(options->get(strMaxSocks), &agent->maxSockets_);
         }
+
+        agent->on(EVENT_FREE, Free::create(agent->requests_));
         return Ptr(agent);
     }
 
@@ -316,9 +318,7 @@ class AgentImpl : public Agent {
         , requests_(JsObject::create())
         , sockets_(JsObject::create())
         , options_(JsObject::create())
-        , ee_(events::EventEmitter::create()) {
-        on(EVENT_FREE, Free::create(requests_));
-    }
+        , ee_(events::EventEmitter::create()) {}
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };

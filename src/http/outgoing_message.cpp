@@ -30,7 +30,7 @@ OutgoingMessage::Ptr OutgoingMessage::create(
 
     OutgoingMessage::Ptr self(new OutgoingMessage());
     self->agent_ = options->getPtr<Agent>(symAgent);
-    if (!self->agent_) self->agent_ = globalAgent;
+    if (!self->agent_) self->agent_ = globalAgent();
 
     Int defaultPort = 80;
     to<Int>(options->get(symDefaultPort), &defaultPort);

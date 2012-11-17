@@ -16,7 +16,7 @@ namespace libj {
 namespace node {
 namespace http {
 
-extern Agent::Ptr globalAgent;
+Agent::Ptr globalAgent();
 
 Server::Ptr createServer(JsFunction::Ptr requestListener = JsFunction::null());
 
