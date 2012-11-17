@@ -15,6 +15,7 @@ class ReadableStream : LIBNODE_STREAM(ReadableStream)
     static Symbol::CPtr EVENT_END;
 
     virtual Boolean readable() const = 0;
+
     virtual Boolean setEncoding(Buffer::Encoding enc) = 0;
 };
 

@@ -15,12 +15,15 @@ class WritableStream : LIBNODE_STREAM(WritableStream)
     static Symbol::CPtr EVENT_PIPE;
 
     virtual Boolean writable() const = 0;
+
     virtual Boolean write(
         const Value& data,
         Buffer::Encoding enc = Buffer::NONE) = 0;
+
     virtual Boolean end(
         const Value& data = UNDEFINED,
         Buffer::Encoding enc = Buffer::NONE) = 0;
+
     virtual Boolean destroySoon() = 0;
 };
 

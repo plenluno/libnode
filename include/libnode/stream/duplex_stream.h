@@ -18,16 +18,20 @@ class DuplexStream : LIBNODE_STREAM(DuplexStream)
 
     // ReadableStream
     virtual Boolean readable() const = 0;
+
     virtual Boolean setEncoding(Buffer::Encoding enc) = 0;
 
     // WritableStream
     virtual Boolean writable() const = 0;
+
     virtual Boolean write(
         const Value& data,
         Buffer::Encoding enc = Buffer::NONE) = 0;
+
     virtual Boolean end(
         const Value& data = UNDEFINED,
         Buffer::Encoding enc = Buffer::NONE) = 0;
+
     virtual Boolean destroySoon() = 0;
 };
 
