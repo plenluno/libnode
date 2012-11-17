@@ -30,7 +30,10 @@ JsObject::Ptr parse(String::CPtr urlStr) {
 
     obj->put(HREF, urlStr);
     if (url->scheme) {
-        obj->put(PROTOCOL, String::create(url->scheme)->toLowerCase());
+        StringBuffer::Ptr protocol = StringBuffer::create();
+        protocol->appendCStr(url->scheme);
+        protocol->appendChar(':');
+        obj->put(PROTOCOL, protocol->toString()->toLowerCase());
     }
     String::CPtr port = String::null();
     if (url->port) {

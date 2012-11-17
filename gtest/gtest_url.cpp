@@ -26,7 +26,7 @@ TEST(GTestUrl, TestParse2) {
     JsObject::Ptr url = url::parse(urlStr);
     ASSERT_TRUE(url->getCPtr<String>(url::HREF)->equals(urlStr));
     ASSERT_TRUE(url->getCPtr<String>(url::PROTOCOL)->equals(
-        String::create("http")));
+        String::create("http:")));
     ASSERT_TRUE(url->getCPtr<String>(url::HOST)->equals(
         String::create("www.gtest.com:8888")));
     ASSERT_TRUE(url->getCPtr<String>(url::AUTH)->equals(
