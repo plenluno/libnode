@@ -12,8 +12,11 @@ namespace http {
 class ClientResponse : LIBNODE_READABLE_STREAM(ClientResponse)
  public:
     virtual Int statusCode() const = 0;
+
     virtual String::CPtr httpVersion() const = 0;
+
     virtual JsObject::CPtr headers() const = 0;
+
     virtual JsObject::CPtr trailers() const = 0;
 };
 
@@ -22,7 +25,7 @@ class ClientResponse : LIBNODE_READABLE_STREAM(ClientResponse)
     LIBJ_MUTABLE_DEFS(T, libj::node::http::ClientResponse)
 
 #define LIBNODE_HTTP_CLIENT_RESPONSE_IMPL(CR) \
-    LIBNODE_WRITABLE_STREAM_IMPL(CR); \
+    LIBNODE_READABLE_STREAM_IMPL(CR); \
 public: \
     virtual Int statusCode() const { \
         return CR->statusCode(); \

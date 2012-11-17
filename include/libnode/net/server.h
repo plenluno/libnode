@@ -20,11 +20,13 @@ class Server : LIBNODE_EVENT_EMITTER(Server)
     static Ptr create();
 
     virtual Value address() = 0;
+
     virtual Boolean listen(
         Int port,
         String::CPtr host = IN_ADDR_ANY,
         Int backlog = 511,
         JsFunction::Ptr callback = JsFunction::null()) = 0;
+
     virtual Boolean close(
         JsFunction::Ptr callback = JsFunction::null()) = 0;
 };

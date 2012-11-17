@@ -18,11 +18,14 @@ class ClientRequest : LIBNODE_WRITABLE_STREAM(ClientRequest)
     static Symbol::CPtr EVENT_CONTINUE;
 
     virtual void abort() = 0;
-    virtual Boolean setNoDelay(Boolean noDelay = true) = 0;
-    virtual Boolean setSocketKeepAlive(
-        Boolean enable = false, Int initialDelay = 0) = 0;
-    virtual Boolean setTimeout(
-        Int timeout,
+
+    virtual void setNoDelay(Boolean noDelay = true) = 0;
+
+    virtual void setSocketKeepAlive(
+        Boolean enable = false, UInt initialDelay = 0) = 0;
+
+    virtual void setTimeout(
+        UInt timeout,
         JsFunction::Ptr callback = JsFunction::null()) = 0;
 };
 
@@ -33,17 +36,20 @@ class ClientRequest : LIBNODE_WRITABLE_STREAM(ClientRequest)
 #define LIBNODE_HTTP_CLIENT_REQUEST_IMPL(CR) \
     LIBNODE_WRITABLE_STREAM_IMPL(CR); \
 public: \
-    virtual Boolean setNoDelay(Boolean noDelay = true) { \
-        return CR->setNoDelay(noDelay); \
+    virtual void abort() { \
+        CR->abort(); \
     } \
-    virtual Boolean setSocketKeepAlive( \
-        Boolean enable = false, Int initialDelay = 0) { \
-        return CR->setSocketKeepAlive(enable, initialDelay); \
+    virtual void setNoDelay(Boolean noDelay = true) { \
+        CR->setNoDelay(noDelay); \
     } \
-    virtual Boolean setTimeout( \
-        Int timeout, \
+    virtual void setSocketKeepAlive( \
+        Boolean enable = false, UInt initialDelay = 0) { \
+        CR->setSocketKeepAlive(enable, initialDelay); \
+    } \
+    virtual void setTimeout( \
+        UInt timeout, \
         JsFunction::Ptr callback = JsFunction::null()) { \
-        return CR->setTimeout(timeout, callback); \
+        CR->setTimeout(timeout, callback); \
     }
 
 }  // namespace http
