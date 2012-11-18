@@ -2,6 +2,7 @@
 
 #include <libj/console.h>
 #include <libj/json.h>
+#include <libnode/buffer.h>
 #include <libnode/http.h>
 #include <libnode/node.h>
 #include <libnode/url.h>
@@ -68,8 +69,15 @@ int main() {
     namespace url = node::url;
     namespace echo = node::echo;
 
+    libj::String::CPtr body = libj::String::create("xyz");
+
     libj::JsObject::Ptr headers = libj::JsObject::create();
-    headers->put(http::HEADER_CONNECTION, libj::String::create("close"));
+    headers->put(
+        http::HEADER_CONNECTION,
+        libj::String::create("close"));
+    headers->put(
+        http::HEADER_CONTENT_LENGTH,
+        libj::String::valueOf(node::Buffer::byteLength(body)));
 
     libj::JsObject::Ptr options = url::parse(
         libj::String::create("http://127.0.0.1:10000/abc"));
@@ -77,7 +85,7 @@ int main() {
 
     echo::OnResponse::Ptr onResponse(new echo::OnResponse());
     http::ClientRequest::Ptr req = http::request(options, onResponse);
-    // req->write(libj::String::create("xyz"));
+    req->write(body);
     req->end();
     node::run();
     return 0;
