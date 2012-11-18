@@ -141,8 +141,8 @@ OutgoingMessage::Ptr OutgoingMessage::create(
         self->onSocket(sock);
     }
 
-    // JsFunction::Ptr flush(new Flush(&(*self)));
-    // self->deferToConnect(JsFunction::null(), flush);
+    JsFunction::Ptr flush(new Flush(self));
+    self->deferToConnect(JsFunction::null(), flush);
     return self;
 }
 

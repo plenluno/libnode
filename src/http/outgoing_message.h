@@ -686,6 +686,19 @@ class OutgoingMessage
         OutgoingMessage* self_;
     };
 
+    class Flush : LIBJ_JS_FUNCTION(Flush)
+     public:
+        Flush(OutgoingMessage::Ptr self) : self_(&(*self)) {}
+
+        Value operator()(JsArray::Ptr args) {
+            self_->flush();
+            return Status::OK;
+        }
+
+     private:
+        OutgoingMessage* self_;
+    };
+
     class SetTimeout : LIBJ_JS_FUNCTION(EmitTimeout)
      public:
         SetTimeout(
