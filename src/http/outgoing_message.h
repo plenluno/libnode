@@ -12,6 +12,7 @@
 
 #include "./parser.h"
 #include "./incoming_message.h"
+#include "./client_response_impl.h"
 #include "../flag.h"
 #include "../net/socket_impl.h"
 
@@ -597,7 +598,7 @@ class OutgoingMessage
                 req->unsetFlag(SHOULD_KEEP_ALIVE);
             }
 
-            req->emit(EVENT_RESPONSE, res);
+            req->emit(EVENT_RESPONSE, ClientResponseImpl::create(res));
             req->res_ = res;
             res->setReq(req);
 
@@ -647,9 +648,6 @@ class OutgoingMessage
             JsFunction::Ptr parserOnIncomingClient(
                 new ParserOnIncomingClient(parser, socket_));
             parser->setOnIncoming(parserOnIncomingClient);
-
-            // Int len = self_->listeners(EVENT_SOCKET)->length();
-            // console::printf(console::DEBUG, "emit socket %d\n", len);
 
             self_->emit(EVENT_SOCKET, socket_);
             return Status::OK;
