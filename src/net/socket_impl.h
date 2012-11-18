@@ -776,7 +776,7 @@ class SocketImpl
             , error_(err) {}
 
         Value operator()(JsArray::Ptr args) {
-            self_->emit(EVENT_ERROR);
+            self_->emit(EVENT_ERROR, error_);
             return Status::OK;
         }
     };
