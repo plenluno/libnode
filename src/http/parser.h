@@ -231,7 +231,7 @@ class Parser : public FlagMixin {
 
         Size n = fields_->length();
         assert(values_->length() == n);
-        if (!maxHeadersCount_) {
+        if (maxHeadersCount_) {
             n = n < maxHeadersCount_ ? n : maxHeadersCount_;
         }
         for (Size i = 0; i < n; i++) {
