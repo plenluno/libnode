@@ -317,8 +317,11 @@ class ServerImpl : public FlagMixin, public Server {
             OutgoingMessage::Ptr out = OutgoingMessage::create();
             out->setFlag(OutgoingMessage::SERVER_RESPONSE);
             incomings_->push(in);
-            if (shouldKeepAlive)
+            if (shouldKeepAlive) {
                 out->setFlag(OutgoingMessage::SHOULD_KEEP_ALIVE);
+            } else {
+                out->unsetFlag(OutgoingMessage::SHOULD_KEEP_ALIVE);
+            }
 
             OutgoingMessage* httpMessage = socket_->httpMessage();
             if (httpMessage) {
