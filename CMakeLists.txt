@@ -184,6 +184,25 @@ if(LIBNODE_BUILD_SAMPLE)
         )
     endif(APPLE)
 
+## echo client
+    add_executable(libnode-echo-client
+        sample/echo_client.cpp
+    )
+    target_link_libraries(libnode-echo-client
+        node
+        ${libnode-deps}
+    )
+    if(APPLE)
+        set_target_properties(libnode-echo-client PROPERTIES
+            COMPILE_FLAGS ${libnode-sample-cflags}
+            LINK_FLAGS ${libnode-sample-lflags}
+        )
+    else(APPLE)
+        set_target_properties(libnode-echo-client PROPERTIES
+            COMPILE_FLAGS ${libnode-sample-cflags}
+        )
+    endif(APPLE)
+
 ## static server
     add_executable(libnode-static-server
         sample/static_server.cpp
