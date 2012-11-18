@@ -188,11 +188,17 @@ class Parser : public FlagMixin {
 
         self->majorVer_ = static_cast<Int>(parser->http_major);
         self->minorVer_ = static_cast<Int>(parser->http_minor);
+
         if (parser->upgrade) {
             self->setFlag(UPGRADE);
+        } else {
+            self->unsetFlag(UPGRADE);
         }
+
         if (http_should_keep_alive(parser)) {
             self->setFlag(SHOULD_KEEP_ALIVE);
+        } else {
+            self->unsetFlag(SHOULD_KEEP_ALIVE);
         }
 
         return self->onHeadersComplete() ? 1 : 0;
