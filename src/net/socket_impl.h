@@ -710,7 +710,7 @@ class SocketImpl
             if (self_->hasFlag(DESTROYED)) return Status::OK;
 
             assert(self_->hasFlag(CONNECTING));
-            self_->setFlag(CONNECTING);
+            self_->unsetFlag(CONNECTING);
 
             int status;
             Boolean readable;
