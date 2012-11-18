@@ -20,7 +20,7 @@ int main() {
     namespace node = libj::node;
     namespace http = libj::node::http;
 
-    http::get(
+    http::ClientRequest::Ptr req = http::get(
         libj::String::create("http://127.0.0.1:10000/abc"),
         libj::JsFunction::null());
     node::run();
