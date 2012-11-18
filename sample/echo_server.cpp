@@ -10,6 +10,7 @@
 
 namespace libj {
 namespace node {
+namespace echo {
 
 class OnData : LIBJ_JS_FUNCTION(OnData)
  private:
@@ -143,15 +144,17 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
     }
 };
 
+}  // namespace echo
 }  // namespace node
 }  // namespace libj
 
 int main() {
     namespace node = libj::node;
-    namespace http = libj::node::http;
+    namespace http = node::http;
+    namespace echo = node::echo;
 
     http::Server::Ptr server = http::Server::create();
-    node::OnRequest::Ptr onRequest(new node::OnRequest(server));
+    echo::OnRequest::Ptr onRequest(new echo::OnRequest(server));
     server->on(http::Server::EVENT_REQUEST, onRequest);
     server->listen(10000);
     node::run();
