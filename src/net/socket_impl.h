@@ -365,8 +365,8 @@ class SocketImpl
             sPort = String::valueOf(vPort);
         }
 
-        Long port = -1;
-        if (sPort) to<Long>(json::parse(sPort), &port);
+        Long lPort = -1;
+        if (sPort) to<Long>(json::parse(sPort), &lPort);
 
         String::CPtr path = options->getCPtr<String>(symPath);
         String::CPtr host = options->getCPtr<String>(symHost);
@@ -374,8 +374,9 @@ class SocketImpl
 
         if (path) {
             return connect(path, cb);
-        } else if (port >= 0) {
-            connect(static_cast<Int>(port), host, localAddress, String::null(), cb);
+        } else if (lPort >= 0) {
+            Int port = static_cast<Int>(lPort);
+            connect(port, host, localAddress, String::null(), cb);
             return true;
         } else {
             return false;
