@@ -4,6 +4,7 @@
 #define LIBNODE_SRC_NET_SOCKET_IMPL_H_
 
 #include <assert.h>
+#include <libj/json.h>
 
 #include "libnode/net.h"
 #include "libnode/process.h"
@@ -358,8 +359,15 @@ class SocketImpl
 
         if (!options) return false;
 
-        Int port = -1;
-        to<Int>(options->get(symPort), &port);
+        String::CPtr sPort = String::null();
+        const Value& vPort = options->get(symPort);
+        if (!vPort.isUndefined()) {
+            sPort = String::valueOf(vPort);
+        }
+
+        Long port = -1;
+        if (sPort) to<Long>(json::parse(sPort), &port);
+
         String::CPtr path = options->getCPtr<String>(symPath);
         String::CPtr host = options->getCPtr<String>(symHost);
         String::CPtr localAddress = options->getCPtr<String>(symLocalAddress);
@@ -367,7 +375,7 @@ class SocketImpl
         if (path) {
             return connect(path, cb);
         } else if (port >= 0) {
-            connect(port, host, localAddress, String::null(), cb);
+            connect(static_cast<Int>(port), host, localAddress, String::null(), cb);
             return true;
         } else {
             return false;

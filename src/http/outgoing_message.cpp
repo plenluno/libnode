@@ -16,6 +16,7 @@ OutgoingMessage::Ptr OutgoingMessage::create(
     LIBJ_STATIC_SYMBOL_DEF(symSlash,        "/");
     LIBJ_STATIC_SYMBOL_DEF(symAuth,         "auth");
     LIBJ_STATIC_SYMBOL_DEF(symPort,         "port");
+    LIBJ_STATIC_SYMBOL_DEF(sym80,           "80");
     LIBJ_STATIC_SYMBOL_DEF(symDefaultPort,  "defaultPort");
     LIBJ_STATIC_SYMBOL_DEF(symHost,         "host");
     LIBJ_STATIC_SYMBOL_DEF(symHostName,     "hostname");
@@ -32,19 +33,23 @@ OutgoingMessage::Ptr OutgoingMessage::create(
     self->agent_ = options->getPtr<Agent>(symAgent);
     if (!self->agent_) self->agent_ = globalAgent();
 
-    Int defaultPort = 80;
-    to<Int>(options->get(symDefaultPort), &defaultPort);
+    String::CPtr defaultPort = sym80;
+    const Value& vDefaultPort = options->get(symDefaultPort);
+    if (!vDefaultPort.isUndefined()) {
+        String::CPtr sDefaultPort = String::valueOf(vDefaultPort);
+        if (sDefaultPort) defaultPort = sDefaultPort;
+    }
 
-    Int port = defaultPort;
-    to<Int>(options->get(symPort), &port);
+    String::CPtr port = defaultPort;
+    const Value& vPort = options->get(symPort);
+    if (!vPort.isUndefined()) {
+        String::CPtr sPort = String::valueOf(vPort);
+        if (sPort) port = sPort;
+    }
 
     String::CPtr host = options->getCPtr<String>(symHostName);
     if (!host) host = options->getCPtr<String>(symHost);
     if (!host) host = symLocalHost;
-
-    Boolean setHost = !options->getCPtr<String>(symSetHost);
-
-    self->socketPath_ = options->getCPtr<String>(symSocketPath);
 
     String::CPtr method = options->getCPtr<String>(symMethod);
     if (method) {
@@ -69,14 +74,15 @@ OutgoingMessage::Ptr OutgoingMessage::create(
         }
     }
 
+    Boolean setHost = !options->getCPtr<String>(symSetHost);
     if (host && !self->getHeader(symHost) && setHost) {
-        if (port == defaultPort) {
+        if (port->equals(defaultPort)) {
             self->setHeader(HEADER_HOST, host);
         } else {
             StringBuffer::Ptr hostHeader = StringBuffer::create();
             hostHeader->append(host);
             hostHeader->appendChar(':');
-            hostHeader->append(String::valueOf(port));
+            hostHeader->append(port);
             self->setHeader(HEADER_HOST, hostHeader->toString());
         }
     }
@@ -107,6 +113,7 @@ OutgoingMessage::Ptr OutgoingMessage::create(
         self->storeHeader(firstLine->toString(), self->renderHeaders());
     }
 
+    self->socketPath_ = options->getCPtr<String>(symSocketPath);
     if (self->socketPath_) {
         self->setFlag(OutgoingMessage::LAST);
         self->unsetFlag(OutgoingMessage::SHOULD_KEEP_ALIVE);
@@ -120,7 +127,7 @@ OutgoingMessage::Ptr OutgoingMessage::create(
         agent->addRequest(
             self,
             host,
-            String::valueOf(port),
+            port,
             options->getCPtr<String>(symLocalAddress));
     } else {
         self->setFlag(OutgoingMessage::LAST);

@@ -5,7 +5,6 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <libj/console.h>
 #include <libj/typed_linked_list.h>
 
 #include "libnode/http.h"
@@ -621,9 +620,6 @@ class OutgoingMessage
         Value operator()(JsArray::Ptr args) {
             LIBJ_STATIC_SYMBOL_DEF(EVENT_SOCKET, "socket");
 
-            console::printf(console::DEBUG, "OnSocket start\n");
-            assert(self_);
-
             Parser* parser = new Parser(HTTP_RESPONSE, socket_);
             self_->socket_ = socket_;
             self_->parser_ = parser;
@@ -652,13 +648,10 @@ class OutgoingMessage
                 new ParserOnIncomingClient(parser, socket_));
             parser->setOnIncoming(parserOnIncomingClient);
 
-            // assert(self_->listeners(EVENT_SOCKET)->length());
-            console::printf(console::DEBUG, "emit socket start\n");
+            // Int len = self_->listeners(EVENT_SOCKET)->length();
+            // console::printf(console::DEBUG, "emit socket %d\n", len);
 
             self_->emit(EVENT_SOCKET, socket_);
-
-            console::printf(console::DEBUG, "emit socket end\n");
-
             return Status::OK;
         }
 
@@ -764,8 +757,6 @@ class OutgoingMessage
             , onConnect_(false) {}
 
         Value operator()(JsArray::Ptr args) {
-            console::printf(console::DEBUG, "DeferToConnect start\n");
-
             if (self_->socket_->hasFlag(WRITABLE) || onConnect_) {
                 if (method_) (*method_)();
                 if (callback_) (*callback_)();

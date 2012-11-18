@@ -3,7 +3,6 @@
 #ifndef LIBNODE_SRC_HTTP_AGENT_IMPL_H_
 #define LIBNODE_SRC_HTTP_AGENT_IMPL_H_
 
-
 #include <libj/string_buffer.h>
 
 #include "libnode/http/agent.h"
