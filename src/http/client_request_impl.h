@@ -17,7 +17,7 @@ class ClientRequestImpl : LIBNODE_HTTP_CLIENT_REQUEST(ClientRequestImpl)
         if (msg) {
             return Ptr(new ClientRequestImpl(msg));
         } else {
-            return ClientRequestImpl::null();
+            return null();
         }
     }
 

@@ -17,7 +17,7 @@ class ServerRequestImpl : LIBNODE_HTTP_SERVER_REQUEST(ServerRequestImpl)
         if (msg) {
             return Ptr(new ServerRequestImpl(msg));
         } else {
-            return ServerRequestImpl::null();
+            return null();
         }
     }
 

@@ -17,7 +17,7 @@ class ClientResponseImpl : LIBNODE_HTTP_CLIENT_RESPONSE(ClientResponseImpl)
         if (msg) {
             return Ptr(new ClientResponseImpl(msg));
         } else {
-            return ClientResponseImpl::null();
+            return null();
         }
     }
 
