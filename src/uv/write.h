@@ -14,7 +14,8 @@ namespace uv {
 class Write : public Req<uv_write_t> {
  public:
     Write()
-        : buffer(Buffer::null())
+        : bytes(0)
+        , buffer(Buffer::null())
         , cb(JsFunction::null()) {}
 
     Size bytes;

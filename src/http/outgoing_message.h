@@ -508,7 +508,7 @@ class OutgoingMessage
                         EVENT_CLOSE, self_->socketCloseListener_);
                     socket_->removeListener(
                         EVENT_ERROR, self_->socketErrorListener_);
-                    req->emit(event, res, socket_, bytesParsed);
+                    req->emit(event, res, socket_, bodyHead);
                     req->emit(EVENT_CLOSE);
                 }
             } else if (parser->incoming() &&
@@ -910,16 +910,16 @@ class OutgoingMessage
         Boolean sentDateHeader = false;
         Boolean sentExpect = false;
 
-        StringBuffer::Ptr messageHader = StringBuffer::create();
-        messageHader->append(firstLine);
+        StringBuffer::Ptr messageHeader = StringBuffer::create();
+        messageHeader->append(firstLine);
         String::CPtr field;
         Value value;
 
         #define LIBNODE_OUTMSG_STORE(F, V) { \
-            messageHader->append(F); \
-            messageHader->appendCStr(": "); \
-            messageHader->append(V); \
-            messageHader->appendCStr("\r\n"); \
+            messageHeader->append(F); \
+            messageHeader->appendCStr(": "); \
+            messageHeader->append(V); \
+            messageHeader->appendCStr("\r\n"); \
             String::CPtr lowerField = F->toLowerCase(); \
             if (lowerField->equals(LHEADER_CONNECTION)) { \
                 sentConnectionHeader = true; \
@@ -965,7 +965,12 @@ class OutgoingMessage
 
         #undef LIBNODE_OUTMSG_STORE
 
-        // TODO(plenluno): date header
+        if (hasFlag(SEND_DATE) && !sentDateHeader) {
+            // TODO(plenluno): implement utcDate
+            // messageHeader->appendCStr("Date: ");
+            // messageHeader->append(utcDate());
+            // messageHeader->appendCStr("\r\n");
+        }
 
         if (!sentConnectionHeader) {
             Boolean shouldSendKeepAlive =
@@ -973,22 +978,22 @@ class OutgoingMessage
                 (sentContentLengthHeader ||
                  hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT) ||
                  true);  // this.agent
-            messageHader->append(HEADER_CONNECTION);
-            messageHader->appendCStr(": ");
+            messageHeader->append(HEADER_CONNECTION);
+            messageHeader->appendCStr(": ");
             if (shouldSendKeepAlive) {
-                messageHader->appendCStr("keep-alive");
+                messageHeader->appendCStr("keep-alive");
             } else {
                 setFlag(LAST);
-                messageHader->appendCStr("close");
+                messageHeader->appendCStr("close");
             }
-            messageHader->appendCStr("\r\n");
+            messageHeader->appendCStr("\r\n");
         }
 
         if (!sentContentLengthHeader && !sentTransferEncodingHeader) {
             if (hasFlag(HAS_BODY)) {
                 if (hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT)) {
-                    messageHader->append(HEADER_TRANSFER_ENCODING);
-                    messageHader->appendCStr(": chunked\r\n");
+                    messageHeader->append(HEADER_TRANSFER_ENCODING);
+                    messageHeader->appendCStr(": chunked\r\n");
                     setFlag(CHUNKED_ENCODING);
                 } else {
                     setFlag(LAST);
@@ -998,8 +1003,8 @@ class OutgoingMessage
             }
         }
 
-        messageHader->appendCStr("\r\n");
-        header_ = messageHader->toString();
+        messageHeader->appendCStr("\r\n");
+        header_ = messageHeader->toString();
         unsetFlag(HEADER_SENT);
 
         if (sentExpect) send(String::create());
