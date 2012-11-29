@@ -19,7 +19,7 @@ TEST(GTestBuffer, TestCreate2) {
 }
 
 TEST(GTestBuffer, TestCreate3) {
-    JsTypedArray<UByte>::Ptr ary = JsTypedArray<UByte>::create();
+    TypedJsArray<UByte>::Ptr ary = TypedJsArray<UByte>::create();
     ary->add(static_cast<UByte>('0'));
     ary->add(static_cast<UByte>('1'));
     Buffer::Ptr buf = Buffer::create(ary);
@@ -40,7 +40,7 @@ TEST(GTestBuffer, TestCreate4) {
     Buffer::Ptr buf = Buffer::create(str, Buffer::UTF8);
     ASSERT_TRUE(buf);
     ASSERT_EQ(9, buf->length());
-    ASSERT_EQ(0x86, buf->get(8));
+    ASSERT_EQ(0x86, buf->at(8));
     ASSERT_TRUE(buf->toString()->equals(str));
 }
 
