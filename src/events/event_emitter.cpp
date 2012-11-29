@@ -1,14 +1,17 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include <libj/status.h>
+#include <libnode/events/event_emitter.h>
 
-#include "libnode/events/event_emitter.h"
+#include <libj/status.h>
+#include <libj/bridge/abstract_js_object.h>
 
 namespace libj {
 namespace node {
 namespace events {
 
-class EventEmitterImpl : public EventEmitter {
+typedef bridge::AbstractJsObject<EventEmitter> EventEmitterBase;
+
+class EventEmitterImpl : public EventEmitterBase {
  private:
     class Once : LIBJ_JS_FUNCTION(Once)
      public:
@@ -58,10 +61,10 @@ class EventEmitterImpl : public EventEmitter {
         if (!listener) return;
 
         JsArray::Ptr a;
-        Value v = listeners_->get(event);
+        Value v = get(event);
         if (v.isUndefined()) {
             a = JsArray::create();
-            listeners_->put(String::intern(event), a);
+            put(String::intern(event), a);
         } else {
             a = toPtr<JsArray>(v);
         }
@@ -91,11 +94,11 @@ class EventEmitterImpl : public EventEmitter {
     }
 
     void removeAllListeners() {
-        listeners_->clear();
+        clear();
     }
 
     void removeAllListeners(String::CPtr event) {
-        listeners_->remove(event);
+        remove(event);
     }
 
     void emit(String::CPtr event, JsArray::Ptr args = JsArray::null()) {
@@ -110,10 +113,10 @@ class EventEmitterImpl : public EventEmitter {
     }
 
     JsArray::Ptr listeners(String::CPtr event) {
-        Value v = listeners_->get(event);
+        Value v = get(event);
         if (v.isUndefined()) {
             JsArray::Ptr a = JsArray::create();
-            listeners_->put(event, a);
+            put(event, a);
             return a;
         } else {
             return toPtr<JsArray>(v);
@@ -125,12 +128,8 @@ class EventEmitterImpl : public EventEmitter {
     }
 
  private:
-    JsObject::Ptr listeners_;
-
     EventEmitterImpl()
-        : listeners_(JsObject::create()) {}
-
-    LIBJ_JS_OBJECT_IMPL(listeners_);
+        : EventEmitterBase(JsObject::create()) {}
 };
 
 LIBJ_SYMBOL_DEF(EventEmitter::EVENT_NEW_LISTENER, "newListener");

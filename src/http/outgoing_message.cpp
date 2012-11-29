@@ -1,5 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <libj/cast.h>
+
 #include "./agent_impl.h"
 #include "./outgoing_message.h"
 

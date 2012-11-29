@@ -4,14 +4,18 @@
 #include <openssl/md5.h>
 #include <openssl/sha.h>
 
-#include "libnode/buffer.h"
-#include "libnode/crypto/hash.h"
+#include <libnode/buffer.h>
+#include <libnode/crypto/hash.h>
+
+#include <libj/bridge/abstract_js_object.h>
 
 namespace libj {
 namespace node {
 namespace crypto {
 
-class HashImpl : public Hash {
+typedef bridge::AbstractJsObject<Hash> HashBase;
+
+class HashImpl : public HashBase {
  public:
     static Ptr create(Algorithm algo) {
         return Ptr(new HashImpl(algo));
@@ -92,14 +96,13 @@ class HashImpl : public Hash {
     }
 
  private:
-    JsObject::Ptr obj_;
     Algorithm algorithm_;
     Buffer::Ptr digest_;
     void* context_;
     unsigned char* md_;
 
     HashImpl(Algorithm algo)
-        : obj_(JsObject::create())
+        : HashBase(JsObject::create())
         , algorithm_(algo)
         , digest_(Buffer::null())
         , context_(0)
@@ -150,8 +153,6 @@ class HashImpl : public Hash {
         }
         delete [] md_;
     }
-
-    LIBJ_JS_OBJECT_IMPL(obj_);
 };
 
 Hash::Ptr Hash::create(Algorithm algo) {

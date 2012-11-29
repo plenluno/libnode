@@ -1,8 +1,9 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include <libj/symbol.h>
+#include <libnode/http/status.h>
 
-#include "libnode/http/status.h"
+#include <libj/symbol.h>
+#include <libj/bridge/abstract_status.h>
 
 namespace libj {
 namespace node {
@@ -58,15 +59,15 @@ namespace http {
         msg = MSG_##NAME; \
         break;
 
-class StatusImpl : public Status {
+typedef bridge::AbstractStatus<Status> StatusBase;
+
+class StatusImpl : public StatusBase {
  private:
     LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_DECL_GEN)
 
  private:
-    libj::Status::CPtr status_;
-
     StatusImpl(Int code, String::CPtr msg)
-        : status_(libj::Status::create(code, msg)) {}
+        : StatusBase(libj::Status::create(code, msg)) {}
 
  public:
     static CPtr create(Int code, String::CPtr msg) {
@@ -81,8 +82,6 @@ class StatusImpl : public Status {
         }
         return CPtr(new StatusImpl(code, msg));
     }
-
-    LIBJ_STATUS_IMPL(status_);
 };
 
 #define LIBNODE_HTTP_STATUS_MSG_DEF_GEN(NAME, MESSAGE) \

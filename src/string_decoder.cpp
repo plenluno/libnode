@@ -1,12 +1,16 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libj/js_object.h"
-#include "libnode/string_decoder.h"
+#include <libnode/string_decoder.h>
+
+#include <libj/js_object.h>
+#include <libj/bridge/abstract_js_object.h>
 
 namespace libj {
 namespace node {
 
-class StringDecoderImpl : public StringDecoder {
+typedef bridge::AbstractJsObject<StringDecoder> StringDecoderBase;
+
+class StringDecoderImpl : public StringDecoderBase {
  public:
     static Ptr create(Buffer::Encoding enc) {
         return Ptr(new StringDecoderImpl(enc));
@@ -24,14 +28,11 @@ class StringDecoderImpl : public StringDecoder {
     }
 
  private:
-    JsObject::Ptr obj_;
     Buffer::Encoding enc_;
 
     StringDecoderImpl(Buffer::Encoding enc)
-        : obj_(JsObject::create())
+        : StringDecoderBase(JsObject::create())
         , enc_(enc) {}
-
-    LIBJ_JS_OBJECT_IMPL(obj_);
 };
 
 StringDecoder::Ptr StringDecoder::create(Buffer::Encoding enc) {

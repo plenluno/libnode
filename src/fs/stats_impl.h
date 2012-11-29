@@ -3,24 +3,24 @@
 #ifndef LIBNODE_SRC_FS_STATS_IMPL_H_
 #define LIBNODE_SRC_FS_STATS_IMPL_H_
 
-#include "libnode/fs/stats.h"
+#include <libnode/fs/stats.h>
+
+#include <libj/bridge/abstract_js_object.h>
 
 namespace libj {
 namespace node {
 namespace fs {
 
-class StatsImpl : public Stats {
+typedef bridge::AbstractJsObject<Stats> StatsBase;
+
+class StatsImpl : public StatsBase {
  public:
     static Ptr create() {
         return Ptr(new StatsImpl());
     }
 
  private:
-    JsObject::Ptr obj_;
-
-    StatsImpl() : obj_(JsObject::create()) {}
-
-    LIBJ_JS_OBJECT_IMPL(obj_);
+    StatsImpl() : StatsBase(JsObject::create()) {}
 };
 
 }  // namespace events

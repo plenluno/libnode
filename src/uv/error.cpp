@@ -1,7 +1,9 @@
 
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libnode/uv/error.h"
+#include <libnode/uv/error.h>
+
+#include <libj/bridge/abstract_status.h>
 
 namespace libj {
 namespace node {
@@ -18,15 +20,15 @@ namespace uv {
         msg = MSG_UV_##NAME; \
         break;
 
-class ErrorImpl : public Error {
+typedef bridge::AbstractStatus<Error> ErrorBase;
+
+class ErrorImpl : public ErrorBase {
  private:
     UV_ERRNO_MAP(LIBNODE_UV_ERR_MSG_DECL_GEN)
 
  private:
-    libj::Status::CPtr status_;
-
     ErrorImpl(Int code, String::CPtr msg)
-        : status_(libj::Status::create(code, msg)) {}
+        : ErrorBase(libj::Status::create(code, msg)) {}
 
  public:
     static CPtr create(Int code) {
@@ -50,8 +52,6 @@ class ErrorImpl : public Error {
         }
         return CPtr(new ErrorImpl(code, msg));
     }
-
-    LIBJ_STATUS_IMPL(status_);
 };
 
 #define LIBNODE_UV_ERR_MSG_DEF_GEN(VAL, NAME, S) \
