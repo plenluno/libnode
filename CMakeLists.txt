@@ -6,11 +6,9 @@ project(libnode)
 
 option(LIBNODE_BUILD_GTEST "Build Google Tests" OFF)
 option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON)
-option(LIBNODE_BUILD_SAMPLE "Build Samples" OFF)
 
 message(STATUS "LIBNODE_BUILD_GTEST=${LIBNODE_BUILD_GTEST}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
-message(STATUS "LIBNODE_BUILD_SAMPLE=${LIBNODE_BUILD_SAMPLE}")
 
 # find libraries -----------------------------------------------------------------------------------
 
@@ -153,76 +151,6 @@ set_target_properties(node PROPERTIES
     COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions -D_FILE_OFFSET_BITS=64"
 )
 
-# build samples ------------------------------------------------------------------------------------
-
-if(LIBNODE_BUILD_SAMPLE)
-
-    set(libnode-sample-cflags
-        "-Wall -fno-rtti -fno-exceptions"
-    )
-    set(libnode-sample-lflags
-        "-framework CoreServices"
-    )
-
-## echo server
-    add_executable(libnode-echo-server
-        sample/echo_server.cpp
-    )
-    target_link_libraries(libnode-echo-server
-        node
-        ${libnode-deps}
-    )
-    if(APPLE)
-        set_target_properties(libnode-echo-server PROPERTIES
-            COMPILE_FLAGS ${libnode-sample-cflags}
-            LINK_FLAGS ${libnode-sample-lflags}
-        )
-    else(APPLE)
-        set_target_properties(libnode-echo-server PROPERTIES
-            COMPILE_FLAGS ${libnode-sample-cflags}
-        )
-    endif(APPLE)
-
-## echo client
-    add_executable(libnode-echo-client
-        sample/echo_client.cpp
-    )
-    target_link_libraries(libnode-echo-client
-        node
-        ${libnode-deps}
-    )
-    if(APPLE)
-        set_target_properties(libnode-echo-client PROPERTIES
-            COMPILE_FLAGS ${libnode-sample-cflags}
-            LINK_FLAGS ${libnode-sample-lflags}
-        )
-    else(APPLE)
-        set_target_properties(libnode-echo-client PROPERTIES
-            COMPILE_FLAGS ${libnode-sample-cflags}
-        )
-    endif(APPLE)
-
-## static server
-    add_executable(libnode-static-server
-        sample/static_server.cpp
-    )
-    target_link_libraries(libnode-static-server
-        node
-        ${libnode-deps}
-    )
-    if(APPLE)
-        set_target_properties(libnode-static-server PROPERTIES
-            COMPILE_FLAGS ${libnode-sample-cflags}
-            LINK_FLAGS ${libnode-sample-lflags}
-        )
-    else(APPLE)
-        set_target_properties(libnode-static-server PROPERTIES
-            COMPILE_FLAGS ${libnode-sample-cflags}
-        )
-    endif(APPLE)
-
-endif(LIBNODE_BUILD_SAMPLE)
-
 # build gtests -------------------------------------------------------------------------------------
 
 if(LIBNODE_BUILD_GTEST)
@@ -231,7 +159,7 @@ if(LIBNODE_BUILD_GTEST)
         gtest/gtest_buffer.cpp
         gtest/gtest_crypto_hash.cpp
         gtest/gtest_event_emitter.cpp
-        gtest/gtest_http_server.cpp
+        gtest/gtest_http.cpp
         gtest/gtest_http_status.cpp
         gtest/gtest_path.cpp
         gtest/gtest_querystring.cpp
