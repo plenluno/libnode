@@ -6,7 +6,6 @@
 #include <libj/js_array.h>
 #include <libj/js_function.h>
 #include <libj/js_object.h>
-#include <libj/string.h>
 #include <libj/symbol.h>
 
 namespace libj {
@@ -45,124 +44,56 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
         String::CPtr event,
         JsArray::Ptr args = JsArray::null()) = 0;
 
- public:
     void emit(
-        String::CPtr event,
-        const Value& val) {
-        JsArray::Ptr args = JsArray::create();
-        args->add(val);
-        emit(event, args);
-    }
+        String::CPtr event, const Value& val);
 
     void emit(
         String::CPtr event,
-        const Value& v1, const Value& v2) {
-        JsArray::Ptr args = JsArray::create();
-        args->add(v1);
-        args->add(v2);
-        emit(event, args);
-    }
+        const Value& v1, const Value& v2);
 
     void emit(
         String::CPtr event,
-        const Value& v1, const Value& v2, const Value& v3) {
-        JsArray::Ptr args = JsArray::create();
-        args->add(v1);
-        args->add(v2);
-        args->add(v3);
-        emit(event, args);
-    }
+        const Value& v1, const Value& v2, const Value& v3);
 
     void emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
-        const Value& v4) {
-        JsArray::Ptr args = JsArray::create();
-        args->add(v1);
-        args->add(v2);
-        args->add(v3);
-        args->add(v4);
-        emit(event, args);
-    }
+        const Value& v4);
 
     void emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
-        const Value& v4, const Value& v5) {
-        JsArray::Ptr args = JsArray::create();
-        args->add(v1);
-        args->add(v2);
-        args->add(v3);
-        args->add(v4);
-        args->add(v5);
-        emit(event, args);
-    }
+        const Value& v4, const Value& v5);
 
     void emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
-        const Value& v4, const Value& v5, const Value& v6) {
-        JsArray::Ptr args = JsArray::create();
-        args->add(v1);
-        args->add(v2);
-        args->add(v3);
-        args->add(v4);
-        args->add(v5);
-        args->add(v6);
-        emit(event, args);
-    }
+        const Value& v4, const Value& v5, const Value& v6);
 
     void emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
-        const Value& v7) {
-        JsArray::Ptr args = JsArray::create();
-        args->add(v1);
-        args->add(v2);
-        args->add(v3);
-        args->add(v4);
-        args->add(v5);
-        args->add(v6);
-        args->add(v7);
-        emit(event, args);
-    }
+        const Value& v7);
 
     void emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
-        const Value& v7, const Value& v8) {
-        JsArray::Ptr args = JsArray::create();
-        args->add(v1);
-        args->add(v2);
-        args->add(v3);
-        args->add(v4);
-        args->add(v5);
-        args->add(v6);
-        args->add(v7);
-        args->add(v8);
-        emit(event, args);
-    }
+        const Value& v7, const Value& v8);
 
     void emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
-        const Value& v7, const Value& v8, const Value& v9) {
-        JsArray::Ptr args = JsArray::create();
-        args->add(v1);
-        args->add(v2);
-        args->add(v3);
-        args->add(v4);
-        args->add(v5);
-        args->add(v6);
-        args->add(v7);
-        args->add(v8);
-        args->add(v9);
-        emit(event, args);
-    }
+        const Value& v7, const Value& v8, const Value& v9);
 };
+
+}  // namespace events
+}  // namespace node
+}  // namespace libj
+
+#include <libnode/impl/events/event_emitter.h>
 
 #define LIBNODE_EVENT_EMITTER(T) \
     public libj::node::events::EventEmitter { \
@@ -251,9 +182,5 @@ public: \
         const Value& v7, const Value& v8, const Value& v9) { \
         EE->emit(event, v1, v2, v3, v4, v5, v6, v7, v8, v9); \
     }
-
-}  // namespace events
-}  // namespace node
-}  // namespace libj
 
 #endif  // LIBNODE_EVENTS_EVENT_EMITTER_H_
