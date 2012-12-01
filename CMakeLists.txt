@@ -221,25 +221,6 @@ if(LIBNODE_BUILD_SAMPLE)
         )
     endif(APPLE)
 
-## countdown timer
-    add_executable(libnode-countdown-timer
-        sample/countdown_timer.cpp
-    )
-    target_link_libraries(libnode-countdown-timer
-        node
-        ${libnode-deps}
-    )
-    if(APPLE)
-        set_target_properties(libnode-countdown-timer PROPERTIES
-            COMPILE_FLAGS ${libnode-sample-cflags}
-            LINK_FLAGS ${libnode-sample-lflags}
-        )
-    else(APPLE)
-        set_target_properties(libnode-countdown-timer PROPERTIES
-            COMPILE_FLAGS ${libnode-sample-cflags}
-        )
-    endif(APPLE)
-
 endif(LIBNODE_BUILD_SAMPLE)
 
 # build gtests -------------------------------------------------------------------------------------
@@ -254,6 +235,7 @@ if(LIBNODE_BUILD_GTEST)
         gtest/gtest_http_status.cpp
         gtest/gtest_path.cpp
         gtest/gtest_querystring.cpp
+        gtest/gtest_timer.cpp
         gtest/gtest_url.cpp
         gtest/gtest_url_parser.cpp
         gtest/gtest_util.cpp
