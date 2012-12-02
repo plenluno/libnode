@@ -1,15 +1,15 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include <assert.h>
+#include <libnode/util.h>
 #include <libj/error.h>
 #include <libj/js_array.h>
 #include <libj/js_regexp.h>
+
+#include <assert.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
 #include <string>
-
-#include "libnode/util.h"
 
 namespace libj {
 namespace node {
@@ -27,14 +27,14 @@ Boolean isRegExp(const Value& val) {
     return val.instanceof(Type<JsRegExp>::id());
 }
 
-Boolean extend(JsObject::Ptr derived, JsObject::CPtr super) {
-    if (!derived) return false;
+Boolean extend(JsObject::Ptr extended, JsObject::CPtr original) {
+    if (!extended) return false;
 
-    Set::CPtr keys = super->keySet();
+    Set::CPtr keys = original->keySet();
     Iterator::Ptr itr = keys->iterator();
     while (itr->hasNext()) {
         String::CPtr key = toCPtr<String>(itr->next());
-        derived->put(key, super->get(key));
+        extended->put(key, original->get(key));
     }
     return true;
 }
@@ -160,7 +160,7 @@ Buffer::Ptr base64Decode(String::CPtr str) {
         decoded = Buffer::null();
     }
     BIO_free_all(bio);
-    delete [] dst;
+    delete[] dst;
     return decoded;
 }
 
@@ -287,7 +287,7 @@ String::CPtr percentEncode(String::CPtr str, String::Encoding enc) {
     char* encoded = new char[encodedLen];
     percentEncode(encoded, encodedLen, source, sourceLen);
     String::CPtr res = String::create(encoded);
-    delete [] encoded;
+    delete[] encoded;
     return res;
 }
 
@@ -299,7 +299,7 @@ String::CPtr percentDecode(String::CPtr str, String::Encoding enc) {
     char* decoded = new char[len];
     Size size = percentDecode(decoded, len, str->toStdString().c_str());
     String::CPtr res = String::create(decoded, enc, size);
-    delete [] decoded;
+    delete[] decoded;
     return res;
 }
 

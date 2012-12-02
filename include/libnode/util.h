@@ -11,21 +11,28 @@ namespace node {
 namespace util {
 
 Boolean isArray(const Value& val);
+
 Boolean isError(const Value& val);
+
 Boolean isRegExp(const Value& val);
 
-Boolean extend(JsObject::Ptr derived, JsObject::CPtr super);
+Boolean extend(JsObject::Ptr extended, JsObject::CPtr original);
 
 String::CPtr hexEncode(Buffer::CPtr buf);
+
 String::CPtr hexEncode(const void* data, Size length);
+
 Buffer::Ptr hexDecode(String::CPtr str);
 
 String::CPtr base64Encode(Buffer::CPtr buf);
+
 String::CPtr base64Encode(const void* data, Size length);
+
 Buffer::Ptr base64Decode(String::CPtr str);
 
 String::CPtr percentEncode(
     String::CPtr str, String::Encoding enc = String::UTF8);
+
 String::CPtr percentDecode(
     String::CPtr str, String::Encoding enc = String::UTF8);
 
