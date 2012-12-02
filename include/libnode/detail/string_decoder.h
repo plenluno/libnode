@@ -13,9 +13,9 @@ namespace detail {
 template<typename I>
 class StringDecoder : public libj::detail::JsObject<I> {
  public:
- 	StringDecoder(Buffer::Encoding enc) : enc_(enc) {}
+    StringDecoder(Buffer::Encoding enc) : enc_(enc) {}
 
- 	Buffer::Encoding encoding() const {
+    Buffer::Encoding encoding() const {
         return enc_;
     }
 
@@ -28,7 +28,7 @@ class StringDecoder : public libj::detail::JsObject<I> {
 
  private:
     Buffer::Encoding enc_;
- };
+};
 
 }  // namespace detail
 }  // namespace node
