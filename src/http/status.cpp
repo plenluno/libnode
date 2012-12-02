@@ -1,9 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <libnode/http/status.h>
-
-#include <libj/symbol.h>
-#include <libj/bridge/abstract_status.h>
+#include <libj/detail/status.h>
 
 namespace libj {
 namespace node {
@@ -51,46 +49,27 @@ namespace http {
     GEN(GATEWAY_TIMEOUT, "Gateway Timeout") \
     GEN(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported")
 
-#define LIBNODE_HTTP_STATUS_MSG_DECL_GEN(NAME, MESSAGE) \
-    static const String::CPtr MSG_##NAME;
+#define LIBNODE_HTTP_STATUS_MSG_DEF_GEN(NAME, MESSAGE) \
+    static const String::CPtr MSG_##NAME = String::create(MESSAGE);
 
 #define LIBNODE_HTTP_STATUS_MSG_CASE_GEN(NAME, MESSAGE) \
     case NAME: \
         msg = MSG_##NAME; \
         break;
 
-typedef bridge::AbstractStatus<Status> StatusBase;
-
-class StatusImpl : public StatusBase {
- private:
-    LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_DECL_GEN)
-
- private:
-    StatusImpl(Int code, String::CPtr msg)
-        : StatusBase(libj::Status::create(code, msg)) {}
-
- public:
-    static CPtr create(Int code, String::CPtr msg) {
-        LIBJ_STATIC_SYMBOL_DEF(symUnknown, "Unknown");
-
-        if (!msg) {
-            switch (code) {
-                LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_CASE_GEN);
-            default:
-                msg = symUnknown;
-            }
-        }
-        return CPtr(new StatusImpl(code, msg));
-    }
-};
-
-#define LIBNODE_HTTP_STATUS_MSG_DEF_GEN(NAME, MESSAGE) \
-    const String::CPtr StatusImpl::MSG_##NAME = String::create(MESSAGE);
-
-LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_DEF_GEN)
+LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_DEF_GEN);
 
 Status::CPtr Status::create(Int code, String::CPtr msg) {
-    return StatusImpl::create(code, msg);
+    LIBJ_STATIC_SYMBOL_DEF(symUnknown, "Unknown");
+
+    if (!msg) {
+        switch (code) {
+            LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_CASE_GEN);
+        default:
+            msg = symUnknown;
+        }
+    }
+    return CPtr(new libj::detail::Status<Status>(code, msg));
 }
 
 }  // namespace http

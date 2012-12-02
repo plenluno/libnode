@@ -8,6 +8,9 @@ namespace libj {
 namespace node {
 namespace uv {
 
+#define LIBNODE_UV_ERR_MSG_DEF_GEN(VAL, NAME, S) \
+    static const String::CPtr MSG_UV_##NAME = String::create(S);
+
 #define LIBNODE_UV_ERR_CASE_GEN(VAL, NAME, S) \
     case _##NAME:
 
@@ -16,10 +19,7 @@ namespace uv {
         msg = MSG_UV_##NAME; \
         break;
 
-#define LIBNODE_UV_ERR_MSG_DEF_GEN(VAL, NAME, S) \
-    static const String::CPtr MSG_UV_##NAME = String::create(S);
-
-UV_ERRNO_MAP(LIBNODE_UV_ERR_MSG_DEF_GEN)
+UV_ERRNO_MAP(LIBNODE_UV_ERR_MSG_DEF_GEN);
 
 static Error::CPtr lastErr = Error::null();
 
