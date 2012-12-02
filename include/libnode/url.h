@@ -23,6 +23,7 @@ extern Symbol::CPtr QUERY;
 extern Symbol::CPtr HASH;
 
 JsObject::Ptr parse(String::CPtr urlStr);
+
 String::CPtr format(JsObject::CPtr urlObj);
 
 }  // namespace url
