@@ -19,10 +19,13 @@ class Error : LIBJ_ERROR(Error)
     };
 
     static CPtr create(Code code);
+
     static CPtr create(Code code, String::CPtr msg);
+
     static CPtr valueOf(uv_err_code code);
 
     static CPtr last();
+
     static void setLast(uv_err_code);
 };
 
