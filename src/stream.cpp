@@ -1,6 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libnode/stream.h"
+#include <libnode/stream.h>
 
 namespace libj {
 namespace node {

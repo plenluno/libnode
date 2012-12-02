@@ -1,8 +1,8 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include <uv.h>
+#include <libnode/node.h>
 
-#include "libnode/node.h"
+#include <uv.h>
 
 namespace libj {
 namespace node {

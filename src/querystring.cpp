@@ -1,60 +1,15 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
+#include <libnode/querystring.h>
+#include <libnode/util.h>
+
 #include <assert.h>
 #include <libj/js_array.h>
 #include <libj/string_buffer.h>
 
-#include "libnode/querystring.h"
-#include "libnode/util.h"
-
 namespace libj {
 namespace node {
 namespace querystring {
-
-static String::CPtr toString(Value val) {
-    if (val.isUndefined() ||
-        val.equals(Object::null()) ||
-        val.instanceof(Type<JsArray>::id()) ||
-        val.instanceof(Type<JsObject>::id())) {
-        return String::create();
-    } else {
-        return util::percentEncode(String::valueOf(val));
-    }
-}
-
-String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
-    if (!obj) return String::create();
-
-    StringBuffer::Ptr res = StringBuffer::create();
-    Set::CPtr keys = obj->keySet();
-    Iterator::Ptr i = keys->iterator();
-    Boolean first = true;
-    while (i->hasNext()) {
-        if (first) {
-            first = false;
-        } else {
-            res->appendChar(sep);
-        }
-        Value key = i->next();
-        Value val = obj->get(key);
-        if (val.instanceof(Type<JsArray>::id())) {
-            JsArray::CPtr ary = toCPtr<JsArray>(val);
-            for (Size i = 0; i < ary->length(); i++) {
-                if (i) {
-                    res->appendChar(sep);
-                }
-                res->append(toString(key));
-                res->appendChar(eq);
-                res->append(toString(ary->get(i)));
-            }
-        } else {
-            res->append(toString(key));
-            res->appendChar(eq);
-            res->append(toString(val));
-        }
-    }
-    return res->toString();
-}
 
 static void addPair(JsObject::Ptr obj, String::CPtr key, String::CPtr val) {
     if (obj->containsKey(key)) {
@@ -116,6 +71,51 @@ JsObject::Ptr parse(String::CPtr query, Char sep, Char eq) {
         util::percentDecode(key),
         util::percentDecode(val));
     return obj;
+}
+
+static String::CPtr toString(Value val) {
+    if (val.isUndefined() ||
+        val.equals(Object::null()) ||
+        val.instanceof(Type<JsArray>::id()) ||
+        val.instanceof(Type<JsObject>::id())) {
+        return String::create();
+    } else {
+        return util::percentEncode(String::valueOf(val));
+    }
+}
+
+String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
+    if (!obj) return String::create();
+
+    StringBuffer::Ptr res = StringBuffer::create();
+    Set::CPtr keys = obj->keySet();
+    Iterator::Ptr i = keys->iterator();
+    Boolean first = true;
+    while (i->hasNext()) {
+        if (first) {
+            first = false;
+        } else {
+            res->appendChar(sep);
+        }
+        Value key = i->next();
+        Value val = obj->get(key);
+        if (val.instanceof(Type<JsArray>::id())) {
+            JsArray::CPtr ary = toCPtr<JsArray>(val);
+            for (Size i = 0; i < ary->length(); i++) {
+                if (i) {
+                    res->appendChar(sep);
+                }
+                res->append(toString(key));
+                res->appendChar(eq);
+                res->append(toString(ary->get(i)));
+            }
+        } else {
+            res->append(toString(key));
+            res->appendChar(eq);
+            res->append(toString(val));
+        }
+    }
+    return res->toString();
 }
 
 }  // namespace querystring
