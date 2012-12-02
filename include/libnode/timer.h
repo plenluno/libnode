@@ -19,9 +19,9 @@ Value setInterval(
     UInt delay,
     JsArray::Ptr args = JsArray::null());
 
-Boolean clearTimeout(Value timeoutId);
+Boolean clearTimeout(const Value& timeoutId);
 
-Boolean clearInterval(Value intervalId);
+Boolean clearInterval(const Value& intervalId);
 
 }  // namespace node
 }  // namespace libj

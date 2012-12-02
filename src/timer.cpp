@@ -1,6 +1,6 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libnode/timer.h"
+#include <libnode/timer.h>
 
 #include "./uv/timer.h"
 
@@ -13,13 +13,15 @@ namespace {
 
     class OnTimeout : LIBJ_JS_FUNCTION(OnTimeout)
      public:
-        static Ptr create(
+        OnTimeout(
             JsFunction::Ptr callback,
             JsArray::Ptr args,
             uv::Timer* timer,
-            Boolean repeat) {
-            return Ptr(new OnTimeout(callback, args, timer, repeat));
-        }
+            Boolean repeat)
+            : callback_(callback)
+            , args_(args)
+            , timer_(timer)
+            , repeat_(repeat) {}
 
         Value operator()(JsArray::Ptr args) {
             (*callback_)(args_);
@@ -34,16 +36,6 @@ namespace {
         JsArray::Ptr args_;
         uv::Timer* timer_;
         Boolean repeat_;
-
-        OnTimeout(
-            JsFunction::Ptr callback,
-            JsArray::Ptr args,
-            uv::Timer* timer,
-            Boolean repeat)
-            : callback_(callback)
-            , args_(args)
-            , timer_(timer)
-            , repeat_(repeat) {}
     };
 
 }  // namespace
@@ -53,7 +45,8 @@ Value setTimeout(JsFunction::Ptr callback, UInt delay, JsArray::Ptr args) {
 
     if (delay == 0 || delay > TIMEOUT_MAX) delay = 1;
     uv::Timer* timer = new uv::Timer();
-    timer->setOnTimeout(OnTimeout::create(callback, args, timer, false));
+    OnTimeout::Ptr onTimeout(new OnTimeout(callback, args, timer, false));
+    timer->setOnTimeout(onTimeout);
     timer->start(delay, 0);
     return timer;
 }
@@ -63,12 +56,13 @@ Value setInterval(JsFunction::Ptr callback, UInt delay, JsArray::Ptr args) {
 
     if (delay == 0 || delay > TIMEOUT_MAX) delay = 1;
     uv::Timer* timer = new uv::Timer();
-    timer->setOnTimeout(OnTimeout::create(callback, args, timer, true));
+    OnTimeout::Ptr onTimeout(new OnTimeout(callback, args, timer, true));
+    timer->setOnTimeout(onTimeout);
     timer->start(delay, delay);
     return timer;
 }
 
-Boolean clearTimeout(Value timeoutId) {
+Boolean clearTimeout(const Value& timeoutId) {
     uv::Timer* timer = NULL;
     if (to<uv::Timer*>(timeoutId, &timer) && timer) {
         timer->close();
@@ -78,7 +72,7 @@ Boolean clearTimeout(Value timeoutId) {
     }
 }
 
-Boolean clearInterval(Value intervalId) {
+Boolean clearInterval(const Value& intervalId) {
     uv::Timer* timer = NULL;
     if (to<uv::Timer*>(intervalId, &timer) && timer) {
         timer->close();
