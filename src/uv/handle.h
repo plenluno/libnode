@@ -4,9 +4,7 @@
 #define LIBNODE_SRC_UV_HANDLE_H_
 
 #include <assert.h>
-#include <uv.h>
-
-#include "libnode/uv/error.h"
+#include <libnode/uv/error.h>
 
 namespace libj {
 namespace node {

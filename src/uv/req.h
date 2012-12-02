@@ -3,8 +3,6 @@
 #ifndef LIBNODE_SRC_UV_REQ_H_
 #define LIBNODE_SRC_UV_REQ_H_
 
-#include <assert.h>
-#include <uv.h>
 #include <libj/js_function.h>
 
 namespace libj {

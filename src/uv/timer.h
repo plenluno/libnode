@@ -56,10 +56,10 @@ class Timer : public Handle {
     }
 
  private:
-  static void onTimeout(uv_timer_t* handle, int status) {
+    static void onTimeout(uv_timer_t* handle, int status) {
         Timer* self = static_cast<Timer*>(handle->data);
         if (self->onTimeout_) self->onTimeout_->call(status);
-  }
+    }
 
  private:
     uv_timer_t timer_;

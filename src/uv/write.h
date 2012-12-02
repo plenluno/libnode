@@ -3,7 +3,7 @@
 #ifndef LIBNODE_SRC_UV_WRITE_H_
 #define LIBNODE_SRC_UV_WRITE_H_
 
-#include "libnode/buffer.h"
+#include <libnode/buffer.h>
 
 #include "./req.h"
 
