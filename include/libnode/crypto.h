@@ -3,7 +3,7 @@
 #ifndef LIBNODE_CRYPTO_H_
 #define LIBNODE_CRYPTO_H_
 
-#include "libnode/crypto/hash.h"
+#include <libnode/crypto/hash.h>
 
 namespace libj {
 namespace node {

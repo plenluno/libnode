@@ -3,15 +3,17 @@
 #ifndef LIBNODE_NET_H_
 #define LIBNODE_NET_H_
 
-#include "libnode/net/socket.h"
-#include "libnode/net/server.h"
+#include <libnode/net/socket.h>
+#include <libnode/net/server.h>
 
 namespace libj {
 namespace node {
 namespace net {
 
 Int isIP(String::CPtr ip);
+
 Boolean isIPv4(String::CPtr ip);
+
 Boolean isIPv6(String::CPtr ip);
 
 Socket::Ptr connect(

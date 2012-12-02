@@ -3,10 +3,10 @@
 #ifndef LIBNODE_FS_H_
 #define LIBNODE_FS_H_
 
+#include <libnode/fs/stats.h>
+
 #include <libj/js_function.h>
 #include <libj/string.h>
-
-#include "libnode/fs/stats.h"
 
 namespace libj {
 namespace node {
@@ -28,10 +28,15 @@ enum Flag {
 };
 
 void open(String::CPtr path, Flag flag, JsFunction::Ptr callback);
+
 void close(const Value& fd, JsFunction::Ptr callback);
-void read(const Value &fd, const Value& buffer, Size offset,
-    Size length, Size position, JsFunction::Ptr callback);
+
+void read(
+    const Value &fd, const Value& buffer,
+    Size offset, Size length, Size position, JsFunction::Ptr callback);
+
 void stat(String::CPtr path, JsFunction::Ptr callback);
+
 void readFile(String::CPtr path, JsFunction::Ptr callback);
 
 }  // namespace fs
