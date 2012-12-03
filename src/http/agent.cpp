@@ -8,7 +8,7 @@ namespace http {
 
 LIBJ_SYMBOL_DEF(AgentImpl::EVENT_CLOSE, "close");
 LIBJ_SYMBOL_DEF(AgentImpl::EVENT_FREE, "free");
-LIBJ_SYMBOL_DEF(AgentImpl::EVENT_AGENT_REMOVE, "agentRmove");
+LIBJ_SYMBOL_DEF(AgentImpl::EVENT_AGENT_REMOVE, "agentRemove");
 
 const UInt AgentImpl::defaultPort_ = 80;
 const Size AgentImpl::defaultMaxSockets_ = 5;

@@ -470,9 +470,9 @@ class OutgoingMessage
             , socket_(&(*sock)) {}
 
         Value operator()(JsArray::Ptr args) {
-            LIBJ_STATIC_SYMBOL_DEF(EVENT_UPGRADE,       "upgrade");
-            LIBJ_STATIC_SYMBOL_DEF(EVENT_CONNECT,       "connect");
-            LIBJ_STATIC_SYMBOL_DEF(EVENT_AGENT_REMOVED, "agentRemoved");
+            LIBJ_STATIC_SYMBOL_DEF(EVENT_UPGRADE,      "upgrade");
+            LIBJ_STATIC_SYMBOL_DEF(EVENT_CONNECT,      "connect");
+            LIBJ_STATIC_SYMBOL_DEF(EVENT_AGENT_REMOVE, "agentRemove");
 
             OutgoingMessage* req = socket_->httpMessage();
             Parser* parser = socket_->parser();
@@ -501,7 +501,7 @@ class OutgoingMessage
                     socket_->destroy();
                 } else {
                     req->setFlag(UPGRADE_OR_CONNECT);
-                    socket_->emit(EVENT_AGENT_REMOVED);
+                    socket_->emit(EVENT_AGENT_REMOVE);
                     self_->socketCloseListener_->setSocket(socket_);
                     self_->socketErrorListener_->setSocket(socket_);
                     socket_->removeListener(

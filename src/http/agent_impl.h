@@ -118,7 +118,7 @@ class AgentImpl : public Agent {
         String::CPtr host,
         String::CPtr port,
         String::CPtr localAddress) {
-        JsArray::Ptr ss = socket->getPtr<JsArray>(name);
+        JsArray::Ptr ss = sockets_->getPtr<JsArray>(name);
         if (ss) {
             ss->remove(socket);
             if (ss->isEmpty()) {

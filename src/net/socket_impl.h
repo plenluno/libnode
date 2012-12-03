@@ -813,6 +813,8 @@ class SocketImpl
             , error_(err) {}
 
         Value operator()(JsArray::Ptr args) {
+            // TODO(plenluno): rethink the timing of 'agentRemove'
+            self_->emit(String::create("agentRemove"));
             self_->emit(EVENT_CLOSE, !!error_);
             return Status::OK;
         }
