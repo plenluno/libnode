@@ -35,8 +35,8 @@ class ServerImpl
             server->on(EVENT_CONNECTION, listener);
         }
 
-        Destroy::Ptr destroy(new Destroy(server));
-        server->on(EVENT_DESTROY, destroy);
+        JsFunction::Ptr onDestroy(new OnDestroy(server));
+        server->on(EVENT_DESTROY, onDestroy);
         return server;
     }
 
@@ -291,12 +291,12 @@ class ServerImpl
         }
     };
 
-    class Destroy : LIBJ_JS_FUNCTION(Destroy)
+    class OnDestroy : LIBJ_JS_FUNCTION(OnDestroy)
      private:
         ServerImpl::Ptr self_;
 
      public:
-        Destroy(ServerImpl::Ptr srv) : self_(srv) {}
+        OnDestroy(ServerImpl::Ptr srv) : self_(srv) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             assert(!self_->handle_);
