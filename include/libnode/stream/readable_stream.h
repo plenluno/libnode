@@ -16,6 +16,10 @@ class ReadableStream : LIBNODE_STREAM(ReadableStream)
 
     virtual Boolean readable() const = 0;
 
+    virtual Boolean pause() = 0;
+
+    virtual Boolean resume() = 0;
+
     virtual Boolean setEncoding(Buffer::Encoding enc) = 0;
 };
 
@@ -27,6 +31,12 @@ class ReadableStream : LIBNODE_STREAM(ReadableStream)
 public: \
     virtual Boolean readable() const { \
         return S->readable(); \
+    } \
+    virtual Boolean pause() { \
+        return S->pause(); \
+    } \
+    virtual Boolean resume() { \
+        return S->resume(); \
     } \
     virtual Boolean setEncoding(Buffer::Encoding enc) { \
         return S->setEncoding(enc); \

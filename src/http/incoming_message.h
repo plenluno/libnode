@@ -67,6 +67,15 @@ class IncomingMessage
     Boolean readable() const {
         return hasFlag(READABLE);
     }
+
+    Boolean pause() {
+        return socket_->pause();
+    }
+
+    Boolean resume() {
+        return socket_->resume();
+    }
+
     Boolean destroy() {
         return socket_->destroy();
     }
