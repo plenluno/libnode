@@ -57,28 +57,26 @@ class SocketImpl
         }
     }
 
-    static Ptr create(int fd, Boolean allowHalfOpen) {
-        SocketImpl* sock = new SocketImpl();
+    static Ptr create(int fd, Boolean allowHalfOpen = false) {
         uv::Pipe* pipe = new uv::Pipe();
         pipe->open(fd);
-        OnRead::Ptr onRead(new OnRead(sock, pipe));
-        pipe->setOnRead(onRead);
 
+        SocketImpl* sock = new SocketImpl();
         sock->handle_ = pipe;
         sock->setFlag(READABLE);
         sock->setFlag(WRITABLE);
         if (allowHalfOpen) sock->setFlag(ALLOW_HALF_OPEN);
+
+        initSocketHandle(sock);
         return Ptr(sock);
     }
 
     static Ptr create(uv::Stream* handle, Boolean allowHalfOpen) {
         SocketImpl* sock = new SocketImpl();
-        if (handle) {
-            OnRead::Ptr onRead(new OnRead(sock, handle));
-            handle->setOnRead(onRead);
-            sock->handle_ = handle;
-        }
+        sock->handle_ = handle;
         if (allowHalfOpen) sock->setFlag(ALLOW_HALF_OPEN);
+
+        initSocketHandle(sock);
         return Ptr(sock);
     }
 
@@ -149,6 +147,19 @@ class SocketImpl
         } else {
             return -1;
         }
+    }
+
+    Size bytesRead() const {
+        return bytesRead_;
+    }
+
+    Size bytesWritten() const {
+        Size bytes = bytesDispatched_;
+        Size len = connectBufQueue_->length();
+        for (Size i = 0; i < len; i++) {
+            bytes += toCPtr<Buffer>(connectBufQueue_->get(i))->length();
+        }
+        return bytes;
     }
 
     Boolean pause() {
@@ -262,7 +273,11 @@ class SocketImpl
 
         unsetFlag(WRITABLE);
         setFlag(DESTROY_SOON);
-        return destroy();
+        if (pendingWriteReqs_) {
+            return true;
+        } else {
+            return destroy();
+        }
     }
 
     Boolean readable() const {
@@ -295,18 +310,10 @@ class SocketImpl
     }
 
     void setOnData(JsFunction::Ptr onData) {
-        if (onData_)
-            removeListener(EVENT_DATA, onData_);
-        if (onData)
-            addListener(EVENT_DATA, onData);
         onData_ = onData;
     }
 
     void setOnEnd(JsFunction::Ptr onEnd) {
-        if (onEnd_)
-            removeListener(EVENT_END, onEnd_);
-        if (onEnd)
-            addListener(EVENT_END, onEnd);
         onEnd_ = onEnd;
     }
 
@@ -395,6 +402,7 @@ class SocketImpl
         if (handle) {
             OnRead::Ptr onRead(new OnRead(self, handle));
             handle->setOnRead(onRead);
+            handle->setOwner(self);
         }
     }
 
@@ -404,11 +412,11 @@ class SocketImpl
         String::CPtr path) {
         assert(self->hasFlag(CONNECTING));
 
-        uv::Connect* creq = handle->connect(path);
+        uv::Connect* req = handle->connect(path);
 
-        if (creq) {
-            AfterConnect::Ptr afterConnect(new AfterConnect(self, creq));
-            creq->onComplete = afterConnect;
+        if (req) {
+            AfterConnect::Ptr afterConnect(new AfterConnect(self, req));
+            req->onComplete = afterConnect;
         } else {
             self->destroy(uv::Error::last());
         }
@@ -420,7 +428,7 @@ class SocketImpl
         String::CPtr address,
         Int port,
         Int addressType,
-        String::CPtr localAddress) {
+        String::CPtr localAddress = String::null()) {
         assert(self->hasFlag(CONNECTING));
 
         if (localAddress) {
@@ -437,16 +445,16 @@ class SocketImpl
             }
         }
 
-        uv::Connect* creq;
+        uv::Connect* req;
         if (addressType == 6) {
-            creq = handle->connect6(address, port);
+            req = handle->connect6(address, port);
         } else {  // addressType == 4
-            creq = handle->connect(address, port);
+            req = handle->connect(address, port);
         }
 
-        if (creq) {
-            AfterConnect::Ptr afterConnect(new AfterConnect(self, creq));
-            creq->onComplete = afterConnect;
+        if (req) {
+            AfterConnect::Ptr afterConnect(new AfterConnect(self, req));
+            req->onComplete = afterConnect;
         } else {
             self->destroy(uv::Error::last());
         }
@@ -481,7 +489,7 @@ class SocketImpl
         } else {
             uv::Tcp* tcp = reinterpret_cast<uv::Tcp*>(handle_);
             if (!host) {
-                connect(this, tcp, symLocalhost4, port, 4, String::null());
+                connect(this, tcp, symLocalhost4, port, 4);
             } else {
                 // TODO(plenluno): dns lookup
 
@@ -491,8 +499,9 @@ class SocketImpl
                 } else {
                     libj::Error::CPtr err =
                         libj::Error::create(libj::Error::ILLEGAL_ARGUMENT);
-                    EmitError2::Ptr emitErr(new EmitError2(this, err));
-                    process::nextTick(emitErr);
+                    JsFunction::Ptr destroy(
+                        new EmitErrorAndDestroy(this, err));
+                    process::nextTick(destroy);
                 }
             }
         }
@@ -505,17 +514,18 @@ class SocketImpl
         connectCbQueue_ = JsArray::null();
     }
 
-    Boolean destroy(libj::Error::CPtr err, JsFunction::Ptr cb) {
-        #define FIRE_ERROR_CALLBACKS \
-            if (cb) cb->call(err); \
-            if (err && !hasFlag(ERROR_EMITTED)) { \
-                EmitError::Ptr emitErr(new EmitError(this, err)); \
-                process::nextTick(emitErr); \
-                setFlag(ERROR_EMITTED); \
-            }
+    void fireErrorCallbacks(libj::Error::CPtr err, JsFunction::Ptr cb) {
+        if (cb) cb->call(err);
+        if (err && !hasFlag(ERROR_EMITTED)) {
+            EmitError::Ptr emitErr(new EmitError(this, err));
+            process::nextTick(emitErr);
+            setFlag(ERROR_EMITTED);
+        }
+    }
 
+    Boolean destroy(libj::Error::CPtr err, JsFunction::Ptr cb) {
         if (hasFlag(DESTROYED)) {
-            FIRE_ERROR_CALLBACKS;
+            fireErrorCallbacks(err, cb);
             return false;
         }
 
@@ -530,23 +540,23 @@ class SocketImpl
             handle_ = NULL;
         }
 
-        FIRE_ERROR_CALLBACKS;
+        fireErrorCallbacks(err, cb);
+
         EmitClose::Ptr emitClose(new EmitClose(this, err));
         process::nextTick(emitClose);
+
         setFlag(DESTROYED);
 
-        #if 0
-        if (this.server) {
-            this.server._connections--;
-            if (this.server._emitCloseIfDrained) {
-                this.server._emitCloseIfDrained();
-            }
-        }
-        #endif
+        // 'server' has already registered a 'close' listener
+        // which will do the following
+        // if (this.server) {
+        //     this.server._connections--;
+        //     if (this.server._emitCloseIfDrained) {
+        //         this.server._emitCloseIfDrained();
+        //     }
+        // }
 
         return true;
-
-        #undef FIRE_ERROR_CALLBACKS
     }
 
     Boolean writeBuffer(Buffer::CPtr buf, JsFunction::Ptr cb) {
@@ -603,7 +613,7 @@ class SocketImpl
                 }
 
                 self_->bytesRead_ += buffer->length();
-                // if (self_->onData_) self_->onData_->call(buffer);
+                if (self_->onData_) self_->onData_->call(buffer);
             } else {
                 uv::Error::CPtr err = uv::Error::last();
                 if (err->code() == uv::Error::_EOF) {
@@ -614,15 +624,13 @@ class SocketImpl
                     if (!self_->hasFlag(WRITABLE)) self_->destroy();
                     if (!self_->hasFlag(ALLOW_HALF_OPEN)) self_->end();
 
-                    #if 0
-                    if (self_->decoder_) {
-                        ret = self_->decoder_->end();
-                        if (ret) self_->emit(EVENT_DATA, ret);
-                    }
-                    #endif
+                    // if (self_->decoder_) {
+                    //     String::CPtr ret = self_->decoder_->end();
+                    //     if (ret) self_->emit(EVENT_DATA, ret);
+                    // }
 
                     self_->emit(EVENT_END);
-                    // if (self_->onEnd_) (*self_->onEnd_)();
+                    if (self_->onEnd_) (*self_->onEnd_)();
                 } else if (err->code() == uv::Error::_ECONNRESET) {
                     self_->destroy();
                 } else {
@@ -641,12 +649,12 @@ class SocketImpl
         AfterShutdown(SocketImpl* self) : self_(self) {}
 
         Value operator()(JsArray::Ptr args) {
+            assert(self_->hasFlag(SHUTDOWN));
+            assert(!self_->hasFlag(WRITABLE));
+
             if (self_->hasFlag(DESTROYED)) {
                 return Status::OK;
-            }
-
-            if (!self_->hasFlag(DESTROYED) &&
-                (self_->hasFlag(GOT_EOF) || !self_->hasFlag(READABLE))) {
+            } else if (self_->hasFlag(GOT_EOF) || !self_->hasFlag(READABLE)) {
                 self_->destroy();
             }
             return Status::OK;
@@ -671,7 +679,8 @@ class SocketImpl
             }
 
             int status;
-            to<int>(args->get(0), &status);
+            Boolean success = to<int>(args->get(0), &status);
+            assert(success);
             if (status) {
                 uv::Error::CPtr err = uv::Error::last();
                 self_->destroy(err, req_->cb);
@@ -715,9 +724,12 @@ class SocketImpl
             int status;
             Boolean readable;
             Boolean writable;
-            to<int>(args->get(0), &status);
-            to<Boolean>(args->get(3), &readable);
-            to<Boolean>(args->get(4), &writable);
+            Boolean success =
+                to<int>(args->get(0), &status) &&
+                to<Boolean>(args->get(3), &readable) &&
+                to<Boolean>(args->get(4), &writable);
+            assert(success);
+
             if (!status) {
                 if (readable) {
                     self_->setFlag(READABLE);
@@ -729,7 +741,6 @@ class SocketImpl
                 } else {
                     self_->unsetFlag(WRITABLE);
                 }
-
                 self_->active();
 
                 if (readable && !self_->hasFlag(PAUSED)) {
@@ -781,13 +792,13 @@ class SocketImpl
         }
     };
 
-    class EmitError2 : LIBJ_JS_FUNCTION(EmitError2)
+    class EmitErrorAndDestroy : LIBJ_JS_FUNCTION(EmitErrorAndDestroy)
      private:
         SocketImpl* self_;
         libj::Error::CPtr error_;
 
      public:
-        EmitError2(
+        EmitErrorAndDestroy(
             SocketImpl* sock,
             libj::Error::CPtr err)
             : self_(sock)

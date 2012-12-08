@@ -22,6 +22,10 @@ class Socket : LIBNODE_DUPLEX_STREAM(Socket)
 
     virtual Int remotePort() = 0;
 
+    virtual Size bytesRead() const = 0;
+
+    virtual Size bytesWritten() const = 0;
+
     virtual Boolean connect(
         Int port,
         String::CPtr host = String::null(),
