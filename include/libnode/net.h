@@ -18,29 +18,33 @@ Boolean isIPv6(String::CPtr ip);
 
 Socket::Ptr connect(
     JsObject::CPtr options,
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr onConnect = JsFunction::null());
 
 Socket::Ptr connect(
     Int port,
     String::CPtr host = String::null(),
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr onConnect = JsFunction::null());
 
 Socket::Ptr connect(
     String::CPtr path,
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr onConnect = JsFunction::null());
+
+Server::Ptr createServer(
+    JsObject::CPtr options = JsObject::null(),
+    JsFunction::Ptr onConnection = JsFunction::null());
 
 Socket::Ptr createConnection(
     JsObject::CPtr options,
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr onConnect = JsFunction::null());
 
 Socket::Ptr createConnection(
     Int port,
     String::CPtr host = String::null(),
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr onConnect = JsFunction::null());
 
 Socket::Ptr createConnection(
     String::CPtr path,
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr onConnect = JsFunction::null());
 
 }  // namespace net
 }  // namespace node

@@ -38,48 +38,54 @@ Boolean isIPv6(String::CPtr ip) {
     return isIP(ip) == 6;
 }
 
+Server::Ptr createServer(
+    JsObject::CPtr options,
+    JsFunction::Ptr onConnection) {
+    return ServerImpl::create(options, onConnection);
+}
+
 Socket::Ptr createConnection(
     JsObject::CPtr options,
-    JsFunction::Ptr callback) {
+    JsFunction::Ptr onConnect) {
     SocketImpl::Ptr sock = SocketImpl::create(options);
-    sock->connect(options, callback);
+    sock->connect(options, onConnect);
     return sock;
 }
 
 Socket::Ptr createConnection(
     Int port,
     String::CPtr host,
-    JsFunction::Ptr callback) {
+    JsFunction::Ptr onConnect) {
     SocketImpl::Ptr sock = SocketImpl::create();
-    sock->connect(port, host, callback);
+    sock->connect(port, host, onConnect);
     return sock;
 }
 
 Socket::Ptr createConnection(
     String::CPtr path,
-    JsFunction::Ptr callback) {
+    JsFunction::Ptr onConnect) {
     SocketImpl::Ptr sock = SocketImpl::create();
-    sock->connect(path, callback);
+    sock->connect(path, onConnect);
     return sock;
 }
 
 Socket::Ptr connect(
     JsObject::CPtr options,
-    JsFunction::Ptr callback) {
-    return createConnection(options, callback);
+    JsFunction::Ptr onConnect) {
+    return createConnection(options, onConnect);
 }
 
 Socket::Ptr connect(
     Int port,
     String::CPtr host,
-    JsFunction::Ptr callback) {
-    return createConnection(port, host, callback);
+    JsFunction::Ptr onConnect) {
+    return createConnection(port, host, onConnect);
 }
 
 Socket::Ptr connect(
     String::CPtr path,
-    JsFunction::Ptr callback) {
-    return createConnection(path, callback);
+    JsFunction::Ptr onConnect) {
+    return createConnection(path, onConnect);
 }
 
 }  // namespace net
