@@ -35,6 +35,8 @@ class SocketImpl
     : public FlagMixin
     , LIBNODE_NET_SOCKET(SocketImpl)
  public:
+    static Symbol::CPtr EVENT_DESTROY;
+
     static Ptr create(JsObject::CPtr options = JsObject::null()) {
         LIBJ_STATIC_SYMBOL_DEF(symFd,            "fd");
         LIBJ_STATIC_SYMBOL_DEF(symHandle,        "handle");
@@ -66,18 +68,14 @@ class SocketImpl
         sock->setFlag(READABLE);
         sock->setFlag(WRITABLE);
         if (allowHalfOpen) sock->setFlag(ALLOW_HALF_OPEN);
-
-        initSocketHandle(sock);
-        return Ptr(sock);
+        return create(sock);
     }
 
     static Ptr create(uv::Stream* handle, Boolean allowHalfOpen) {
         SocketImpl* sock = new SocketImpl();
         sock->handle_ = handle;
         if (allowHalfOpen) sock->setFlag(ALLOW_HALF_OPEN);
-
-        initSocketHandle(sock);
-        return Ptr(sock);
+        return create(sock);
     }
 
     void setTimeout(
@@ -404,6 +402,14 @@ class SocketImpl
             handle->setOnRead(onRead);
             handle->setOwner(self);
         }
+    }
+
+    static Ptr create(SocketImpl* self) {
+        initSocketHandle(self);
+        Ptr socket(self);
+        JsFunction::Ptr onDestroy(new OnDestroy(socket));
+        socket->on(EVENT_DESTROY, onDestroy);
+        return socket;
     }
 
     static void connect(
@@ -824,9 +830,23 @@ class SocketImpl
             , error_(err) {}
 
         Value operator()(JsArray::Ptr args) {
-            // TODO(plenluno): rethink the timing of 'agentRemove'
-            self_->emit(String::create("agentRemove"));
             self_->emit(EVENT_CLOSE, !!error_);
+            self_->emit(EVENT_DESTROY);
+            return Status::OK;
+        }
+    };
+
+    class OnDestroy : LIBJ_JS_FUNCTION(OnDestroy)
+     private:
+        SocketImpl::Ptr self_;
+
+     public:
+        OnDestroy(SocketImpl::Ptr sock) : self_(sock) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
+            assert(!self_->handle_);
+            assert(self_->hasFlag(DESTROYED));
+            self_->removeAllListeners();
             return Status::OK;
         }
     };

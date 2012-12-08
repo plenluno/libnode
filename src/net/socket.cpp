@@ -9,6 +9,8 @@ namespace net {
 LIBJ_SYMBOL_DEF(Socket::EVENT_CONNECT, "connect");
 LIBJ_SYMBOL_DEF(Socket::EVENT_TIMEOUT, "timeout");
 
+LIBJ_SYMBOL_DEF(SocketImpl::EVENT_DESTROY, "destroy");
+
 Socket::Ptr Socket::create(JsObject::CPtr options) {
     return SocketImpl::create(options);
 }
