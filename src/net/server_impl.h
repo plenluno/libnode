@@ -3,7 +3,8 @@
 #ifndef LIBNODE_SRC_NET_SERVER_IMPL_H_
 #define LIBNODE_SRC_NET_SERVER_IMPL_H_
 
-#include "libnode/net/server.h"
+#include <libj/string_buffer.h>
+#include <libnode/net.h>
 
 #include "./socket_impl.h"
 #include "../flag.h"
@@ -16,8 +17,27 @@ class ServerImpl
     : public FlagMixin
     , LIBNODE_NET_SERVER(ServerImpl)
  public:
-    static Ptr create() {
-        return Ptr(new ServerImpl());
+    static Symbol::CPtr EVENT_DESTROY;
+    static Symbol::CPtr OPTION_ALLOW_HALF_OPEN;
+
+    static Ptr create(
+        JsObject::CPtr options = JsObject::null(),
+        JsFunction::Ptr listener = JsFunction::null()) {
+        Ptr server(new ServerImpl());
+
+        if (options) {
+            Boolean allowHalfOpen = false;
+            to<Boolean>(options->get(OPTION_ALLOW_HALF_OPEN), &allowHalfOpen);
+            if (allowHalfOpen) server->setFlag(ALLOW_HALF_OPEN);
+        }
+
+        if (listener) {
+            server->on(EVENT_CONNECTION, listener);
+        }
+
+        Destroy::Ptr destroy(new Destroy(server));
+        server->on(EVENT_DESTROY, destroy);
+        return server;
     }
 
     Value address() {
@@ -31,13 +51,34 @@ class ServerImpl
         }
     }
 
+    Size connections() const {
+        return connections_;
+    }
+
+    Size maxConnections() const {
+        return maxConnections_;
+    }
+
+    void setMaxConnections(Size max) {
+        maxConnections_ = max;
+    }
+
     Boolean listen(
         Int port,
         String::CPtr host = IN_ADDR_ANY,
         Int backlog = 511,
         JsFunction::Ptr callback = JsFunction::null()) {
+        if (handle_) return false;
+
         if (callback) once(EVENT_LISTENING, callback);
-        return listen(host, port, 4, backlog);
+
+        Int addressType = isIP(host);
+        if (addressType) {
+            return listen(host, port, addressType, backlog);
+        } else {
+            emit(EVENT_ERROR, Error::create(Error::ILLEGAL_ARGUMENT));
+            return false;
+        }
     }
 
     Boolean close(
@@ -68,9 +109,16 @@ class ServerImpl
         int fd = -1) {
         uv::Stream* handle;
         if (fd >= 0) {
-            uv::Pipe* pipe = new uv::Pipe();
-            pipe->open(fd);
-            return pipe;
+            uv_handle_type type = uv::Handle::guessHandleType(fd);
+            if (type == UV_NAMED_PIPE) {
+                uv::Pipe* pipe = new uv::Pipe();
+                pipe->open(fd);
+                // pipe->readable = true;
+                // pipe->writable = true;
+                return pipe;
+            } else {
+                return NULL;
+            }
         } else if (port == -1 && addressType == -1) {
             handle = new uv::Pipe();
         } else {
@@ -112,6 +160,7 @@ class ServerImpl
 
         OnConnection::Ptr onConnection(new OnConnection(this));
         handle_->setOnConnection(onConnection);
+        handle_->setOwner(this);
 
         Int r = handle_->listen(backlog ? backlog : 511);
         if (r) {
@@ -121,7 +170,13 @@ class ServerImpl
             process::nextTick(emitError);
             return false;
         } else {
-            // connectionKey = addressType + ':' + address + ':' + port;
+            StringBuffer::Ptr key = StringBuffer::create();
+            key->append(String::valueOf(addressType));
+            key->appendChar(':');
+            key->append(address);
+            key->appendChar(':');
+            key->append(String::valueOf(port));
+            connectionKey_ = key->toString();
             EmitListening::Ptr emitListening(new EmitListening(this));
             process::nextTick(emitListening);
             return true;
@@ -143,7 +198,7 @@ class ServerImpl
      public:
         OnConnection(ServerImpl* srv) : self_(srv) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             Value client = args->get(0);
             uv::Stream* clientHandle = NULL;
             uv::Pipe* pipe;
@@ -154,18 +209,15 @@ class ServerImpl
                 clientHandle = tcp;
             }
             if (!clientHandle) {
-                EmitError::Ptr emitError(new EmitError(self_));
-                process::nextTick(emitError);
+                self_->emit(EVENT_ERROR, uv::Error::last());
                 return Error::ILLEGAL_STATE;
             }
 
-            #if 0
-            if (self_->maxConnections &&
-                self_->connections >= self_->maxConnections) {
+            if (self_->maxConnections_ &&
+                self_->connections_ >= self_->maxConnections_) {
                 clientHandle->close();
-                return;
+                return Status::OK;
             }
-            #endif
 
             SocketImpl::Ptr socket = SocketImpl::create(
                 clientHandle,
@@ -176,10 +228,25 @@ class ServerImpl
             clientHandle->readStart();
 
             self_->connections_++;
-            // socket.server = self;
+            JsFunction::Ptr removeConnection(new RemoveConnection(self_));
+            socket->on(EVENT_CLOSE, removeConnection);
 
             self_->emit(EVENT_CONNECTION, socket);
             socket->emit(SocketImpl::EVENT_CONNECT);
+            return Status::OK;
+        }
+    };
+
+    class RemoveConnection : LIBJ_JS_FUNCTION(RemoveConnection)
+     private:
+        ServerImpl* self_;
+
+     public:
+        RemoveConnection(ServerImpl* srv) : self_(srv) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
+            self_->connections_--;
+            self_->emitCloseIfDrained();
             return Status::OK;
         }
     };
@@ -191,8 +258,9 @@ class ServerImpl
      public:
         EmitClose(ServerImpl* srv) : self_(srv) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             self_->emit(EVENT_CLOSE);
+            self_->emit(EVENT_DESTROY);
             return Status::OK;
         }
     };
@@ -204,7 +272,7 @@ class ServerImpl
      public:
         EmitError(ServerImpl* srv) : self_(srv) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             self_->emit(EVENT_ERROR, uv::Error::last());
             return Status::OK;
         }
@@ -217,8 +285,23 @@ class ServerImpl
      public:
         EmitListening(ServerImpl* srv) : self_(srv) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             self_->emit(EVENT_LISTENING);
+            return Status::OK;
+        }
+    };
+
+    class Destroy : LIBJ_JS_FUNCTION(Destroy)
+     private:
+        ServerImpl::Ptr self_;
+
+     public:
+        Destroy(ServerImpl::Ptr srv) : self_(srv) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
+            assert(!self_->handle_);
+            assert(!self_->connections_);
+            self_->removeAllListeners();
             return Status::OK;
         }
     };
@@ -231,13 +314,17 @@ class ServerImpl
  private:
     uv::Stream* handle_;
     Size connections_;
+    Size maxConnections_;
     String::CPtr pipeName_;
+    String::CPtr connectionKey_;
     events::EventEmitter::Ptr ee_;
 
     ServerImpl()
         : handle_(NULL)
         , connections_(0)
+        , maxConnections_(0)
         , pipeName_(String::null())
+        , connectionKey_(String::null())
         , ee_(events::EventEmitter::create()) {}
 
     LIBNODE_EVENT_EMITTER_IMPL(ee_);

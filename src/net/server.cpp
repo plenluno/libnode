@@ -12,6 +12,9 @@ LIBJ_SYMBOL_DEF(Server::EVENT_ERROR,      "error");
 LIBJ_SYMBOL_DEF(Server::EVENT_LISTENING,  "listening");
 LIBJ_SYMBOL_DEF(Server::EVENT_CONNECTION, "connection");
 
+LIBJ_SYMBOL_DEF(ServerImpl::EVENT_DESTROY,          "destroy");
+LIBJ_SYMBOL_DEF(ServerImpl::OPTION_ALLOW_HALF_OPEN, "allowHalfOpen");
+
 Server::Ptr Server::create() {
     return ServerImpl::create();
 }

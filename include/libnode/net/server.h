@@ -21,6 +21,12 @@ class Server : LIBNODE_EVENT_EMITTER(Server)
 
     virtual Value address() = 0;
 
+    virtual Size connections() const = 0;
+
+    virtual Size maxConnections() const = 0;
+
+    virtual void setMaxConnections(Size max) = 0;
+
     virtual Boolean listen(
         Int port,
         String::CPtr host = IN_ADDR_ANY,
@@ -39,6 +45,15 @@ class Server : LIBNODE_EVENT_EMITTER(Server)
     LIBNODE_EVENT_EMITTER_IMPL(S) \
     virtual Value address() { \
         return S->address(); \
+    } \
+    virtual Size connections() const { \
+        return S->connections(); \
+    } \
+    virtual Size maxConnections() const { \
+        return S->maxConnections(); \
+    } \
+    virtual void setMaxConnections(Size max) { \
+        return S->setMaxConnections(max); \
     } \
     virtual Boolean listen( \
         Int port, \
