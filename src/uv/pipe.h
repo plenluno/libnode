@@ -11,8 +11,6 @@ namespace uv {
 
 class Pipe : public Stream {
  public:
-    uv_pipe_t* uvPipe() { return &pipe_; }
-
     Pipe(Boolean ipc = false)
         : Stream(reinterpret_cast<uv_stream_t*>(&pipe_)) {
         Int r = uv_pipe_init(uv_default_loop(), &pipe_, ipc);
@@ -20,13 +18,7 @@ class Pipe : public Stream {
         pipe_.data = this;
     }
 
-    Int bind(String::CPtr name) {
-        Int r = uv_pipe_bind(&pipe_, name->toStdString().c_str());
-        if (r) setLastError();
-        return r;
-    }
-
-    Int listen(Int backlog) {
+    virtual Int listen(Int backlog) {
         Int r = uv_listen(
             reinterpret_cast<uv_stream_t*>(&pipe_),
             backlog,
@@ -37,6 +29,12 @@ class Pipe : public Stream {
 
     void open(int fd) {
         uv_pipe_open(&pipe_, fd);
+    }
+
+    Int bind(String::CPtr name) {
+        Int r = uv_pipe_bind(&pipe_, name->toStdString().c_str());
+        if (r) setLastError();
+        return r;
     }
 
     Connect* connect(String::CPtr name) {

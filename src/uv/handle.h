@@ -11,12 +11,23 @@ namespace node {
 namespace uv {
 
 class Handle {
+ protected:
+    Handle(uv_handle_t* handle)
+        : handle_(handle)
+        , unref_(false) {
+        assert(handle_);
+        handle_->data = this;
+    }
+
  public:
-    uv_handle_t* uvHandle() const { return handle_; }
+    virtual ~Handle() {}
+
+    virtual void setHandle(uv_handle_t* handle) {
+        handle_ = handle;
+        handle_->data = this;
+    }
 
     uv_handle_type type() const { return handle_->type; }
-
-    virtual ~Handle() {}
 
     void ref() {
         uv_ref(handle_);
@@ -35,19 +46,13 @@ class Handle {
         }
     }
 
-    virtual void setHandle(uv_handle_t* handle) {
-        handle_ = handle;
-        handle_->data = this;
+ public:
+    static uv_handle_type guessHandleType(int fd) {
+        assert(fd >= 0);
+        return uv_guess_handle(fd);
     }
 
  protected:
-    Handle(uv_handle_t* handle)
-        : handle_(handle)
-        , unref_(false) {
-        assert(handle_);
-        handle_->data = this;
-    }
-
     static void setLastError() {
         Error::setLast(uv_last_error(uv_default_loop()).code);
     }

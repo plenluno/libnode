@@ -15,9 +15,17 @@ typedef class Req<uv_shutdown_t> Shutdown;
 
 class Stream : public Handle {
  public:
-    uv_stream_t* uvStream() const { return stream_; }
-
     virtual Int listen(Int backlog) = 0;
+
+    virtual void setHandle(uv_handle_t* handle) {
+        Handle::setHandle(handle);
+        stream_ = reinterpret_cast<uv_stream_t*>(handle);
+        stream_->data = this;
+    }
+
+    void setOwner(void* owner) {
+        owner_ = owner;
+    }
 
     void setOnRead(JsFunction::Ptr callback) {
         onRead_ = callback;
@@ -25,12 +33,6 @@ class Stream : public Handle {
 
     void setOnConnection(JsFunction::Ptr callback) {
         onConnection_ = callback;
-    }
-
-    virtual void setHandle(uv_handle_t* handle) {
-        Handle::setHandle(handle);
-        stream_ = reinterpret_cast<uv_stream_t*>(handle);
-        stream_->data = this;
     }
 
     Int readStart() {
@@ -216,6 +218,7 @@ class Stream : public Handle {
  protected:
     uv_stream_t* stream_;
     Buffer::Ptr buffer_;
+    void* owner_;
     JsFunction::Ptr onRead_;
     JsFunction::Ptr onConnection_;
 
@@ -223,6 +226,7 @@ class Stream : public Handle {
         : Handle(reinterpret_cast<uv_handle_t*>(stream))
         , stream_(stream)
         , buffer_(Buffer::null())
+        , owner_(NULL)
         , onRead_(JsFunction::null())
         , onConnection_(JsFunction::null()) {
         assert(stream_);

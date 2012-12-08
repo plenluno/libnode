@@ -12,8 +12,6 @@ namespace uv {
 
 class Timer : public Handle {
  public:
-    uv_timer_t* uvTimer() { return &timer_; }
-
     Timer()
         : Handle(reinterpret_cast<uv_handle_t*>(&timer_))
         , onTimeout_(JsFunction::null()) {

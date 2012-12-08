@@ -13,11 +13,18 @@ namespace uv {
 
 class Tcp : public Stream {
  public:
-    uv_tcp_t* uvTcp() { return &tcp_; }
-
     Tcp() : Stream(reinterpret_cast<uv_stream_t*>(&tcp_)) {
         int r = uv_tcp_init(uv_default_loop(), &tcp_);
         assert(r == 0);
+    }
+
+    virtual Int listen(Int backlog) {
+        Int r = uv_listen(
+            reinterpret_cast<uv_stream_t*>(&tcp_),
+            backlog,
+            onConnection);
+        if (r) setLastError();
+        return r;
     }
 
     JsObject::Ptr getSockName() {
@@ -79,15 +86,6 @@ class Tcp : public Stream {
         return r;
     }
 
-    Int listen(Int backlog) {
-        Int r = uv_listen(
-            reinterpret_cast<uv_stream_t*>(&tcp_),
-            backlog,
-            onConnection);
-        if (r) setLastError();
-        return r;
-    }
-
     Connect* connect(String::CPtr ip, Int port) {
         assert(ip);
         struct sockaddr_in address =
@@ -123,7 +121,7 @@ class Tcp : public Stream {
     }
 
  private:
-    JsObject::Ptr addressToJs(const sockaddr* addr) {
+    static JsObject::Ptr addressToJs(const sockaddr* addr) {
         LIBJ_STATIC_SYMBOL_DEF(symIpV4,    "IPv4");
         LIBJ_STATIC_SYMBOL_DEF(symIpV6,    "IPv6");
         LIBJ_STATIC_SYMBOL_DEF(symPort,    "port");
@@ -157,7 +155,6 @@ class Tcp : public Stream {
         return res;
     }
 
- private:
     static void onConnection(uv_stream_t* handle, int status) {
         Tcp* self = static_cast<Tcp*>(handle->data);
         assert(self && self->stream_ == handle);
