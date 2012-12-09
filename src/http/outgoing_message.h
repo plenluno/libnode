@@ -55,10 +55,15 @@ class OutgoingMessage
     }
 
     Boolean setHeader(String::CPtr name, String::CPtr value) {
-        if (header_ && !header_->isEmpty()) return false;
+        if (header_) return false;
 
         if (name && value) {
             String::CPtr key = name->toLowerCase();
+            if (!headers_) {
+                assert(!headerNames_);
+                headers_ = JsObject::create();
+                headerNames_ = JsObject::create();
+            }
             headers_->put(key, value);
             headerNames_->put(key, name);
             return true;
@@ -68,7 +73,7 @@ class OutgoingMessage
     }
 
     String::CPtr getHeader(String::CPtr name) const {
-        if (name) {
+        if (name && headers_) {
             return headers_->getCPtr<String>(name->toLowerCase());
         } else {
             return String::null();
@@ -76,7 +81,7 @@ class OutgoingMessage
     }
 
     void removeHeader(String::CPtr name) {
-        if (!name) return;
+        if (!name || !headers_) return;
 
         String::CPtr key = name->toLowerCase();
         headers_->remove(key);
@@ -86,7 +91,7 @@ class OutgoingMessage
     Boolean write(const Value& chunk, Buffer::Encoding enc) {
         LIBJ_STATIC_SYMBOL_DEF(symCRLF, "\r\n");
 
-        if (!header_ || header_->isEmpty()) {
+        if (!header_) {
             implicitHeader();
         }
 
@@ -127,7 +132,7 @@ class OutgoingMessage
     Boolean end(const Value& data, Buffer::Encoding enc) {
         if (hasFlag(FINISHED)) return false;
 
-        if (!header_ || header_->isEmpty()) {
+        if (!header_ ) {
             implicitHeader();
         }
 
@@ -234,6 +239,10 @@ class OutgoingMessage
 
     void assignSocket(Ptr self, net::SocketImpl::Ptr socket) {
         LIBJ_STATIC_SYMBOL_DEF(symHttpMessage, "httpMessage");
+
+        if (!socketOnClose_) {
+            socketOnClose_ = SocketOnClose::Ptr(new SocketOnClose());
+        }
 
         assert(!socket->httpMessage());
         socket->setHttpMessage(this);
@@ -610,7 +619,7 @@ class OutgoingMessage
         net::SocketImpl::Ptr socket_;
     };
 
-    class OnSocket : LIBJ_JS_FUNCTION(SocketOnClose)
+    class OnSocket : LIBJ_JS_FUNCTION(OnSocket)
      public:
         OnSocket(
             OutgoingMessage* self,
@@ -630,15 +639,23 @@ class OutgoingMessage
 
             httpSocketSetup(socket_);
 
-            self_->socketErrorListener_->setSocket(&(*socket_));
-            self_->socketCloseListener_->setSocket(&(*socket_));
+            if (!self_->socketCloseListener_) {
+                assert(!self_->socketErrorListener_);
+                self_->socketCloseListener_ =
+                    SocketCloseListener::Ptr(new SocketCloseListener());
+                self_->socketErrorListener_ =
+                    SocketErrorListener::Ptr(new SocketErrorListener());
+            }
 
-            socket_->on(
-                net::SocketImpl::EVENT_ERROR,
-                self_->socketErrorListener_);
+            self_->socketCloseListener_->setSocket(&(*socket_));
+            self_->socketErrorListener_->setSocket(&(*socket_));
+
             socket_->on(
                 net::SocketImpl::EVENT_CLOSE,
                 self_->socketCloseListener_);
+            socket_->on(
+                net::SocketImpl::EVENT_ERROR,
+                self_->socketErrorListener_);
 
             JsFunction::Ptr socketOnEnd(new SocketOnEnd(socket_));
             JsFunction::Ptr socketOnData(new SocketOnData(self_, socket_));
@@ -1120,10 +1137,10 @@ class OutgoingMessage
         , statusCode_(Status::OK)
         , method_(String::null())
         , path_(String::null())
-        , header_(String::create())
+        , header_(String::null())
         , trailer_(String::create())
-        , headers_(JsObject::create())
-        , headerNames_(JsObject::create())
+        , headers_(JsObject::null())
+        , headerNames_(JsObject::null())
         , output_(LinkedList::create())
         , outputEncodings_(EncodingList::create())
         , parser_(NULL)
@@ -1131,9 +1148,9 @@ class OutgoingMessage
         , socketPath_(String::null())
         , res_(IncomingMessage::null())
         , timeoutCb_(JsFunction::null())
-        , socketOnClose_(new SocketOnClose())
-        , socketCloseListener_(new SocketCloseListener())
-        , socketErrorListener_(new SocketErrorListener())
+        , socketOnClose_(SocketOnClose::null())
+        , socketCloseListener_(SocketCloseListener::null())
+        , socketErrorListener_(SocketErrorListener::null())
         , ee_(EventEmitter::create()) {
         setFlag(WRITABLE);
         setFlag(SHOULD_KEEP_ALIVE);
