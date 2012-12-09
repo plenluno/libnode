@@ -132,7 +132,7 @@ class OutgoingMessage
     Boolean end(const Value& data, Buffer::Encoding enc) {
         if (hasFlag(FINISHED)) return false;
 
-        if (!header_ ) {
+        if (!header_) {
             implicitHeader();
         }
 
