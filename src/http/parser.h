@@ -262,7 +262,7 @@ class Parser : public FlagMixin {
     }
 
     void onBody(Buffer::CPtr buf) {
-        LinkedList::Ptr pendings = incoming_->getPendings();
+        LinkedList::Ptr pendings = incoming_->pendings();
         if (incoming_->hasFlag(IncomingMessage::PAUSED) ||
             pendings->length()) {
             pendings->push(buf);
@@ -288,7 +288,7 @@ class Parser : public FlagMixin {
         }
 
         if (!incoming_->hasFlag(IncomingMessage::UPGRADE)) {
-            LinkedList::Ptr pendings = incoming_->getPendings();
+            LinkedList::Ptr pendings = incoming_->pendings();
             if (incoming_->hasFlag(IncomingMessage::PAUSED) ||
                 pendings->length()) {
                 pendings->push(0);  // EOF

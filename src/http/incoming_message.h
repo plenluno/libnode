@@ -69,11 +69,15 @@ class IncomingMessage
     }
 
     Boolean pause() {
-        return socket_->pause();
+        setFlag(PAUSED);
+        return socket_ && socket_->pause();
     }
 
     Boolean resume() {
-        return socket_->resume();
+        unsetFlag(PAUSED);
+        Boolean res = socket_ && socket_->resume();
+        emitPending();
+        return res;
     }
 
     Boolean destroy() {
@@ -104,10 +108,8 @@ class IncomingMessage
 
     void addHeaderLine(String::CPtr name, String::CPtr value) {
         LIBJ_STATIC_SYMBOL_DEF(symExtPrefix, "x-");
+
         static Set::Ptr commaSeparated = Set::null();
-
-        assert(name && value);
-
         if (!commaSeparated) {
             commaSeparated = Set::create();
             commaSeparated->add(LHEADER_ACCEPT);
@@ -123,6 +125,8 @@ class IncomingMessage
             commaSeparated->add(LHEADER_SEC_WEBSOCKET_EXTENSIONS);
             commaSeparated->add(LHEADER_SEC_WEBSOCKET_PROTOCOL);
         }
+
+        assert(name && value);
 
         JsObject::Ptr dest = hasFlag(COMPLETE) ? trailers_ : headers_;
         String::CPtr field = name->toLowerCase();
@@ -172,17 +176,16 @@ class IncomingMessage
         req_ = req;
     }
 
-    LinkedList::Ptr getPendings() const {
+    LinkedList::Ptr pendings() const {
         return pendings_;
     }
 
     void emitPending(JsFunction::Ptr callback = JsFunction::null()) {
         if (pendings_->isEmpty()) {
-            if (callback) {
-                (*callback)();
-            }
+            if (callback) (*callback)();
         } else {
-            process::nextTick(EmitPending::create(this, callback));
+            JsFunction::Ptr emit(new EmitPending(this, callback));
+            process::nextTick(emit);
         }
     }
 
@@ -200,8 +203,8 @@ class IncomingMessage
     void emitEnd() {
         if (!hasFlag(END_EMITTED)) {
             emit(EVENT_END);
+            setFlag(END_EMITTED);
         }
-        setFlag(END_EMITTED);
     }
 
  public:
@@ -216,17 +219,17 @@ class IncomingMessage
  private:
     class EmitPending : LIBJ_JS_FUNCTION(EmitPending)
      public:
-        static Ptr create(
-                IncomingMessage* incoming,
-                JsFunction::Ptr callback) {
-            return Ptr(new EmitPending(incoming, callback));
-        }
+        EmitPending(
+            IncomingMessage* incoming,
+            JsFunction::Ptr callback)
+            : self_(incoming)
+            , callback_(callback) {}
 
-        Value operator()(JsArray::Ptr args) {
-            LinkedList::Ptr pendings = self_->getPendings();
+        virtual Value operator()(JsArray::Ptr args) {
+            LinkedList::Ptr pendings = self_->pendings_;
             assert(pendings);
-            while (!self_->hasFlag(PAUSED) && self_->getPendings()->length()) {
-                Buffer::Ptr chunk = toPtr<Buffer>(pendings->remove(0));
+            while (!self_->hasFlag(PAUSED) && pendings->length()) {
+                Buffer::Ptr chunk = toPtr<Buffer>(pendings->shift());
                 if (chunk) {
                     assert(Buffer::isBuffer(chunk));
                     self_->emitData(chunk);
@@ -236,30 +239,23 @@ class IncomingMessage
                     self_->emitEnd();
                 }
             }
-            if (callback_)
-                (*callback_)();
+            if (callback_) (*callback_)();
             return libj::Status::OK;
         }
 
      private:
         IncomingMessage* self_;
         JsFunction::Ptr callback_;
-
-        EmitPending(
-            IncomingMessage* incoming,
-            JsFunction::Ptr callback)
-            : self_(incoming)
-            , callback_(callback) {}
     };
 
  private:
     net::SocketImpl::Ptr socket_;
-    Int statusCode_;
+    String::CPtr method_;
+    String::CPtr url_;
     String::CPtr httpVersion_;
+    Int statusCode_;
     JsObject::Ptr headers_;
     JsObject::Ptr trailers_;
-    String::CPtr url_;
-    String::CPtr method_;
     LinkedList::Ptr pendings_;
     StringDecoder::Ptr decoder_;
     OutgoingMessage* req_;
@@ -267,12 +263,12 @@ class IncomingMessage
 
     IncomingMessage(net::SocketImpl::Ptr sock)
         : socket_(sock)
-        , statusCode_(0)
+        , method_(String::null())
+        , url_(String::create())
         , httpVersion_(String::null())
+        , statusCode_(0)
         , headers_(JsObject::create())
         , trailers_(JsObject::create())
-        , url_(String::create())
-        , method_(String::null())
         , pendings_(LinkedList::create())
         , decoder_(StringDecoder::null())
         , req_(NULL)
