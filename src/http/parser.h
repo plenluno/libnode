@@ -220,13 +220,15 @@ class Parser : public FlagMixin {
 
  private:
     int onHeadersComplete() {
+        incoming_ = IncomingMessage::create(socket_);
+        incoming_->setUrl(url_);
+        incoming_->setHttpVersionMajor(majorVer_);
+        incoming_->setHttpVersionMinor(minorVer_);
+
         StringBuffer::Ptr httpVer = StringBuffer::create();
         httpVer->append(majorVer_);
         httpVer->appendChar('.');
         httpVer->append(minorVer_);
-
-        incoming_ = IncomingMessage::create(socket_);
-        incoming_->setUrl(url_);
         incoming_->setHttpVersion(httpVer->toString());
 
         Size n = fields_->length();

@@ -31,45 +31,31 @@ class OutgoingMessage
     static Ptr create(JsObject::CPtr options, JsFunction::Ptr callback);
 
     Boolean destroy() {
-        if (socket_) {
-            return socket_->destroy();
-        } else {
-            return false;
-        }
+        return socket_ && socket_->destroy();
     }
 
     Boolean destroySoon() {
-        if (socket_) {
-            return socket_->destroySoon();
-        } else {
-            return false;
-        }
+        return socket_ && socket_->destroySoon();
     }
 
     Boolean writable() const {
-        if (socket_) {
-            return socket_->writable();
-        } else {
-            return false;
-        }
+        return socket_ && socket_->writable();
     }
 
     Boolean setHeader(String::CPtr name, String::CPtr value) {
         if (header_) return false;
+        if (!name || !value) return false;
 
-        if (name && value) {
-            String::CPtr key = name->toLowerCase();
-            if (!headers_) {
-                assert(!headerNames_);
-                headers_ = JsObject::create();
-                headerNames_ = JsObject::create();
-            }
-            headers_->put(key, value);
-            headerNames_->put(key, name);
-            return true;
-        } else {
-            return false;
+        if (!headers_) {
+            assert(!headerNames_);
+            headers_ = JsObject::create();
+            headerNames_ = JsObject::create();
         }
+
+        String::CPtr key = name->toLowerCase();
+        headers_->put(key, value);
+        headerNames_->put(key, name);
+        return true;
     }
 
     String::CPtr getHeader(String::CPtr name) const {
@@ -80,12 +66,14 @@ class OutgoingMessage
         }
     }
 
-    void removeHeader(String::CPtr name) {
-        if (!name || !headers_) return;
+    Boolean removeHeader(String::CPtr name) {
+        if (header_) return false;
+        if (!name || !headers_) return false;
 
         String::CPtr key = name->toLowerCase();
         headers_->remove(key);
         headerNames_->remove(key);
+        return true;
     }
 
     Boolean write(const Value& chunk, Buffer::Encoding enc) {
@@ -138,17 +126,19 @@ class OutgoingMessage
 
         Value d;
         if (hasFlag(HAS_BODY)) {
-            d = UNDEFINED;
-        } else {
             d = data;
+        } else {
+            d = UNDEFINED;
         }
 
         String::CPtr str = toCPtr<String>(d);
         Boolean hot =
             !hasFlag(HEADER_SENT) &&
-            str && !str->isEmpty() &&
+            str &&
+            !str->isEmpty() &&
             output_->isEmpty() &&
-            socket_ && socket_->writable() &&
+            socket_ &&
+            socket_->writable() &&
             socket_->httpMessage() == this;
 
         Boolean ret;
@@ -185,7 +175,7 @@ class OutgoingMessage
         }
 
         setFlag(FINISHED);
-        if (output_->length() == 0 && socket_->httpMessage() == this) {
+        if (output_->isEmpty() && socket_->httpMessage() == this) {
             finish();
         }
         return ret;
@@ -238,29 +228,18 @@ class OutgoingMessage
     }
 
     void assignSocket(Ptr self, net::SocketImpl::Ptr socket) {
-        LIBJ_STATIC_SYMBOL_DEF(symHttpMessage, "httpMessage");
-
-        if (!socketOnClose_) {
-            socketOnClose_ = SocketOnClose::Ptr(new SocketOnClose());
-        }
-
         assert(!socket->httpMessage());
         socket->setHttpMessage(this);
-        socket->put(symHttpMessage, self);
-        socketOnClose_->setSocket(&(*socket));
-        socket->on(net::Socket::EVENT_CLOSE, socketOnClose_);
+        JsFunction::Ptr emitClose(new EmitClose(self));
+        socket->setOnClose(emitClose);
         socket_ = socket;
         flush();
     }
 
     void detachSocket(net::SocketImpl::Ptr socket) {
-        LIBJ_STATIC_SYMBOL_DEF(symHttpMessage, "httpMessage");
-
         assert(socket->httpMessage() == this);
-        socketOnClose_->setSocket(NULL);
-        socket->removeListener(net::Socket::EVENT_CLOSE, socketOnClose_);
+        socket->setOnClose(JsFunction::null());
         socket->setHttpMessage(NULL);
-        socket->remove(symHttpMessage);
         socket_ = net::SocketImpl::null();
     }
 
@@ -326,6 +305,294 @@ class OutgoingMessage
     }
 
  private:
+    static void freeParser(Parser* parser, OutgoingMessage* req) {
+        assert(parser);
+        parser->free();
+        if (req) {
+            req->parser_ = NULL;
+        }
+        delete parser;
+    }
+
+    static uv::Error::CPtr createHangUpError() {
+        return uv::Error::create(uv::Error::_ECONNRESET);
+    }
+
+    static String::CPtr toHex(Size val) {
+        Size n;
+        to<Size>(val, &n);
+        const Size kLen = ((sizeof(Size) << 3) / 3) + 3;
+        char s[kLen];
+        snprintf(s, kLen, "%zx", n);
+        return String::create(s);
+    }
+
+    static void httpSocketSetup(net::SocketImpl::Ptr socket) {
+        SocketOnDrain::Ptr onDrain = SocketOnDrain::create(socket);
+        socket->removeAllListeners(net::Socket::EVENT_DRAIN);
+        socket->on(net::Socket::EVENT_DRAIN, onDrain);
+    }
+
+    Boolean send(const Value& data, Buffer::Encoding enc = Buffer::NONE) {
+        if (hasFlag(HEADER_SENT)) {
+            return writeRaw(data, enc);
+        } else {
+            assert(header_);
+            setFlag(HEADER_SENT);
+            String::CPtr str = toCPtr<String>(data);
+            if (str) {
+                return writeRaw(header_->concat(str), enc);
+            } else {
+                output_->unshift(header_);
+                outputEncodings_->unshiftTyped(Buffer::UTF8);
+                return writeRaw(data, enc);
+            }
+        }
+    }
+
+    Boolean writeRaw(const Value& data, Buffer::Encoding enc) {
+        String::CPtr str = toCPtr<String>(data);
+        if (str && str->isEmpty()) return true;
+
+        Buffer::CPtr buf = toCPtr<Buffer>(data);
+        if (buf && buf->isEmpty()) return true;
+
+        assert(str || buf);
+
+        if (socket_ &&
+            socket_->httpMessage() == this &&
+            socket_->writable()) {
+            while (output_->length()) {
+                if (!socket_->writable()) {
+                    buffer(data, enc);
+                    return false;
+                }
+                Value c = output_->shift();
+                Buffer::Encoding e = outputEncodings_->shiftTyped();
+                socket_->write(c, e);
+            }
+            return socket_->write(data, enc);
+        } else {
+            buffer(data, enc);
+            return false;
+        }
+    }
+
+    Boolean buffer(const Value& data, Buffer::Encoding enc) {
+        String::CPtr str = toCPtr<String>(data);
+        if (str && str->isEmpty()) return true;
+
+        Buffer::CPtr buf = toCPtr<Buffer>(data);
+        if (buf && buf->isEmpty()) return true;
+
+        assert(str || buf);
+
+        Size length = output_->length();
+
+        if (!length || !str) {
+            output_->push(data);
+            outputEncodings_->pushTyped(enc);
+            return false;
+        }
+
+        Buffer::Encoding lastEnc = outputEncodings_->getTyped(length - 1);
+        Value lastData = output_->get(length - 1);
+
+        if ((enc != Buffer::NONE && lastEnc == enc) ||
+            (enc == Buffer::NONE && data.type() == lastData.type())) {
+            if (str) {
+                output_->set(
+                    length - 1,
+                    toCPtr<String>(lastData)->concat(str));
+            } else {
+                output_->set(
+                    length -1,
+                    toCPtr<Buffer>(lastData)->concat(buf));
+            }
+        }
+
+        output_->push(data);
+        outputEncodings_->pushTyped(enc);
+        return false;
+    }
+
+    void store(
+        StringBuffer::Ptr messageHeader,
+        String::CPtr field,
+        const Value& value) {
+        LIBJ_STATIC_SYMBOL_DEF(symClose,   "close");
+        LIBJ_STATIC_SYMBOL_DEF(symChunked, "chunked");
+
+        messageHeader->append(field);
+        messageHeader->appendCStr(": ");
+        messageHeader->append(value);
+        messageHeader->appendCStr("\r\n");
+
+        String::CPtr lowerField = field->toLowerCase();
+        if (lowerField->equals(LHEADER_CONNECTION)) {
+            setFlag(SENT_CONNECTION_HEADER);
+            if (value.equals(symClose)) {
+                setFlag(LAST);
+            } else {
+                setFlag(SHOULD_KEEP_ALIVE);
+            }
+        } else if (lowerField->equals(LHEADER_TRANSFER_ENCODING)) {
+            setFlag(SENT_TRANSFER_ENCODING_HEADER);
+            if (value.equals(symChunked)) {
+                setFlag(CHUNKED_ENCODING);
+            }
+        } else if (lowerField->equals(LHEADER_CONTENT_LENGTH)) {
+            setFlag(SENT_CONTENT_LENGTH_HEADER);
+        } else if (lowerField->equals(LHEADER_DATE)) {
+            setFlag(SENT_DATE_HEADER);
+        } else if (lowerField->equals(LHEADER_EXPECT)) {
+            setFlag(SENT_EXPECT_HEADER);
+        }
+    }
+
+    void storeHeader(String::CPtr firstLine, JsObject::CPtr headers) {
+        unsetFlag(SENT_CONNECTION_HEADER);
+        unsetFlag(SENT_CONTENT_LENGTH_HEADER);
+        unsetFlag(SENT_TRANSFER_ENCODING_HEADER);
+        unsetFlag(SENT_DATE_HEADER);
+        unsetFlag(SENT_EXPECT_HEADER);
+
+        StringBuffer::Ptr messageHeader = StringBuffer::create();
+        messageHeader->append(firstLine);
+
+        if (headers) {
+            Set::CPtr keys = headers->keySet();
+            Iterator::Ptr itr = keys->iterator();
+            while (itr->hasNext()) {
+                String::CPtr field = toCPtr<String>(itr->next());
+                Value value = headers->get(field);
+
+                JsArray::CPtr ary = toCPtr<JsArray>(value);
+                if (ary) {
+                    Size len = ary->length();
+                    for (Size i = 0; i < len; i++) {
+                        store(messageHeader, field, ary->get(i));
+                    }
+                } else {
+                    store(messageHeader, field, value);
+                }
+            }
+        }
+
+        if (hasFlag(SEND_DATE) && !hasFlag(SENT_DATE_HEADER)) {
+            // TODO(plenluno): implement utcDate
+            // messageHeader->appendCStr("Date: ");
+            // messageHeader->append(utcDate());
+            // messageHeader->appendCStr("\r\n");
+        }
+
+        if (!hasFlag(SENT_CONNECTION_HEADER)) {
+            Boolean shouldSendKeepAlive =
+                hasFlag(SHOULD_KEEP_ALIVE) &&
+                (hasFlag(SENT_CONTENT_LENGTH_HEADER) ||
+                 hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT) ||
+                 agent_);
+            messageHeader->append(HEADER_CONNECTION);
+            messageHeader->appendCStr(": ");
+            if (shouldSendKeepAlive) {
+                messageHeader->appendCStr("keep-alive");
+            } else {
+                setFlag(LAST);
+                messageHeader->appendCStr("close");
+            }
+            messageHeader->appendCStr("\r\n");
+        }
+
+        if (!hasFlag(SENT_CONTENT_LENGTH_HEADER) &&
+            !hasFlag(SENT_TRANSFER_ENCODING_HEADER)) {
+            if (hasFlag(HAS_BODY)) {
+                if (hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT)) {
+                    messageHeader->append(HEADER_TRANSFER_ENCODING);
+                    messageHeader->appendCStr(": chunked\r\n");
+                    setFlag(CHUNKED_ENCODING);
+                } else {
+                    setFlag(LAST);
+                }
+            } else {
+                unsetFlag(CHUNKED_ENCODING);
+            }
+        }
+
+        messageHeader->appendCStr("\r\n");
+        header_ = messageHeader->toString();
+        unsetFlag(HEADER_SENT);
+
+        if (hasFlag(SENT_EXPECT_HEADER)) send(String::create());
+    }
+
+    JsObject::Ptr renderHeaders() {
+        if (header_) return JsObject::null();
+        if (!headers_) return JsObject::create();
+
+        JsObject::Ptr headers = JsObject::create();
+        Set::CPtr keys = headers_->keySet();
+        Iterator::Ptr itr = keys->iterator();
+        while (itr->hasNext()) {
+            String::CPtr key = toCPtr<String>(itr->next());
+            headers->put(headerNames_->get(key), headers_->get(key));
+        }
+        return headers;
+    }
+
+    void finish() {
+        LIBJ_STATIC_SYMBOL_DEF(EVENT_FINISH, "finish");
+        assert(socket_);
+        emit(EVENT_FINISH);
+    }
+
+    void flush() {
+        if (!socket_) return;
+
+        Boolean ret = false;
+        while (output_->length()) {
+            if (!socket_->writable()) return;
+
+            Value data = output_->shift();
+            Buffer::Encoding enc = outputEncodings_->shiftTyped();
+            ret = socket_->write(data, enc);
+        }
+
+        if (hasFlag(FINISHED)) {
+            finish();
+        } else if (ret) {
+            emit(EVENT_DRAIN);
+        }
+    }
+
+    void implicitHeader() {
+        if (hasFlag(SERVER_SIDE)) {
+            writeHead(statusCode_);
+        } else {
+            assert(method_ && path_);
+            StringBuffer::Ptr sb = StringBuffer::create();
+            sb->append(method_);
+            sb->appendChar(' ');
+            sb->append(path_);
+            sb->appendCStr(" HTTP/1.1\r\n");
+            String::CPtr firstLine = sb->toString();
+            storeHeader(firstLine, renderHeaders());
+        }
+    }
+
+    void deferToConnect(
+        JsFunction::Ptr method,
+        JsFunction::Ptr callback = JsFunction::null()) {
+        LIBJ_STATIC_SYMBOL_DEF(EVENT_SOCKET, "socket");
+
+        JsFunction::Ptr onSocket(new DeferToConnect(this, method, callback));
+        if (socket_) {
+            (*onSocket)();
+        } else {
+            once(EVENT_SOCKET, onSocket);
+        }
+    }
+
+ private:
     class SocketOnDrain : LIBJ_JS_FUNCTION(SocketOnDrain)
         static Ptr create(net::SocketImpl::Ptr socket) {
             return Ptr(new SocketOnDrain(&(*socket)));
@@ -344,25 +611,18 @@ class OutgoingMessage
         SocketOnDrain(net::SocketImpl* sock) : socket_(sock) {}
     };
 
-    class SocketOnClose : LIBJ_JS_FUNCTION(SocketOnClose)
+    class EmitClose : LIBJ_JS_FUNCTION(EmitClose)
      public:
-        SocketOnClose() : socket_(NULL) {}
+        EmitClose(OutgoingMessage::Ptr out) : self_(out) {}
 
-        Value operator()(JsArray::Ptr args) {
-            LIBJ_STATIC_SYMBOL_DEF(symHttpMessage, "httpMessage");
-
-            assert(socket_);
-            socket_->httpMessage()->emit(OutgoingMessage::EVENT_CLOSE);
-            socket_->remove(symHttpMessage);
+        virtual Value operator()(JsArray::Ptr args) {
+            self_->emit(OutgoingMessage::EVENT_CLOSE);
             return libj::Status::OK;
         }
 
-        void setSocket(net::SocketImpl* socket) {
-            socket_ = socket;
-        }
-
      private:
-        net::SocketImpl* socket_;
+        // retain self_ until detachSocket or socket 'close'
+        OutgoingMessage::Ptr self_;
     };
 
     class CloseResponse : LIBJ_JS_FUNCTION(CloseResponse)
@@ -804,309 +1064,27 @@ class OutgoingMessage
         Boolean onConnect_;
     };
 
- private:
-    static void freeParser(Parser* parser, OutgoingMessage* req) {
-        assert(parser);
-        parser->free();
-        if (req) {
-            req->parser_ = NULL;
-        }
-        delete parser;
-    }
-
-    static uv::Error::CPtr createHangUpError() {
-        return uv::Error::create(uv::Error::_ECONNRESET);
-    }
-
-    static String::CPtr toHex(Size val) {
-        Size n;
-        to<Size>(val, &n);
-        const Size kLen = ((sizeof(Size) << 3) / 3) + 3;
-        char s[kLen];
-        snprintf(s, kLen, "%zx", n);
-        return String::create(s);
-    }
-
-    static void httpSocketSetup(net::SocketImpl::Ptr socket) {
-        SocketOnDrain::Ptr onDrain = SocketOnDrain::create(socket);
-        socket->removeAllListeners(net::Socket::EVENT_DRAIN);
-        socket->on(net::Socket::EVENT_DRAIN, onDrain);
-    }
-
-    Boolean send(const Value& data, Buffer::Encoding enc = Buffer::NONE) {
-        if (hasFlag(HEADER_SENT)) {
-            return writeRaw(data, enc);
-        } else {
-            setFlag(HEADER_SENT);
-            String::CPtr str = toCPtr<String>(data);
-            if (str) {
-                assert(header_);
-                return writeRaw(header_->concat(str), enc);
-            } else {
-                output_->add(0, header_);
-                outputEncodings_->addTyped(0, Buffer::UTF8);
-                return writeRaw(data, enc);
-            }
-        }
-    }
-
-    Boolean writeRaw(const Value& data, Buffer::Encoding enc) {
-        String::CPtr str = toCPtr<String>(data);
-        Buffer::CPtr buf = toCPtr<Buffer>(data);
-        if (str) {
-            if (str->isEmpty()) return true;
-        } else if (buf) {
-            if (buf->isEmpty()) return true;
-        } else {
-            return false;
-        }
-
-        if (socket_ &&
-            socket_->httpMessage() == this &&
-            socket_->writable()) {
-            while (output_->length()) {
-                if (!socket_->writable()) {
-                    buffer(data, enc);
-                    return false;
-                }
-                Value c = output_->remove(0);
-                Buffer::Encoding e = outputEncodings_->removeTyped(0);
-                socket_->write(c, e);
-            }
-            return socket_->write(data, enc);
-        } else {
-            buffer(data, enc);
-            return false;
-        }
-    }
-
-    void buffer(const Value& data, Buffer::Encoding enc) {
-        String::CPtr str = toCPtr<String>(data);
-        if (str && str->isEmpty()) return;
-
-        Buffer::CPtr buf = toCPtr<Buffer>(data);
-        if (buf && buf->isEmpty()) return;
-
-        Size length = output_->length();
-
-        if (!length || !str) {
-            output_->add(data);
-            outputEncodings_->addTyped(enc);
-            return;
-        }
-
-        Buffer::Encoding lastEnc = outputEncodings_->getTyped(length - 1);
-        Value lastData = output_->get(length - 1);
-
-        if ((enc != Buffer::NONE && lastEnc == enc) ||
-            (enc == Buffer::NONE && data.type() == lastData.type())) {
-            if (str) {
-                output_->set(
-                    length - 1,
-                    toCPtr<String>(lastData)->concat(str));
-            } else if (buf) {
-                output_->set(
-                    length -1,
-                    toCPtr<Buffer>(lastData)->concat(buf));
-            } else {
-                assert(false);
-            }
-        }
-
-        output_->add(data);
-        outputEncodings_->addTyped(enc);
-    }
-
-    void storeHeader(String::CPtr firstLine, JsObject::CPtr headers) {
-        LIBJ_STATIC_SYMBOL_DEF(symClose,     "close");
-        LIBJ_STATIC_SYMBOL_DEF(symChunked,   "chunked");
-
-        Boolean sentConnectionHeader = false;
-        Boolean sentContentLengthHeader = false;
-        Boolean sentTransferEncodingHeader = false;
-        Boolean sentDateHeader = false;
-        Boolean sentExpect = false;
-
-        StringBuffer::Ptr messageHeader = StringBuffer::create();
-        messageHeader->append(firstLine);
-        String::CPtr field;
-        Value value;
-
-        #define LIBNODE_OUTMSG_STORE(F, V) { \
-            messageHeader->append(F); \
-            messageHeader->appendCStr(": "); \
-            messageHeader->append(V); \
-            messageHeader->appendCStr("\r\n"); \
-            String::CPtr lowerField = F->toLowerCase(); \
-            if (lowerField->equals(LHEADER_CONNECTION)) { \
-                sentConnectionHeader = true; \
-                if (V.equals(symClose)) { \
-                    setFlag(LAST); \
-                } else { \
-                    setFlag(SHOULD_KEEP_ALIVE); \
-                } \
-            } else if (lowerField->equals(LHEADER_TRANSFER_ENCODING)) { \
-                sentTransferEncodingHeader = true; \
-                if (V.equals(symChunked)) { \
-                    setFlag(CHUNKED_ENCODING); \
-                } \
-            } else if (lowerField->equals(LHEADER_CONTENT_LENGTH)) { \
-                sentContentLengthHeader = true; \
-            } else if (lowerField->equals(LHEADER_DATE)) { \
-                sentDateHeader = true; \
-            } else if (lowerField->equals(LHEADER_EXPECT)) { \
-                sentExpect = true; \
-            } \
-        }
-
-        if (headers) {
-            Set::CPtr keys = headers->keySet();
-            Iterator::Ptr itr = keys->iterator();
-            while (itr->hasNext()) {
-                field = toCPtr<String>(itr->next());
-                assert(field);
-                value = headers->get(field);
-
-                JsArray::CPtr ary = toCPtr<JsArray>(value);
-                if (ary) {
-                    Size len = ary->length();
-                    for (Size i = 0; i < len; i++) {
-                        Value v = ary->get(i);
-                        LIBNODE_OUTMSG_STORE(field, v);
-                    }
-                } else {
-                    LIBNODE_OUTMSG_STORE(field, value);
-                }
-            }
-        }
-
-        #undef LIBNODE_OUTMSG_STORE
-
-        if (hasFlag(SEND_DATE) && !sentDateHeader) {
-            // TODO(plenluno): implement utcDate
-            // messageHeader->appendCStr("Date: ");
-            // messageHeader->append(utcDate());
-            // messageHeader->appendCStr("\r\n");
-        }
-
-        if (!sentConnectionHeader) {
-            Boolean shouldSendKeepAlive =
-                hasFlag(SHOULD_KEEP_ALIVE) &&
-                (sentContentLengthHeader ||
-                 hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT) ||
-                 true);  // this.agent
-            messageHeader->append(HEADER_CONNECTION);
-            messageHeader->appendCStr(": ");
-            if (shouldSendKeepAlive) {
-                messageHeader->appendCStr("keep-alive");
-            } else {
-                setFlag(LAST);
-                messageHeader->appendCStr("close");
-            }
-            messageHeader->appendCStr("\r\n");
-        }
-
-        if (!sentContentLengthHeader && !sentTransferEncodingHeader) {
-            if (hasFlag(HAS_BODY)) {
-                if (hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT)) {
-                    messageHeader->append(HEADER_TRANSFER_ENCODING);
-                    messageHeader->appendCStr(": chunked\r\n");
-                    setFlag(CHUNKED_ENCODING);
-                } else {
-                    setFlag(LAST);
-                }
-            } else {
-                unsetFlag(CHUNKED_ENCODING);
-            }
-        }
-
-        messageHeader->appendCStr("\r\n");
-        header_ = messageHeader->toString();
-        unsetFlag(HEADER_SENT);
-
-        if (sentExpect) send(String::create());
-    }
-
-    JsObject::Ptr renderHeaders() {
-        JsObject::Ptr headers = JsObject::create();
-        Set::CPtr keys = headers_->keySet();
-        Iterator::Ptr itr = keys->iterator();
-        while (itr->hasNext()) {
-            String::CPtr key = toCPtr<String>(itr->next());
-            headers->put(headerNames_->get(key), headers_->get(key));
-        }
-        return headers;
-    }
-
-    void finish() {
-        LIBJ_STATIC_SYMBOL_DEF(EVENT_FINISH, "finish");
-        assert(socket_);
-        emit(EVENT_FINISH);
-    }
-
-    void flush() {
-        if (!socket_) return;
-
-        Boolean ret = false;
-        while (output_->length()) {
-            if (!socket_->writable()) return;
-
-            Value data = output_->remove(0);
-            Buffer::Encoding enc = outputEncodings_->removeTyped(0);
-            ret = socket_->write(data, enc);
-        }
-
-        if (hasFlag(FINISHED)) {
-            finish();
-        } else if (ret) {
-            emit(EVENT_DRAIN);
-        }
-    }
-
-    void implicitHeader() {
-        if (hasFlag(SERVER_RESPONSE)) {
-            writeHead(statusCode_);
-        } else {
-            assert(method_ && path_);
-            StringBuffer::Ptr sb = StringBuffer::create();
-            sb->append(method_);
-            sb->appendChar(' ');
-            sb->append(path_);
-            sb->appendCStr(" HTTP/1.1\r\n");
-            String::CPtr firstLine = sb->toString();
-            storeHeader(firstLine, renderHeaders());
-        }
-    }
-
-    void deferToConnect(
-        JsFunction::Ptr method,
-        JsFunction::Ptr callback = JsFunction::null()) {
-        LIBJ_STATIC_SYMBOL_DEF(EVENT_SOCKET, "socket");
-
-        JsFunction::Ptr onSocket(new DeferToConnect(this, method, callback));
-        if (socket_) {
-            (*onSocket)();
-        } else {
-            once(EVENT_SOCKET, onSocket);
-        }
-    }
-
  public:
     enum Flag {
-        WRITABLE                        = 1 << 0,
-        LAST                            = 1 << 1,
-        CHUNKED_ENCODING                = 1 << 2,
+        SERVER_SIDE                     = 1 << 0,
+        WRITABLE                        = 1 << 1,
+        LAST                            = 1 << 2,
         SHOULD_KEEP_ALIVE               = 1 << 3,
-        USE_CHUNKED_ENCODING_BY_DEFAULT = 1 << 4,
-        SEND_DATE                       = 1 << 5,
-        HAS_BODY                        = 1 << 6,
-        FINISHED                        = 1 << 7,
-        HEADER_SENT                     = 1 << 8,
-        EXPECT_CONTINUE                 = 1 << 9,
-        SENT_100                        = 1 << 10,
-        HAD_ERROR                       = 1 << 11,
-        UPGRADE_OR_CONNECT              = 1 << 12,
-        SERVER_RESPONSE                 = 1 << 13,
+        CHUNKED_ENCODING                = 1 << 4,
+        USE_CHUNKED_ENCODING_BY_DEFAULT = 1 << 5,
+        SEND_DATE                       = 1 << 6,
+        HAS_BODY                        = 1 << 7,
+        FINISHED                        = 1 << 8,
+        HEADER_SENT                     = 1 << 9,
+        EXPECT_CONTINUE                 = 1 << 10,
+        SENT_100                        = 1 << 11,
+        HAD_ERROR                       = 1 << 12,
+        UPGRADE_OR_CONNECT              = 1 << 13,
+        SENT_CONNECTION_HEADER          = 1 << 14,
+        SENT_CONTENT_LENGTH_HEADER      = 1 << 15,
+        SENT_TRANSFER_ENCODING_HEADER   = 1 << 16,
+        SENT_DATE_HEADER                = 1 << 17,
+        SENT_EXPECT_HEADER              = 1 << 18,
     };
 
  private:
@@ -1127,7 +1105,6 @@ class OutgoingMessage
     String::CPtr socketPath_;
     IncomingMessage::Ptr res_;
     JsFunction::Ptr timeoutCb_;
-    SocketOnClose::Ptr socketOnClose_;
     SocketCloseListener::Ptr socketCloseListener_;
     SocketErrorListener::Ptr socketErrorListener_;
     EventEmitter::Ptr ee_;
@@ -1148,7 +1125,6 @@ class OutgoingMessage
         , socketPath_(String::null())
         , res_(IncomingMessage::null())
         , timeoutCb_(JsFunction::null())
-        , socketOnClose_(SocketOnClose::null())
         , socketCloseListener_(SocketCloseListener::null())
         , socketErrorListener_(SocketErrorListener::null())
         , ee_(EventEmitter::create()) {

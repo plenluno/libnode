@@ -315,6 +315,17 @@ class SocketImpl
         onEnd_ = onEnd;
     }
 
+
+    void setOnClose(JsFunction::Ptr onClose) {
+        if (onClose_) {
+            removeListener(EVENT_CLOSE, onClose_);
+        }
+        if (onClose) {
+            addListener(EVENT_CLOSE, onClose);
+        }
+        onClose_ = onClose;
+    }
+
     http::Parser* parser() const {
         return parser_;
     }
@@ -910,6 +921,7 @@ class SocketImpl
     StringDecoder::Ptr decoder_;
     JsFunction::Ptr onData_;
     JsFunction::Ptr onEnd_;
+    JsFunction::Ptr onClose_;
     http::Parser* parser_;
     http::OutgoingMessage* httpMessage_;
     events::EventEmitter::Ptr ee_;
@@ -927,6 +939,7 @@ class SocketImpl
         , decoder_(StringDecoder::null())
         , onData_(JsFunction::null())
         , onEnd_(JsFunction::null())
+        , onClose_(JsFunction::null())
         , parser_(NULL)
         , httpMessage_(NULL)
         , ee_(events::EventEmitter::create()) {}

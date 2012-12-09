@@ -30,6 +30,28 @@ class ServerImpl : public FlagMixin, public Server {
     }
 
  private:
+    static OutgoingMessage::Ptr createOutgoing(IncomingMessage::Ptr req) {
+        LIBJ_STATIC_SYMBOL_DEF(symChunked, "chunked");
+
+        OutgoingMessage::Ptr out = OutgoingMessage::create();
+        out->setFlag(OutgoingMessage::SERVER_SIDE);
+        out->setFlag(OutgoingMessage::SEND_DATE);
+
+        if (req->method()->equals(METHOD_HEAD)) {
+            out->unsetFlag(OutgoingMessage::HAS_BODY);
+        }
+
+        if (req->httpVersionMajor() < 1 ||
+            (req->httpVersionMajor() == 1 &&
+             req->httpVersionMinor() == 0)) {
+            out->unsetFlag(OutgoingMessage::SHOULD_KEEP_ALIVE);
+            if (req->getHeader(HEADER_TE)->equals(symChunked)) {
+                out->setFlag(OutgoingMessage::USE_CHUNKED_ENCODING_BY_DEFAULT);
+            }
+        }
+        return out;
+    }
+
     static void freeParser(Parser* parser) {
         assert(parser);
         parser->free();
@@ -314,8 +336,7 @@ class ServerImpl : public FlagMixin, public Server {
             Boolean shouldKeepAlive = false;
             to<Boolean>(args->get(1), &shouldKeepAlive);
 
-            OutgoingMessage::Ptr out = OutgoingMessage::create();
-            out->setFlag(OutgoingMessage::SERVER_RESPONSE);
+            OutgoingMessage::Ptr out = createOutgoing(in);
             incomings_->push(in);
             if (shouldKeepAlive) {
                 out->setFlag(OutgoingMessage::SHOULD_KEEP_ALIVE);
