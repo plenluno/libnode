@@ -81,7 +81,7 @@ class IncomingMessage
     }
 
     Boolean destroy() {
-        return socket_->destroy();
+        return socket_ && socket_->destroy();
     }
 
     Boolean setEncoding(Buffer::Encoding enc) {
@@ -90,12 +90,28 @@ class IncomingMessage
     }
 
  public:
-    void setStatusCode(Int statusCode) {
-        statusCode_ = statusCode;
+    Int httpVersionMajor() const {
+        return httpVersionMajor_;
     }
 
-    void setHttpVersion(String::CPtr httpVersion) {
-        httpVersion_ = httpVersion;
+    Int httpVersionMinor() const {
+        return httpVersionMinor_;
+    }
+
+    void setHttpVersion(String::CPtr version) {
+        httpVersion_ = version;
+    }
+
+    void setHttpVersionMajor(Int major) {
+        httpVersionMajor_ = major;
+    }
+
+    void setHttpVersionMinor(Int minor) {
+        httpVersionMinor_ = minor;
+    }
+
+    void setStatusCode(Int statusCode) {
+        statusCode_ = statusCode;
     }
 
     String::CPtr getHeader(String::CPtr name) const {
@@ -253,6 +269,8 @@ class IncomingMessage
     String::CPtr method_;
     String::CPtr url_;
     String::CPtr httpVersion_;
+    Int httpVersionMajor_;
+    Int httpVersionMinor_;
     Int statusCode_;
     JsObject::Ptr headers_;
     JsObject::Ptr trailers_;
@@ -266,6 +284,8 @@ class IncomingMessage
         , method_(String::null())
         , url_(String::create())
         , httpVersion_(String::null())
+        , httpVersionMajor_(0)
+        , httpVersionMinor_(0)
         , statusCode_(0)
         , headers_(JsObject::create())
         , trailers_(JsObject::create())
