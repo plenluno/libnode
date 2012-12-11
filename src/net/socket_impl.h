@@ -246,6 +246,7 @@ class SocketImpl
         if (!hasFlag(READABLE)) {
             return destroySoon();
         } else {
+            setFlag(SHUTDOWN);
             uv::Shutdown* req = handle_->shutdown();
             if (req) {
                 AfterShutdown::Ptr afterShutdown(new AfterShutdown(this));
@@ -307,23 +308,40 @@ class SocketImpl
         }
     }
 
-    void setOnData(JsFunction::Ptr onData) {
+    JsFunction::Ptr setOnData(JsFunction::Ptr onData) {
+        JsFunction::Ptr previous = onData_;
         onData_ = onData;
+        return previous;
     }
 
-    void setOnEnd(JsFunction::Ptr onEnd) {
+    JsFunction::Ptr setOnEnd(JsFunction::Ptr onEnd) {
+        JsFunction::Ptr previous = onEnd_;
         onEnd_ = onEnd;
+        return previous;
     }
 
+    JsFunction::Ptr setOnDrain(JsFunction::Ptr onDrain) {
+        if (onDrain_) {
+            removeListener(EVENT_DRAIN, onDrain_);
+        }
+        if (onDrain) {
+            addListener(EVENT_DRAIN, onDrain);
+        }
+        JsFunction::Ptr previous = onDrain_;
+        onDrain_ = onDrain;
+        return previous;
+    }
 
-    void setOnClose(JsFunction::Ptr onClose) {
+    JsFunction::Ptr setOnClose(JsFunction::Ptr onClose) {
         if (onClose_) {
             removeListener(EVENT_CLOSE, onClose_);
         }
         if (onClose) {
             addListener(EVENT_CLOSE, onClose);
         }
+        JsFunction::Ptr previous = onClose_;
         onClose_ = onClose;
+        return previous;
     }
 
     http::Parser* parser() const {
@@ -375,14 +393,16 @@ class SocketImpl
 
         if (!options) return false;
 
-        String::CPtr sPort = String::null();
+        Int port = -1;
         const Value& vPort = options->get(symPort);
         if (!vPort.isUndefined()) {
-            sPort = String::valueOf(vPort);
+            String::CPtr sPort = String::valueOf(vPort);
+            if (sPort) {
+                Long lPort = -1;
+                to<Long>(json::parse(sPort), &lPort);
+                port = static_cast<Int>(lPort);
+            }
         }
-
-        Long lPort = -1;
-        if (sPort) to<Long>(json::parse(sPort), &lPort);
 
         String::CPtr path = options->getCPtr<String>(symPath);
         String::CPtr host = options->getCPtr<String>(symHost);
@@ -390,8 +410,7 @@ class SocketImpl
 
         if (path) {
             return connect(path, cb);
-        } else if (lPort >= 0) {
-            Int port = static_cast<Int>(lPort);
+        } else if (port >= 0) {
             connect(port, host, localAddress, String::null(), cb);
             return true;
         } else {
@@ -598,6 +617,24 @@ class SocketImpl
         pendingWriteReqs_++;
         bytesDispatched_ += req->bytes;
         return true;
+    }
+
+    Boolean hasTimer() {
+        return !timer_.isUndefined();
+    }
+
+    void startTimer(Int timeout) {
+        if (hasTimer()) finishTimer();
+
+        JsFunction::Ptr emitTimeout(new EmitTimeout(this));
+        timer_ = node::setTimeout(emitTimeout, timeout);
+        timeout_ = timeout;
+    }
+
+    void finishTimer() {
+        clearTimeout(timer_);
+        timer_ = UNDEFINED;
+        timeout_ = 0;
     }
 
  private:
@@ -847,6 +884,19 @@ class SocketImpl
         }
     };
 
+    class EmitTimeout : LIBJ_JS_FUNCTION(EmitTimeout)
+     private:
+        SocketImpl* self_;
+
+     public:
+        EmitTimeout(SocketImpl* self) : self_(self) {}
+
+        Value operator()(JsArray::Ptr args) {
+            self_->emit(EVENT_TIMEOUT);
+            return Status::OK;
+        }
+    };
+
     class OnDestroy : LIBJ_JS_FUNCTION(OnDestroy)
      private:
         SocketImpl::Ptr self_;
@@ -861,37 +911,6 @@ class SocketImpl
             return Status::OK;
         }
     };
-
-    class OnTimeout : LIBJ_JS_FUNCTION(OnTimeout)
-     private:
-        SocketImpl* self_;
-
-     public:
-        OnTimeout(SocketImpl* self) : self_(self) {}
-
-        Value operator()(JsArray::Ptr args) {
-            self_->emit(EVENT_TIMEOUT);
-            return Status::OK;
-        }
-    };
-
-    Boolean hasTimer() {
-        return !timer_.isUndefined();
-    }
-
-    void startTimer(Int timeout) {
-        if (hasTimer()) finishTimer();
-
-        JsFunction::Ptr onTimeout(new OnTimeout(this));
-        timer_ = node::setTimeout(onTimeout, timeout);
-        timeout_ = timeout;
-    }
-
-    void finishTimer() {
-        clearTimeout(timer_);
-        timer_ = UNDEFINED;
-        timeout_ = 0;
-    }
 
  public:
     enum Flag {
@@ -921,6 +940,7 @@ class SocketImpl
     StringDecoder::Ptr decoder_;
     JsFunction::Ptr onData_;
     JsFunction::Ptr onEnd_;
+    JsFunction::Ptr onDrain_;
     JsFunction::Ptr onClose_;
     http::Parser* parser_;
     http::OutgoingMessage* httpMessage_;
@@ -939,6 +959,7 @@ class SocketImpl
         , decoder_(StringDecoder::null())
         , onData_(JsFunction::null())
         , onEnd_(JsFunction::null())
+        , onDrain_(JsFunction::null())
         , onClose_(JsFunction::null())
         , parser_(NULL)
         , httpMessage_(NULL)

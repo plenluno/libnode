@@ -17,7 +17,11 @@ class Server : LIBNODE_NET_SERVER(Server)
     static Symbol::CPtr EVENT_UPGRADE;
     static Symbol::CPtr EVENT_CLIENT_ERROR;
 
-    static Ptr create();
+    static Ptr create(JsFunction::Ptr requestListener = JsFunction::null());
+
+    virtual Size maxHeadersCount() const = 0;
+
+    virtual void setMaxHeadersCount(Size max) = 0;
 };
 
 }  // namespace http

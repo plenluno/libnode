@@ -24,11 +24,14 @@ class OutgoingMessage
     : public FlagMixin
     , LIBNODE_WRITABLE_STREAM(OutgoingMessage)
  public:
-    static Ptr create() {
-        return Ptr(new OutgoingMessage());
-    }
+    static Ptr createInServer(IncomingMessage::Ptr req);
 
-    static Ptr create(JsObject::CPtr options, JsFunction::Ptr callback);
+    static Ptr createInClient(
+        JsObject::CPtr options, JsFunction::Ptr callback);
+
+    static void httpSocketSetup(net::SocketImpl::Ptr socket) {
+        socket->setOnDrain(JsFunction::Ptr(new EmitDrain(&(*socket))));
+    }
 
     Boolean destroy() {
         return socket_ && socket_->destroy();
@@ -280,17 +283,21 @@ class OutgoingMessage
             timeoutCb_ = emitTimeout;
             socket_->setTimeout(msecs, emitTimeout);
             return;
-        } else if (socket_) {
+        }
+
+        if (socket_) {
             JsFunction::Ptr onConnect(
                 new SetTimeout(this, msecs, emitTimeout));
             socket_->once(EVENT_CONNECT, onConnect);
             return;
-        } else {
-            JsFunction::Ptr onSocket(
-                new SetTimeout(this, msecs, emitTimeout));
-            once(EVENT_SOCKET, onSocket);
-            return;
         }
+
+        JsFunction::Ptr onSocket(new SetTimeout(this, msecs, emitTimeout));
+        once(EVENT_SOCKET, onSocket);
+    }
+
+    void clearTimeout(JsFunction::Ptr callback) {
+        setTimeout(0, callback);
     }
 
     void setNoDelay(Boolean noDelay) {
@@ -308,10 +315,10 @@ class OutgoingMessage
     static void freeParser(Parser* parser, OutgoingMessage* req) {
         assert(parser);
         parser->free();
+        delete parser;
         if (req) {
             req->parser_ = NULL;
         }
-        delete parser;
     }
 
     static uv::Error::CPtr createHangUpError() {
@@ -325,12 +332,6 @@ class OutgoingMessage
         char s[kLen];
         snprintf(s, kLen, "%zx", n);
         return String::create(s);
-    }
-
-    static void httpSocketSetup(net::SocketImpl::Ptr socket) {
-        SocketOnDrain::Ptr onDrain = SocketOnDrain::create(socket);
-        socket->removeAllListeners(net::Socket::EVENT_DRAIN);
-        socket->on(net::Socket::EVENT_DRAIN, onDrain);
     }
 
     Boolean send(const Value& data, Buffer::Encoding enc = Buffer::NONE) {
@@ -593,22 +594,19 @@ class OutgoingMessage
     }
 
  private:
-    class SocketOnDrain : LIBJ_JS_FUNCTION(SocketOnDrain)
-        static Ptr create(net::SocketImpl::Ptr socket) {
-            return Ptr(new SocketOnDrain(&(*socket)));
-        }
+    class EmitDrain : LIBJ_JS_FUNCTION(EmitDrain)
+        EmitDrain(net::SocketImpl* sock) : socket_(sock) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             OutgoingMessage* httpMessage = socket_->httpMessage();
-            if (httpMessage)
+            if (httpMessage) {
                 httpMessage->emit(OutgoingMessage::EVENT_DRAIN);
+            }
             return libj::Status::OK;
         }
 
      private:
         net::SocketImpl* socket_;
-
-        SocketOnDrain(net::SocketImpl* sock) : socket_(sock) {}
     };
 
     class EmitClose : LIBJ_JS_FUNCTION(EmitClose)
@@ -625,13 +623,28 @@ class OutgoingMessage
         OutgoingMessage::Ptr self_;
     };
 
-    class CloseResponse : LIBJ_JS_FUNCTION(CloseResponse)
+    class EmitTimeout : LIBJ_JS_FUNCTION(EmitTimeout)
      public:
-        CloseResponse(IncomingMessage::Ptr res) : res_(res) {}
+        EmitTimeout(OutgoingMessage* msg) : self_(msg) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
+            LIBJ_STATIC_SYMBOL_DEF(EVENT_TIMEOUT, "timeout");
+            self_->emit(EVENT_TIMEOUT);
+            return Status::OK;
+        }
+
+     private:
+        OutgoingMessage* self_;
+    };
+
+    class IncomingEmitClose : LIBJ_JS_FUNCTION(IncomingEmitClose)
+     public:
+        IncomingEmitClose(IncomingMessage::Ptr res) : res_(res) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
             res_->emitEnd();
             res_->emit(IncomingMessage::EVENT_CLOSE);
+            res_ = IncomingMessage::null();
             return Status::OK;
         }
 
@@ -643,18 +656,19 @@ class OutgoingMessage
      public:
         SocketCloseListener() : socket_(NULL) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             LIBJ_STATIC_SYMBOL_DEF(EVENT_ABORTED, "aborted");
 
             OutgoingMessage* req = socket_->httpMessage();
             req->emit(EVENT_CLOSE);
-            if (req->res_ && req->res_->hasFlag(IncomingMessage::READABLE)) {
-                IncomingMessage::Ptr res = req->res_;
+
+            IncomingMessage::Ptr res = req->res_;
+            if (res && res->hasFlag(IncomingMessage::READABLE)) {
                 res->emit(EVENT_ABORTED);
-                JsFunction::Ptr closeResponse(new CloseResponse(res));
-                res->emitPending(closeResponse);
-            } else if (!req->res_ && !req->hasFlag(HAD_ERROR)) {
-                req->emit(OutgoingMessage::EVENT_ERROR, createHangUpError());
+                JsFunction::Ptr emitClose(new IncomingEmitClose(res));
+                res->emitPending(emitClose);
+            } else if (!res && !req->hasFlag(HAD_ERROR)) {
+                req->emit(EVENT_ERROR, createHangUpError());
             }
 
             Parser* parser = req->parser_;
@@ -677,11 +691,11 @@ class OutgoingMessage
      public:
         SocketErrorListener() : socket_(NULL) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             libj::Error::CPtr err = args->getCPtr<libj::Error>(0);
             OutgoingMessage* req = socket_->httpMessage();
             if (req) {
-                req->emit(OutgoingMessage::EVENT_ERROR, err);
+                req->emit(EVENT_ERROR, err);
                 req->setFlag(HAD_ERROR);
             }
 
@@ -707,12 +721,10 @@ class OutgoingMessage
      public:
         SocketOnEnd(net::SocketImpl::Ptr sock) : socket_(&(*sock)) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             OutgoingMessage* req = socket_->httpMessage();
             if (!req->res_) {
-                req->emit(
-                    OutgoingMessage::EVENT_ERROR,
-                    createHangUpError());
+                req->emit(EVENT_ERROR, createHangUpError());
                 req->setFlag(HAD_ERROR);
             }
 
@@ -738,13 +750,14 @@ class OutgoingMessage
             : self_(msg)
             , socket_(&(*sock)) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             LIBJ_STATIC_SYMBOL_DEF(EVENT_UPGRADE,      "upgrade");
             LIBJ_STATIC_SYMBOL_DEF(EVENT_CONNECT,      "connect");
             LIBJ_STATIC_SYMBOL_DEF(EVENT_AGENT_REMOVE, "agentRemove");
 
-            OutgoingMessage* req = socket_->httpMessage();
             Parser* parser = socket_->parser();
+            OutgoingMessage* req = socket_->httpMessage();
+            IncomingMessage::Ptr res = parser->incoming();
             Buffer::CPtr buf = args->getCPtr<Buffer>(0);
             Int bytesParsed = parser->execute(buf);
             if (bytesParsed < 0) {
@@ -754,16 +767,16 @@ class OutgoingMessage
                     EVENT_ERROR,
                     libj::Error::create(libj::Error::ILLEGAL_RESPONSE));
                 req->setFlag(HAD_ERROR);
-            } else if (parser->incoming() &&
-                parser->incoming()->hasFlag(IncomingMessage::UPGRADE)) {
-                IncomingMessage::Ptr res = parser->incoming();
+            } else if (res && res->hasFlag(IncomingMessage::UPGRADE)) {
                 req->res_ = res;
 
-                socket_->setOnData(JsFunction::null());
+                JsFunction::Ptr prev = socket_->setOnData(JsFunction::null());
+                assert(&(*prev) == this);
                 socket_->setOnEnd(JsFunction::null());
                 parser->finish();
 
                 Buffer::Ptr bodyHead = toPtr<Buffer>(buf->slice(bytesParsed));
+
                 Boolean isConnect = req->method_->equals(METHOD_CONNECT);
                 String::CPtr event = isConnect ? EVENT_CONNECT : EVENT_UPGRADE;
                 if (req->listeners(event)->isEmpty()) {
@@ -771,8 +784,6 @@ class OutgoingMessage
                 } else {
                     req->setFlag(UPGRADE_OR_CONNECT);
                     socket_->emit(EVENT_AGENT_REMOVE);
-                    self_->socketCloseListener_->setSocket(socket_);
-                    self_->socketErrorListener_->setSocket(socket_);
                     socket_->removeListener(
                         EVENT_CLOSE, self_->socketCloseListener_);
                     socket_->removeListener(
@@ -780,9 +791,11 @@ class OutgoingMessage
                     req->emit(event, res, socket_, bodyHead);
                     req->emit(EVENT_CLOSE);
                 }
-            } else if (parser->incoming() &&
-                parser->incoming()->hasFlag(IncomingMessage::COMPLETE) &&
-                parser->incoming()->statusCode() != 100) {
+
+                freeParser(parser, req);
+            } else if (res &&
+                res->hasFlag(IncomingMessage::COMPLETE) &&
+                res->statusCode() != 100) {
                 freeParser(parser, req);
             }
             return Status::OK;
@@ -795,9 +808,9 @@ class OutgoingMessage
 
     class ResponseOnEnd : LIBJ_JS_FUNCTION(ResponseOnEnd)
      public:
-        ResponseOnEnd(IncomingMessage::Ptr res) : res_(res) {}
+        ResponseOnEnd(IncomingMessage* res) : res_(res) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             LIBJ_STATIC_SYMBOL_DEF(EVENT_FREE, "free");
 
             OutgoingMessage* req = res_->req();
@@ -824,7 +837,7 @@ class OutgoingMessage
         }
 
      private:
-        IncomingMessage::Ptr res_;
+        IncomingMessage* res_;
     };
 
     class ParserOnIncomingClient : LIBJ_JS_FUNCTION(ParserOnIncomingClient)
@@ -835,7 +848,7 @@ class OutgoingMessage
             : parser_(parser)
             , socket_(socket) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             LIBJ_STATIC_SYMBOL_DEF(EVENT_CONTINUE, "continue");
             LIBJ_STATIC_SYMBOL_DEF(EVENT_RESPONSE, "response");
 
@@ -846,7 +859,7 @@ class OutgoingMessage
             OutgoingMessage* req = socket_->httpMessage();
             if (req->res_) {
                 socket_->destroy();
-                return true;
+                return false;
             }
             req->res_ = res;
 
@@ -871,6 +884,9 @@ class OutgoingMessage
             req->res_ = res;
             res->setReq(req);
 
+            JsFunction::Ptr responseOnEnd(new ResponseOnEnd(&(*res)));
+            res->on(IncomingMessage::EVENT_END, responseOnEnd);
+
             return req->method_->equals(METHOD_HEAD);
         }
 
@@ -887,7 +903,7 @@ class OutgoingMessage
             : self_(self)
             , socket_(socket) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             LIBJ_STATIC_SYMBOL_DEF(EVENT_SOCKET, "socket");
 
             Parser* parser = new Parser(HTTP_RESPONSE, socket_);
@@ -935,25 +951,11 @@ class OutgoingMessage
         net::SocketImpl::Ptr socket_;
     };
 
-    class EmitTimeout : LIBJ_JS_FUNCTION(EmitTimeout)
-     public:
-        EmitTimeout(OutgoingMessage* msg) : self_(msg) {}
-
-        Value operator()(JsArray::Ptr args) {
-            LIBJ_STATIC_SYMBOL_DEF(EVENT_TIMEOUT, "timeout");
-            self_->emit(EVENT_TIMEOUT);
-            return Status::OK;
-        }
-
-     private:
-        OutgoingMessage* self_;
-    };
-
     class Destroy : LIBJ_JS_FUNCTION(Destroy)
      public:
         Destroy(OutgoingMessage* msg) : self_(msg) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             return self_->destroy();
         }
 
@@ -963,9 +965,9 @@ class OutgoingMessage
 
     class Flush : LIBJ_JS_FUNCTION(Flush)
      public:
-        Flush(OutgoingMessage::Ptr self) : self_(&(*self)) {}
+        Flush(OutgoingMessage* self) : self_(self) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             self_->flush();
             return Status::OK;
         }
@@ -984,8 +986,7 @@ class OutgoingMessage
             , msecs_(msecs)
             , callback_(callback) {}
 
-        Value operator()(JsArray::Ptr args) {
-            LIBJ_STATIC_SYMBOL_DEF(EVENT_TIMEOUT, "timeout");
+        virtual Value operator()(JsArray::Ptr args) {
             self_->setTimeout(msecs_, callback_);
             return Status::OK;
         }
@@ -1004,7 +1005,7 @@ class OutgoingMessage
             : socket_(socket)
             , noDelay_(noDelay) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             return socket_->setNoDelay(noDelay_);
         }
 
@@ -1023,7 +1024,7 @@ class OutgoingMessage
             , enable_(enable)
             , initialDelay_(initialDelay) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             return socket_->setKeepAlive(enable_, initialDelay_);
         }
 
@@ -1044,7 +1045,7 @@ class OutgoingMessage
             , callback_(callback)
             , onConnect_(false) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             if (self_->socket_->hasFlag(WRITABLE) || onConnect_) {
                 if (method_) (*method_)();
                 if (callback_) (*callback_)();

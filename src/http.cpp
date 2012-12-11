@@ -44,7 +44,7 @@ ClientRequest::Ptr request(
         }
     }
 
-    OutgoingMessage::Ptr msg = OutgoingMessage::create(opt, callback);
+    OutgoingMessage::Ptr msg = OutgoingMessage::createInClient(opt, callback);
     return ClientRequestImpl::create(msg);
 }
 

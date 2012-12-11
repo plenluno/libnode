@@ -21,12 +21,12 @@ class Parser : public FlagMixin {
     Parser(
         enum http_parser_type type,
         net::SocketImpl::Ptr sock,
-        Size maxHeaders = 0)
+        Size maxHeadersCount = 0)
         : url_(String::null())
         , method_(String::null())
-        , maxHeadersCount_(maxHeaders)
         , fields_(JsArray::create())
         , values_(JsArray::create())
+        , maxHeadersCount_(maxHeadersCount)
         , socket_(sock)
         , incoming_(IncomingMessage::null())
         , onIncoming_(JsFunction::null()) {
@@ -42,6 +42,7 @@ class Parser : public FlagMixin {
             settings.on_message_complete = Parser::onMessageComplete;
             initSettings = true;
         }
+
         http_parser_init(&parser_, type);
         parser_.data = this;
         settings_ = &settings;
@@ -301,7 +302,7 @@ class Parser : public FlagMixin {
         }
 
         if (socket_->readable()) {
-            // socket_->resume();
+            socket_->resume();
         }
     }
 
@@ -320,9 +321,9 @@ class Parser : public FlagMixin {
     Int majorVer_;
     Int minorVer_;
     Int statusCode_;
-    Size maxHeadersCount_;
     JsArray::Ptr fields_;
     JsArray::Ptr values_;
+    Size maxHeadersCount_;
     net::SocketImpl::Ptr socket_;
     IncomingMessage::Ptr incoming_;
     JsFunction::Ptr onIncoming_;

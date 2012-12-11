@@ -9,7 +9,30 @@ namespace libj {
 namespace node {
 namespace http {
 
-OutgoingMessage::Ptr OutgoingMessage::create(
+OutgoingMessage::Ptr OutgoingMessage::createInServer(
+    IncomingMessage::Ptr req) {
+    LIBJ_STATIC_SYMBOL_DEF(symChunked, "chunked");
+
+    OutgoingMessage::Ptr self(new OutgoingMessage());
+    self->setFlag(OutgoingMessage::SERVER_SIDE);
+    self->setFlag(OutgoingMessage::SEND_DATE);
+
+    if (req->method()->equals(METHOD_HEAD)) {
+        self->unsetFlag(OutgoingMessage::HAS_BODY);
+    }
+
+    if (req->httpVersionMajor() < 1 ||
+        (req->httpVersionMajor() == 1 &&
+         req->httpVersionMinor() == 0)) {
+        self->unsetFlag(OutgoingMessage::SHOULD_KEEP_ALIVE);
+        if (req->getHeader(HEADER_TE)->equals(symChunked)) {
+            self->setFlag(OutgoingMessage::USE_CHUNKED_ENCODING_BY_DEFAULT);
+        }
+    }
+    return self;
+}
+
+OutgoingMessage::Ptr OutgoingMessage::createInClient(
     JsObject::CPtr options,
     JsFunction::Ptr callback) {
     LIBJ_STATIC_SYMBOL_DEF(symAgent,        "agent");
@@ -29,9 +52,10 @@ OutgoingMessage::Ptr OutgoingMessage::create(
     LIBJ_STATIC_SYMBOL_DEF(symLocalAddress, "localAddress");
     LIBJ_STATIC_SYMBOL_DEF(EVENT_RESPONSE,  "response");
 
+    OutgoingMessage::Ptr self(new OutgoingMessage());
+
     if (!options) options = JsObject::create();
 
-    OutgoingMessage::Ptr self(new OutgoingMessage());
     self->agent_ = options->getPtr<Agent>(symAgent);
     if (!self->agent_) self->agent_ = globalAgent();
 
@@ -77,7 +101,7 @@ OutgoingMessage::Ptr OutgoingMessage::create(
     }
 
     Boolean setHost = !options->getCPtr<String>(symSetHost);
-    if (host && !self->getHeader(symHost) && setHost) {
+    if (host && !self->getHeader(LHEADER_HOST) && setHost) {
         if (port->equals(defaultPort)) {
             self->setHeader(HEADER_HOST, host);
         } else {
@@ -119,6 +143,7 @@ OutgoingMessage::Ptr OutgoingMessage::create(
     if (self->socketPath_) {
         self->setFlag(OutgoingMessage::LAST);
         self->unsetFlag(OutgoingMessage::SHOULD_KEEP_ALIVE);
+
         net::SocketImpl::Ptr sock = net::SocketImpl::create();
         sock->connect(self->socketPath_);
         self->onSocket(sock);
@@ -134,16 +159,18 @@ OutgoingMessage::Ptr OutgoingMessage::create(
     } else {
         self->setFlag(OutgoingMessage::LAST);
         self->unsetFlag(OutgoingMessage::SHOULD_KEEP_ALIVE);
-        net::SocketImpl::Ptr sock = net::SocketImpl::create();
+
         JsObject::Ptr opt = JsObject::create();
         opt->put(symPort, port);
         opt->put(symHost, host);
         opt->put(symLocalAddress, options->getCPtr<String>(symLocalAddress));
+
+        net::SocketImpl::Ptr sock = net::SocketImpl::create();
         sock->connect(opt);
         self->onSocket(sock);
     }
 
-    JsFunction::Ptr flush(new Flush(self));
+    JsFunction::Ptr flush(new Flush(&(*self)));
     self->deferToConnect(JsFunction::null(), flush);
     return self;
 }
