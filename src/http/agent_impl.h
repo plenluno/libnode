@@ -29,7 +29,7 @@ class AgentImpl : public Agent {
             to<Size>(options->get(strMaxSocks), &agent->maxSockets_);
         }
 
-        agent->on(EVENT_FREE, Free::create(agent->requests_));
+        agent->on(EVENT_FREE, JsFunction::Ptr(new Free(agent->requests_)));
         return Ptr(agent);
     }
 
@@ -84,7 +84,7 @@ class AgentImpl : public Agent {
         options->put(strServerName, host);
 
         if (req) {
-            String::CPtr hostHeader = req->getHeader(strHost);
+            String::CPtr hostHeader = req->getHeader(LHEADER_HOST);
             if (hostHeader) {
                 Size index = hostHeader->lastIndexOf(':');
                 options->put(strServerName, host->substring(0, index));
@@ -100,14 +100,16 @@ class AgentImpl : public Agent {
         }
         ss->push(socket);
 
-        OnFree::Ptr onFree =
-            OnFree::create(this, socket, host, port, localAddress);
-        OnClose::Ptr onClose =
-            OnClose::create(this, socket, name, host, port, localAddress);
-        OnRemove::Ptr onRemove = OnRemove::create(
-            this, socket, name, host, port, localAddress, onFree, onClose);
+        OnFree::Ptr onFree(new OnFree(
+            this, socket, host, port, localAddress));
         socket->on(EVENT_FREE, onFree);
+
+        OnClose::Ptr onClose(new OnClose(
+            this, socket, name, host, port, localAddress));
         socket->on(EVENT_CLOSE, onClose);
+
+        OnRemove::Ptr onRemove(new OnRemove(
+            this, socket, name, host, port, localAddress, onFree, onClose));
         socket->on(EVENT_AGENT_REMOVE, onRemove);
         return socket;
     }
@@ -122,24 +124,22 @@ class AgentImpl : public Agent {
         if (ss) {
             ss->remove(socket);
             if (ss->isEmpty()) {
-                socket->remove(name);
+                sockets_->remove(name);
             }
         }
 
         JsArray::Ptr rs = requests_->getPtr<JsArray>(name);
-        if (rs && !rs->isEmpty()) {
-            OutgoingMessage::Ptr req = requests_->getPtr<OutgoingMessage>(0);
+        if (rs && rs->length()) {
+            OutgoingMessage::Ptr req = rs->getPtr<OutgoingMessage>(0);
             createSocket(name, host, port, localAddress, req)->emit(EVENT_FREE);
         }
     }
 
  private:
     class Free : LIBJ_JS_FUNCTION(Free)
-        static Ptr create(JsObject::Ptr reqs) {
-            return Ptr(new Free(reqs));
-        }
+        Free(JsObject::Ptr reqs) : requests_(reqs) {}
 
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             net::SocketImpl::Ptr socket = args->getPtr<net::SocketImpl>(0);
             String::CPtr host = args->getCPtr<String>(1);
             String::CPtr port = args->getCPtr<String>(2);
@@ -170,32 +170,9 @@ class AgentImpl : public Agent {
 
      private:
         JsObject::Ptr requests_;
-
-        Free(JsObject::Ptr reqs) : requests_(reqs) {}
     };
 
     class OnFree : LIBJ_JS_FUNCTION(OnFree)
-        static Ptr create(
-            AgentImpl* self,
-            net::SocketImpl::Ptr socket,
-            String::CPtr host,
-            String::CPtr port,
-            String::CPtr localAddress) {
-            return Ptr(new OnFree(self, socket, host, port, localAddress));
-        }
-
-        Value operator()(JsArray::Ptr args) {
-            self_->emit(EVENT_FREE, socket_, host_, port_, localAddress_);
-            return libj::Status::OK;
-        }
-
-     private:
-        AgentImpl* self_;
-        net::SocketImpl::Ptr socket_;
-        String::CPtr host_;
-        String::CPtr port_;
-        String::CPtr localAddress_;
-
         OnFree(
             AgentImpl* self,
             net::SocketImpl::Ptr socket,
@@ -206,33 +183,21 @@ class AgentImpl : public Agent {
             , socket_(socket)
             , host_(host)
             , localAddress_(localAddress) {}
-    };
 
-    class OnClose : LIBJ_JS_FUNCTION(OnClose)
-        static Ptr create(
-            AgentImpl* self,
-            net::SocketImpl::Ptr socket,
-            String::CPtr name,
-            String::CPtr host,
-            String::CPtr port,
-            String::CPtr localAddress) {
-            return Ptr(new OnClose(
-                self, socket, name, host, port, localAddress));
-        }
-
-        Value operator()(JsArray::Ptr args) {
-            self_->removeSocket(socket_, name_, host_, port_, localAddress_);
+        virtual Value operator()(JsArray::Ptr args) {
+            self_->emit(EVENT_FREE, socket_, host_, port_, localAddress_);
             return libj::Status::OK;
         }
 
      private:
         AgentImpl* self_;
         net::SocketImpl::Ptr socket_;
-        String::CPtr name_;
         String::CPtr host_;
         String::CPtr port_;
         String::CPtr localAddress_;
+    };
 
+    class OnClose : LIBJ_JS_FUNCTION(OnClose)
         OnClose(
             AgentImpl* self,
             net::SocketImpl::Ptr socket,
@@ -245,28 +210,9 @@ class AgentImpl : public Agent {
             , name_(name)
             , host_(host)
             , localAddress_(localAddress) {}
-    };
 
-    class OnRemove : LIBJ_JS_FUNCTION(OnRemove)
-        static Ptr create(
-            AgentImpl* self,
-            net::SocketImpl::Ptr socket,
-            String::CPtr name,
-            String::CPtr host,
-            String::CPtr port,
-            String::CPtr localAddress,
-            OnFree::Ptr onFree,
-            OnClose::Ptr onClose) {
-            return Ptr(new OnRemove(
-                self, socket, name, host, port, localAddress,
-                onFree, onClose));
-        }
-
-        Value operator()(JsArray::Ptr args) {
+        virtual Value operator()(JsArray::Ptr args) {
             self_->removeSocket(socket_, name_, host_, port_, localAddress_);
-            socket_->removeListener(EVENT_FREE, onFree_);
-            socket_->removeListener(EVENT_CLOSE, onClose_);
-            socket_->removeAllListeners(EVENT_AGENT_REMOVE);
             return libj::Status::OK;
         }
 
@@ -277,9 +223,9 @@ class AgentImpl : public Agent {
         String::CPtr host_;
         String::CPtr port_;
         String::CPtr localAddress_;
-        OnFree::Ptr onFree_;
-        OnClose::Ptr onClose_;
+    };
 
+    class OnRemove : LIBJ_JS_FUNCTION(OnRemove)
         OnRemove(
             AgentImpl* self,
             net::SocketImpl::Ptr socket,
@@ -296,6 +242,24 @@ class AgentImpl : public Agent {
             , localAddress_(localAddress)
             , onFree_(onFree)
             , onClose_(onClose) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
+            self_->removeSocket(socket_, name_, host_, port_, localAddress_);
+            socket_->removeListener(EVENT_FREE, onFree_);
+            socket_->removeListener(EVENT_CLOSE, onClose_);
+            socket_->removeAllListeners(EVENT_AGENT_REMOVE);
+            return libj::Status::OK;
+        }
+
+     private:
+        AgentImpl* self_;
+        net::SocketImpl::Ptr socket_;
+        String::CPtr name_;
+        String::CPtr host_;
+        String::CPtr port_;
+        String::CPtr localAddress_;
+        OnFree::Ptr onFree_;
+        OnClose::Ptr onClose_;
     };
 
  private:
@@ -307,15 +271,15 @@ class AgentImpl : public Agent {
     static const Size defaultMaxSockets_;
 
     Size maxSockets_;
-    JsObject::Ptr requests_;
     JsObject::Ptr sockets_;
+    JsObject::Ptr requests_;
     JsObject::CPtr options_;
     events::EventEmitter::Ptr ee_;
 
     AgentImpl()
         : maxSockets_(defaultMaxSockets_)
-        , requests_(JsObject::create())
         , sockets_(JsObject::create())
+        , requests_(JsObject::create())
         , options_(JsObject::create())
         , ee_(events::EventEmitter::create()) {}
 
