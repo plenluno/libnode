@@ -159,7 +159,7 @@ if(LIBNODE_BUILD_GTEST)
         gtest/gtest_buffer.cpp
         gtest/gtest_crypto_hash.cpp
         gtest/gtest_event_emitter.cpp
-        gtest/gtest_http.cpp
+        gtest/gtest_http_echo.cpp
         gtest/gtest_http_status.cpp
         gtest/gtest_path.cpp
         gtest/gtest_querystring.cpp
