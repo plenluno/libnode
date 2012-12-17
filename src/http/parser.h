@@ -71,17 +71,19 @@ class Parser : public FlagMixin {
         return !numParsed;
     }
 
-    void free() {
+    JsArray::Ptr free() {
+        JsArray::Ptr keeper = JsArray::create();
         fields_ = JsArray::create();
         values_ = JsArray::create();
         onIncoming_ = JsFunction::null();
         if (socket_) {
-            socket_->setOnData(JsFunction::null());
-            socket_->setOnEnd(JsFunction::null());
+            keeper->add(socket_->setOnData(JsFunction::null()));
+            keeper->add(socket_->setOnEnd(JsFunction::null()));
             socket_->setParser(NULL);
         }
         socket_ = net::SocketImpl::null();
         incoming_ = IncomingMessage::null();
+        return keeper;
     }
 
     IncomingMessage::Ptr incoming() {

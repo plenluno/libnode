@@ -312,13 +312,14 @@ class OutgoingMessage
     }
 
  private:
-    static void freeParser(Parser* parser, OutgoingMessage* req) {
+    static JsArray::Ptr freeParser(Parser* parser, OutgoingMessage* req) {
         assert(parser);
-        parser->free();
+        JsArray::Ptr keeper = parser->free();
         delete parser;
         if (req) {
             req->parser_ = NULL;
         }
+        return keeper;
     }
 
     static uv::Error::CPtr createHangUpError() {
@@ -729,9 +730,11 @@ class OutgoingMessage
             }
 
             Parser* parser = socket_->parser();
+            JsArray::Ptr keeper = JsArray::null();
             if (parser) {
                 parser->finish();
-                freeParser(parser, req);
+                keeper = freeParser(parser, req);
+                assert(keeper);
             }
 
             socket_->destroy();
