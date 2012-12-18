@@ -64,7 +64,6 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
         res_->end();
 
         req_->removeAllListeners();
-        srv_->removeAllListeners();
         srv_->close();
         return Status::OK;
     }
@@ -140,7 +139,7 @@ class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
     }
 };
 
-TEST(GTestHttp, TestEcho) {
+TEST(GTestHttpEcho, TestEcho) {
     String::CPtr msg = String::create("xyz");
 
     http::Server::Ptr srv = http::Server::create();
