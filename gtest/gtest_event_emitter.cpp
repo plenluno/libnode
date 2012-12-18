@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <libnode/events/event_emitter.h>
+
 #include <libj/error.h>
 
 namespace libj {

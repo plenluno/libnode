@@ -1,11 +1,11 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
+#include <libnode/node.h>
 #include <libnode/timer.h>
 
 #include <libj/console.h>
 #include <libj/status.h>
-#include <libnode/node.h>
 
 namespace libj {
 namespace node {

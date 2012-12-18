@@ -1,9 +1,10 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
+#include <libnode/path.h>
+
 #include <unistd.h>
 #include <libj/js_object.h>
-#include <libnode/path.h>
 
 namespace libj {
 namespace node {
