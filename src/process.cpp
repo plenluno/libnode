@@ -4,6 +4,7 @@
 #include <libnode/timer.h>
 
 #include <libj/status.h>
+#include <libj/typed_linked_list.h>
 
 namespace libj {
 namespace node {
@@ -11,24 +12,25 @@ namespace process {
 
 class NextTick : LIBJ_JS_FUNCTION(NextTick)
  public:
-    NextTick() : queue_(JsArray::create()) {}
+    typedef TypedLinkedList<JsFunction::Ptr> CallbackQueue;
+
+    NextTick() : queue_(CallbackQueue::create()) {}
 
     Value operator()(JsArray::Ptr args) {
         Size len = queue_->length();
         for (Size i = 0; i < len; i++) {
-            JsFunction::Ptr cb = queue_->getPtr<JsFunction>(i);
+            JsFunction::Ptr cb = queue_->shiftTyped();
             (*cb)();
         }
-        queue_->clear();
         return Status::OK;
     }
 
     void push(JsFunction::Ptr cb) {
-        queue_->push(cb);
+        queue_->pushTyped(cb);
     }
 
  private:
-    JsArray::Ptr queue_;
+    CallbackQueue::Ptr queue_;
 };
 
 void nextTick(JsFunction::Ptr callback) {
