@@ -1,15 +1,20 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <libnode/util.h>
+#include <libnode/config.h>
 
 #include <libj/error.h>
 #include <libj/js_array.h>
 #include <libj/js_regexp.h>
 
 #include <assert.h>
-#include <openssl/bio.h>
-#include <openssl/buffer.h>
-#include <openssl/evp.h>
+#ifdef LIBNODE_USE_OPENSSL
+    #include <openssl/bio.h>
+    #include <openssl/buffer.h>
+    #include <openssl/evp.h>
+#else
+    #include <b64/b64.h>
+#endif
 #include <string>
 
 namespace libj {
@@ -119,6 +124,8 @@ String::CPtr base64Encode(Buffer::CPtr buf) {
     }
 }
 
+#ifdef LIBNODE_USE_OPENSSL
+
 String::CPtr base64Encode(const void* data, Size len) {
     if (!data) return String::null();
     if (!len) return String::create();
@@ -165,6 +172,44 @@ Buffer::Ptr base64Decode(String::CPtr str) {
     return decoded;
 }
 
+#else
+
+String::CPtr base64Encode(const void* data, Size len) {
+    if (!data) return String::null();
+    if (!len) return String::create();
+
+    Size size = b64::b64_encode(data, len, NULL, 0);
+    char* buf = new char[size];
+    size = b64::b64_encode(data, len, buf, size);
+    String::CPtr encoded = String::create(buf, String::UTF8, size);
+    delete[] buf;
+    return encoded;
+}
+
+Buffer::Ptr base64Decode(String::CPtr str) {
+    if (!str) return Buffer::null();
+    if (!str->length()) return Buffer::create();
+
+    std::string src = str->toStdString();
+    Size len = src.length();
+    b64::B64_RC rc;
+    const char* bad = NULL;
+    const unsigned flags = b64::B64_F_STOP_ON_UNKNOWN_CHAR;
+    Size size = b64::b64_decode2(src.c_str(), len, NULL, 0, flags, &bad, &rc);
+
+    char* dst = new char[size];
+    size = b64::b64_decode2(src.c_str(), len, dst, size, flags, &bad, &rc);
+    Buffer::Ptr decoded;
+    if (size && rc == b64::B64_RC_OK && !bad) {
+        decoded = Buffer::create(dst, size);
+    } else {
+        decoded = Buffer::null();
+    }
+    delete[] dst;
+    return decoded;
+}
+
+#endif
 
 // -- percentEncode & percentDecode --
 

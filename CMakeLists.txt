@@ -4,11 +4,13 @@ project(libnode)
 
 # options ------------------------------------------------------------------------------------------
 
-option(LIBNODE_BUILD_GTEST "Build Google Tests" OFF)
+option(LIBNODE_USE_OPENSSL "Use OpenSSL" ON)
 option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON)
+option(LIBNODE_BUILD_GTEST "Build Google Tests" OFF)
 
-message(STATUS "LIBNODE_BUILD_GTEST=${LIBNODE_BUILD_GTEST}")
+message(STATUS "LIBNODE_USE_OPENSSL=${LIBNODE_USE_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
+message(STATUS "LIBNODE_BUILD_GTEST=${LIBNODE_BUILD_GTEST}")
 
 # find libraries -----------------------------------------------------------------------------------
 
@@ -24,12 +26,16 @@ if(LIBNODE_BUILD_GTEST)
     endif()
 endif(LIBNODE_BUILD_GTEST)
 
+# configure ----------------------------------------------------------------------------------------
+
+CONFIGURE_FILE(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h )
+
 # set variables ------------------------------------------------------------------------------------
 
 set(libnode-src
     src/buffer.cpp
-    src/crypto.cpp
-    src/crypto/hash.cpp
     src/events/event_emitter.cpp
     src/fs.cpp
     src/fs/stats.cpp
@@ -56,14 +62,33 @@ set(libnode-src
     src/uv/stream.cpp
 )
 
+if(LIBNODE_USE_OPENSSL)
+    set(libnode-src
+        ${libnode-src}
+        src/crypto.cpp
+        src/crypto/hash.cpp
+    )
+else(LIBNODE_USE_OPENSSL)
+    set(libnode-src
+        ${libnode-src}
+        deps/b64/src/b64.c
+    )
+endif(LIBNODE_USE_OPENSSL)
+
 set(libnode-deps
-    crypto
     httpparser
     j
     pthread
     urlparser
     uv
 )
+
+if(LIBNODE_USE_OPENSSL)
+    set(libnode-deps
+        ${libnode-deps}
+        crypto
+    )
+endif(LIBNODE_USE_OPENSSL)
 
 if(NOT APPLE)
     set(libnode-deps
@@ -82,12 +107,42 @@ set(libnode-include
     deps/libuv/include
 )
 
+if(NOT LIBNODE_USE_OPENSSL)
+    set(libnode-include
+        ${libnode-include}
+        deps/b64/include
+    )
+endif(NOT LIBNODE_USE_OPENSSL)
+
 if(LIBNODE_BUILD_OPENSSL)
     set(libnode-include
         ${libnode-include}
         deps/openssl/include
     )
 endif(LIBNODE_BUILD_OPENSSL)
+
+set(libnode-gtest-src
+    ${libnode-src}
+    gtest/gtest_main.cpp
+    gtest/gtest_buffer.cpp
+    gtest/gtest_event_emitter.cpp
+    gtest/gtest_http_echo.cpp
+    gtest/gtest_http_status.cpp
+    gtest/gtest_path.cpp
+    gtest/gtest_process.cpp
+    gtest/gtest_querystring.cpp
+    gtest/gtest_timer.cpp
+    gtest/gtest_url.cpp
+    gtest/gtest_util.cpp
+    gtest/gtest_uv_error.cpp
+)
+
+if(LIBNODE_USE_OPENSSL)
+    set(libnode-gtest-src
+        ${libnode-gtest-src}
+        gtest/gtest_crypto_hash.cpp
+    )
+endif(LIBNODE_USE_OPENSSL)
 
 # build libraries ----------------------------------------------------------------------------------
 
@@ -155,24 +210,11 @@ set_target_properties(node PROPERTIES
 
 if(LIBNODE_BUILD_GTEST)
     add_executable(libnode-gtest
-        gtest/gtest_main.cpp
-        gtest/gtest_buffer.cpp
-        gtest/gtest_crypto_hash.cpp
-        gtest/gtest_event_emitter.cpp
-        gtest/gtest_http_echo.cpp
-        gtest/gtest_http_status.cpp
-        gtest/gtest_path.cpp
-        gtest/gtest_querystring.cpp
-        gtest/gtest_timer.cpp
-        gtest/gtest_url.cpp
-        gtest/gtest_url_parser.cpp
-        gtest/gtest_util.cpp
-        gtest/gtest_uv_error.cpp
-        ${libnode-src}
+        ${libnode-gtest-src}
     )
     target_link_libraries(libnode-gtest
-        gtest
         ${libnode-deps}
+        gtest
     )
     if(APPLE)
         set_target_properties(libnode-gtest PROPERTIES
