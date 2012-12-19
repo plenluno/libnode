@@ -13,13 +13,15 @@
 namespace libj {
 namespace node {
 
+const Size NUM_REQS = 7;
+
 class GTestHttpOnData : LIBJ_JS_FUNCTION(GTestHttpOnData)
  public:
     GTestHttpOnData() : body_(StringBuffer::create()) {}
 
-    String::CPtr getBody() const { return body_->toString(); }
+    String::CPtr body() const { return body_->toString(); }
 
-    Value operator()(JsArray::Ptr args) {
+    virtual Value operator()(JsArray::Ptr args) {
         String::CPtr chunk = toCPtr<String>(args->get(0));
         if (chunk) {
             body_->append(chunk);
@@ -33,11 +35,18 @@ class GTestHttpOnData : LIBJ_JS_FUNCTION(GTestHttpOnData)
 
 class GTestHttpOnClose :  LIBJ_JS_FUNCTION(GTestHttpOnClose)
  public:
-    Value operator()(JsArray::Ptr args) {
-        assert(false);
+    static UInt count() { return count_; }
+
+    virtual Value operator()(JsArray::Ptr args) {
+        count_++;
         return Status::OK;
     }
+
+ private:
+    static UInt count_;
 };
+
+UInt GTestHttpOnClose::count_ = 0;
 
 class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
  public:
@@ -51,8 +60,10 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
         , res_(res)
         , onData_(onData) {}
 
-    Value operator()(JsArray::Ptr args) {
-        String::CPtr body = onData_->getBody();
+    virtual Value operator()(JsArray::Ptr args) {
+        static UInt count = 0;
+
+        String::CPtr body = onData_->body();
 
         res_->setHeader(
             http::HEADER_CONTENT_TYPE,
@@ -63,8 +74,8 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
         res_->write(body);
         res_->end();
 
-        req_->removeAllListeners();
-        srv_->close();
+        count++;
+        if (count >= NUM_REQS) srv_->close();
         return Status::OK;
     }
 
@@ -80,7 +91,7 @@ class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
     GTestHttpServerOnRequest(
         http::Server::Ptr srv) : srv_(srv) {}
 
-    Value operator()(JsArray::Ptr args) {
+    virtual Value operator()(JsArray::Ptr args) {
         http::ServerRequest::Ptr req =
             toPtr<http::ServerRequest>(args->get(0));
         http::ServerResponse::Ptr res =
@@ -107,24 +118,24 @@ class GTestHttpClientOnEnd : LIBJ_JS_FUNCTION(GTestHttpClientOnEnd)
     GTestHttpClientOnEnd(GTestHttpOnData::Ptr onData)
         : onData_(onData) {}
 
-    Value operator()(JsArray::Ptr args) {
-        msg_ = onData_->getBody();
+    static JsArray::CPtr messages() { return msgs_; }
+
+    virtual Value operator()(JsArray::Ptr args) {
+        msgs_->add(onData_->body());
         return Status::OK;
     }
 
-    static String::CPtr getMessage() { return msg_; }
-
  private:
-    static String::CPtr msg_;
+    static JsArray::Ptr msgs_;
 
     GTestHttpOnData::Ptr onData_;
 };
 
-String::CPtr GTestHttpClientOnEnd::msg_ = String::null();
+JsArray::Ptr GTestHttpClientOnEnd::msgs_ = JsArray::create();
 
 class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
  public:
-    Value operator()(JsArray::Ptr args) {
+    virtual Value operator()(JsArray::Ptr args) {
         http::ClientResponse::Ptr res =
             toPtr<http::ClientResponse>(args->get(0));
 
@@ -159,12 +170,26 @@ TEST(GTestHttpEcho, TestEcho) {
     options->put(String::create("headers"), headers);
 
     GTestHttpClientOnResponse::Ptr onResponse(new GTestHttpClientOnResponse());
-    http::ClientRequest::Ptr req = http::request(options, onResponse);
-    req->write(msg);
-    req->end();
+    JsArray::Ptr reqs = JsArray::create();
+    for (Size i = 0; i < NUM_REQS; i++) {
+        http::ClientRequest::Ptr req = http::request(options, onResponse);
+        req->write(msg);
+        req->end();
+        reqs->add(req);  // TODO(plenluno): delete it
+    }
 
     node::run();
-    ASSERT_TRUE(GTestHttpClientOnEnd::getMessage()->equals(msg));
+
+    ASSERT_EQ(0, GTestHttpOnClose::count());
+
+    JsArray::CPtr messages = GTestHttpClientOnEnd::messages();
+    Size numMsgs = messages->length();
+    ASSERT_EQ(NUM_REQS, numMsgs);
+    for (Size i = 0; i < numMsgs; i++) {
+        console::printf(console::INFO, ".");
+        ASSERT_TRUE(messages->get(i).equals(msg));
+    }
+    console::printf(console::INFO, "\n");
 }
 
 }  // namespace node
