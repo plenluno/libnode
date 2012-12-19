@@ -182,6 +182,7 @@ class AgentImpl : public Agent {
             : self_(self)
             , socket_(socket)
             , host_(host)
+            , port_(port)
             , localAddress_(localAddress) {}
 
         virtual Value operator()(JsArray::Ptr args) {
@@ -209,6 +210,7 @@ class AgentImpl : public Agent {
             , socket_(socket)
             , name_(name)
             , host_(host)
+            , port_(port)
             , localAddress_(localAddress) {}
 
         virtual Value operator()(JsArray::Ptr args) {
@@ -239,6 +241,7 @@ class AgentImpl : public Agent {
             , socket_(socket)
             , name_(name)
             , host_(host)
+            , port_(port)
             , localAddress_(localAddress)
             , onFree_(onFree)
             , onClose_(onClose) {}
