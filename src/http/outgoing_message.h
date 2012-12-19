@@ -645,6 +645,8 @@ class OutgoingMessage
         virtual Value operator()(JsArray::Ptr args) {
             res_->emitEnd();
             res_->emit(IncomingMessage::EVENT_CLOSE);
+            // no event after 'end' and 'close'
+            res_->removeAllListeners();
             res_ = IncomingMessage::null();
             return Status::OK;
         }

@@ -220,6 +220,10 @@ class IncomingMessage
         if (!hasFlag(END_EMITTED)) {
             emit(EVENT_END);
             setFlag(END_EMITTED);
+            // 'end' only once
+            removeAllListeners(EVENT_END);
+            // no 'data' after 'end'
+            removeAllListeners(EVENT_DATA);
         }
     }
 
