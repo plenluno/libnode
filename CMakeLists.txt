@@ -2,11 +2,14 @@ cmake_minimum_required(VERSION 2.8)
 
 project(libnode)
 
+include(CMakeDependentOption)
+
 # options ------------------------------------------------------------------------------------------
 
 option(LIBNODE_USE_OPENSSL "Use OpenSSL" ON)
-option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON)
 option(LIBNODE_BUILD_GTEST "Build Google Tests" OFF)
+
+cmake_dependent_option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON "LIBNODE_USE_OPENSSL" OFF)
 
 message(STATUS "LIBNODE_USE_OPENSSL=${LIBNODE_USE_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
@@ -28,7 +31,7 @@ endif(LIBNODE_BUILD_GTEST)
 
 # configure ----------------------------------------------------------------------------------------
 
-CONFIGURE_FILE(
+configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h.in
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h )
 
@@ -68,11 +71,6 @@ if(LIBNODE_USE_OPENSSL)
         src/crypto.cpp
         src/crypto/hash.cpp
     )
-else(LIBNODE_USE_OPENSSL)
-    set(libnode-src
-        ${libnode-src}
-        deps/b64/src/b64.c
-    )
 endif(LIBNODE_USE_OPENSSL)
 
 set(libnode-deps
@@ -88,6 +86,11 @@ if(LIBNODE_USE_OPENSSL)
         ${libnode-deps}
         crypto
     )
+else(LIBNODE_USE_OPENSSL)
+    set(libnode-deps
+        ${libnode-deps}
+        b64
+    )
 endif(LIBNODE_USE_OPENSSL)
 
 if(NOT APPLE)
@@ -102,17 +105,11 @@ set(libnode-include
     deps
     deps/http-parser
     deps/url_parser
+    deps/b64/include
     deps/libj/include
-    deps/libj/deps/boost-svn
     deps/libuv/include
+    deps/libj/deps/boost-svn
 )
-
-if(NOT LIBNODE_USE_OPENSSL)
-    set(libnode-include
-        ${libnode-include}
-        deps/b64/include
-    )
-endif(NOT LIBNODE_USE_OPENSSL)
 
 if(LIBNODE_BUILD_OPENSSL)
     set(libnode-include
@@ -122,7 +119,6 @@ if(LIBNODE_BUILD_OPENSSL)
 endif(LIBNODE_BUILD_OPENSSL)
 
 set(libnode-gtest-src
-    ${libnode-src}
     gtest/gtest_main.cpp
     gtest/gtest_buffer.cpp
     gtest/gtest_event_emitter.cpp
@@ -157,7 +153,14 @@ link_directories(
 ## libj
 add_subdirectory(deps/libj)
 
-# url_parser
+## b64
+if(NOT LIBNODE_USE_OPENSSL)
+    add_library(b64
+        deps/b64/src/b64.c
+    )
+endif(NOT LIBNODE_USE_OPENSSL)
+
+## url_parser
 add_library(urlparser
     deps/url_parser/url_parser.c
 )
@@ -215,6 +218,7 @@ if(LIBNODE_BUILD_GTEST)
     target_link_libraries(libnode-gtest
         ${libnode-deps}
         gtest
+        node
     )
     if(APPLE)
         set_target_properties(libnode-gtest PROPERTIES
