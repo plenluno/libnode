@@ -321,10 +321,11 @@ class ServerImpl : public FlagMixin, public Server {
 
             OutgoingMessage::httpSocketSetup(socket);
 
-            socket->setTimeout(2 * 60 * 1000);
-            socket->once(
-                net::Socket::EVENT_TIMEOUT,
-                JsFunction::Ptr(new SocketOnTimeout(&(*socket))));
+            // TODO(plenluno): investigate the cause of sudden timeout
+            // socket->setTimeout(2 * 60 * 1000);
+            // socket->once(
+            //     net::Socket::EVENT_TIMEOUT,
+            //     JsFunction::Ptr(new SocketOnTimeout(&(*socket))));
 
             Size maxHeadersCount;
             if (self_->maxHeadersCount_) {
