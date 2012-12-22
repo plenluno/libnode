@@ -81,6 +81,16 @@ class ServerImpl
         }
     }
 
+    Boolean listen(
+        String::CPtr path,
+        JsFunction::Ptr callback = JsFunction::null()) {
+        if (handle_) return false;
+
+        if (callback) once(EVENT_LISTENING, callback);
+
+        return listen(path, -1, -1);
+    }
+
     Boolean close(
         JsFunction::Ptr callback = JsFunction::null()) {
         if (!handle_) return false;
@@ -127,11 +137,15 @@ class ServerImpl
 
         Int r = 0;
         if (address || port) {
-            uv::Tcp* tcp = static_cast<uv::Tcp*>(handle);
             if (addressType == 6) {
+                uv::Tcp* tcp = static_cast<uv::Tcp*>(handle);
                 r = tcp->bind6(address, port);
-            } else {
+            } else if (addressType == 4) {
+                uv::Tcp* tcp = static_cast<uv::Tcp*>(handle);
                 r = tcp->bind(address, port);
+            } else {
+                uv::Pipe* pipe = static_cast<uv::Pipe*>(handle);
+                r = pipe->bind(address);
             }
         }
 

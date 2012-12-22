@@ -33,6 +33,10 @@ class Server : LIBNODE_EVENT_EMITTER(Server)
         Int backlog = 511,
         JsFunction::Ptr callback = JsFunction::null()) = 0;
 
+    virtual Boolean listen(
+        String::CPtr path,
+        JsFunction::Ptr callback = JsFunction::null()) = 0;
+
     virtual Boolean close(
         JsFunction::Ptr callback = JsFunction::null()) = 0;
 };
@@ -61,6 +65,11 @@ class Server : LIBNODE_EVENT_EMITTER(Server)
         Int backlog = 511, \
         JsFunction::Ptr callback = JsFunction::null()) { \
         return S->listen(port, host, backlog, callback); \
+    } \
+    virtual Boolean listen( \
+        String::CPtr path, \
+        JsFunction::Ptr callback = JsFunction::null()) { \
+        return S->listen(path, callback); \
     } \
     virtual Boolean close( \
         JsFunction::Ptr callback = JsFunction::null()) { \
