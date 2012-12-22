@@ -561,7 +561,9 @@ class SocketImpl
 
     Boolean destroy(libj::Error::CPtr err, JsFunction::Ptr cb) {
         if (hasFlag(DESTROYED)) {
-            fireErrorCallbacks(err, cb);
+            // OnDestroy has already called removeAllListeners
+            // check the return value 'false' instead of calling:
+            // fireErrorCallbacks(err, cb);
             return false;
         }
 
@@ -583,8 +585,8 @@ class SocketImpl
 
         setFlag(DESTROYED);
 
-        // 'server' has already registered a 'close' listener
-        // which will do the following
+        // this.server has already registered a 'close' listener
+        // which will do the following:
         // if (this.server) {
         //     this.server._connections--;
         //     if (this.server._emitCloseIfDrained) {
