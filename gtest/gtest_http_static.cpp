@@ -5,8 +5,6 @@
 #include <libnode/node.h>
 #include <libnode/url.h>
 
-#include <libj/console.h>
-
 #include "./gtest_http_common.h"
 
 namespace libj {
@@ -71,8 +69,8 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
 };
 
 TEST(GTestHttpStatic, TestStatic) {
-    GTestHttpOnClose::clear();
-    GTestHttpClientOnEnd::clear();
+    GTestOnEnd::clear();
+    GTestOnClose::clear();
 
     char dir[256];
     getcwd(dir, 256);
@@ -97,9 +95,9 @@ TEST(GTestHttpStatic, TestStatic) {
 
     node::run();
 
-    ASSERT_EQ(0, GTestHttpOnClose::count());
+    ASSERT_EQ(0, GTestOnClose::count());
 
-    JsArray::CPtr messages = GTestHttpClientOnEnd::messages();
+    JsArray::CPtr messages = GTestOnEnd::messages();
     ASSERT_EQ(1, messages->length());
     ASSERT_TRUE(messages->getCPtr<String>(0)->length());
 }

@@ -5,15 +5,15 @@
 #include <libnode/url.h>
 
 #include <assert.h>
-#include <libj/console.h>
 #include <libj/json.h>
+#include <string>
 
 #include "./gtest_http_common.h"
 
 namespace libj {
 namespace node {
 
-const Size NUM_REQS = 7;
+static const Size NUM_REQS = 7;
 
 class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
  public:
@@ -21,7 +21,7 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
         http::Server::Ptr srv,
         http::ServerRequest::Ptr req,
         http::ServerResponse::Ptr res,
-        GTestHttpOnData::Ptr onData)
+        GTestOnData::Ptr onData)
         : srv_(srv)
         , req_(req)
         , res_(res)
@@ -30,7 +30,7 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
     virtual Value operator()(JsArray::Ptr args) {
         static UInt count = 0;
 
-        String::CPtr body = onData_->body();
+        String::CPtr body = onData_->string();
 
         res_->setHeader(
             http::HEADER_CONTENT_TYPE,
@@ -50,7 +50,7 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
     http::Server::Ptr srv_;
     http::ServerRequest::Ptr req_;
     http::ServerResponse::Ptr res_;
-    GTestHttpOnData::Ptr onData_;
+    GTestOnData::Ptr onData_;
 };
 
 class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
@@ -64,8 +64,8 @@ class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
         http::ServerResponse::Ptr res =
             toPtr<http::ServerResponse>(args->get(1));
 
-        GTestHttpOnData::Ptr onData(new GTestHttpOnData());
-        GTestHttpOnClose::Ptr onClose(new GTestHttpOnClose());
+        GTestOnData::Ptr onData(new GTestOnData());
+        GTestOnClose::Ptr onClose(new GTestOnClose());
         GTestHttpServerOnEnd::Ptr onEnd(
             new GTestHttpServerOnEnd(srv_, req, res, onData));
         req->setEncoding(Buffer::UTF8);
@@ -81,8 +81,8 @@ class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
 };
 
 TEST(GTestHttpEcho, TestEcho) {
-    GTestHttpOnClose::clear();
-    GTestHttpClientOnEnd::clear();
+    GTestOnEnd::clear();
+    GTestOnClose::clear();
 
     String::CPtr msg = String::create("xyz");
 
@@ -113,9 +113,9 @@ TEST(GTestHttpEcho, TestEcho) {
 
     node::run();
 
-    ASSERT_EQ(0, GTestHttpOnClose::count());
+    ASSERT_EQ(0, GTestOnClose::count());
 
-    JsArray::CPtr messages = GTestHttpClientOnEnd::messages();
+    JsArray::CPtr messages = GTestOnEnd::messages();
     Size numMsgs = messages->length();
     ASSERT_EQ(NUM_REQS, numMsgs);
     for (Size i = 0; i < numMsgs; i++) {
