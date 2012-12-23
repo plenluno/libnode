@@ -3,9 +3,6 @@
 #include <libnode/buffer.h>
 #include <libnode/detail/buffer.h>
 
-#include <string>
-#include <algorithm>
-
 namespace libj {
 namespace node {
 

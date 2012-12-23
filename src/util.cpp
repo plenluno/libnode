@@ -15,7 +15,6 @@
 #else
     #include <b64/b64.h>
 #endif
-#include <string>
 
 namespace libj {
 namespace node {

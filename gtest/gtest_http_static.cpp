@@ -2,7 +2,6 @@
 
 #include <gtest/gtest.h>
 #include <libnode/fs.h>
-#include <libnode/node.h>
 #include <libnode/url.h>
 
 #include "./gtest_http_common.h"

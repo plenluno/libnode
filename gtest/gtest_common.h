@@ -4,12 +4,12 @@
 #define LIBNODE_GTEST_GTEST_COMMON_H_
 
 #include <libnode/buffer.h>
+#include <libnode/node.h>
 
 #include <assert.h>
 #include <libj/console.h>
 #include <libj/js_function.h>
 #include <libj/string_buffer.h>
-#include <string>
 
 namespace libj {
 namespace node {

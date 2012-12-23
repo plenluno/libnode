@@ -5,7 +5,6 @@
 
 #include <libj/exception.h>
 #include <libnode/util.h>
-#include <string>
 
 namespace libj {
 namespace node {

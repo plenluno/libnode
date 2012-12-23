@@ -1,12 +1,10 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
-#include <libnode/node.h>
 #include <libnode/url.h>
 
 #include <assert.h>
 #include <libj/json.h>
-#include <string>
 
 #include "./gtest_http_common.h"
 
