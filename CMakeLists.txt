@@ -35,7 +35,11 @@ configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h.in
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h )
 
-# set variables ------------------------------------------------------------------------------------
+# variables ----------------------------------------------------------------------------------------
+
+set(CMAKE_CXX_FLAGS_RELEASE
+    "-Wno-unused-variable"
+)
 
 set(libnode-src
     src/buffer.cpp
