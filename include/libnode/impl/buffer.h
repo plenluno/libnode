@@ -127,11 +127,10 @@ inline Size Buffer::copy(
 
 inline UByte Buffer::at(Size offset) const {
     UByte b;
-    if (readUInt8(offset, &b)) {
-        return b;
-    } else {
+    if (!readUInt8(offset, &b)) {
         LIBJ_THROW(Error::INDEX_OUT_OF_BOUNDS);
     }
+    return b;
 }
 
 inline Boolean Buffer::readUInt8(Size offset, UByte* value) const {
