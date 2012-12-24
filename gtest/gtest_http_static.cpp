@@ -89,8 +89,7 @@ TEST(GTestHttpStatic, TestStatic) {
     options->put(String::create("headers"), headers);
 
     JsFunction::Ptr onResponse(new GTestHttpClientOnResponse());
-    http::ClientRequest::Ptr req = http::request(options, onResponse);
-    req->end();
+    http::get(options, onResponse);
 
     node::run();
 
