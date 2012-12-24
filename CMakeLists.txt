@@ -6,11 +6,14 @@ include(CMakeDependentOption)
 
 # options ------------------------------------------------------------------------------------------
 
+option(LIBNODE_USE_CXX11 "Use C++11" OFF)
 option(LIBNODE_USE_OPENSSL "Use OpenSSL" ON)
 option(LIBNODE_BUILD_GTEST "Build Google Tests" OFF)
 
+cmake_dependent_option(LIBJ_USE_CXX11 "Use C++11" ON "LIBNODE_USE_CXX11" OFF)
 cmake_dependent_option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON "LIBNODE_USE_OPENSSL" OFF)
 
+message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
 message(STATUS "LIBNODE_USE_OPENSSL=${LIBNODE_USE_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_GTEST=${LIBNODE_BUILD_GTEST}")
@@ -41,6 +44,26 @@ set(CMAKE_CXX_FLAGS_RELEASE
     "-Wno-unused-variable"
 )
 
+## libnode-include
+set(libnode-include
+    include
+    deps
+    deps/http-parser
+    deps/url_parser
+    deps/b64/include
+    deps/libj/include
+    deps/libuv/include
+    deps/libj/deps/boost-svn
+)
+
+if(LIBNODE_BUILD_OPENSSL)
+    set(libnode-include
+        ${libnode-include}
+        deps/openssl/include
+    )
+endif(LIBNODE_BUILD_OPENSSL)
+
+## libnode-src
 set(libnode-src
     src/buffer.cpp
     src/events/event_emitter.cpp
@@ -77,6 +100,7 @@ if(LIBNODE_USE_OPENSSL)
     )
 endif(LIBNODE_USE_OPENSSL)
 
+## libnode-deps
 set(libnode-deps
     httpparser
     j
@@ -104,24 +128,24 @@ if(NOT APPLE)
     )
 endif(NOT APPLE)
 
-set(libnode-include
-    include
-    deps
-    deps/http-parser
-    deps/url_parser
-    deps/b64/include
-    deps/libj/include
-    deps/libuv/include
-    deps/libj/deps/boost-svn
+## libnode-cflags
+set(libnode-cflags
+    -Wall
+    -fno-rtti
+    -fno-exceptions
+    -D_FILE_OFFSET_BITS=64
 )
 
-if(LIBNODE_BUILD_OPENSSL)
-    set(libnode-include
-        ${libnode-include}
-        deps/openssl/include
+if(LIBNODE_USE_CXX11)
+    set(libnode-cflags
+        ${libnode-cflags}
+        --std=c++0x
     )
-endif(LIBNODE_BUILD_OPENSSL)
+endif(LIBNODE_USE_CXX11)
 
+string(REPLACE ";" " " libnode-cflags "${libnode-cflags}")
+
+## libnode-gtest-src
 set(libnode-gtest-src
     gtest/gtest_main.cpp
     gtest/gtest_buffer.cpp
@@ -147,6 +171,27 @@ if(LIBNODE_USE_OPENSSL)
         gtest/gtest_crypto_hash.cpp
     )
 endif(LIBNODE_USE_OPENSSL)
+
+if(LIBNODE_USE_CXX11)
+    set(libnode-gtest-src
+        ${libnode-gtest-src}
+        gtest/gtest_http_echo_cxx11.cpp
+    )
+endif(LIBNODE_USE_CXX11)
+
+## libnode-gtest-cflags
+set(libnode-gtest-cflags
+    -Wall
+)
+
+if(LIBNODE_USE_CXX11)
+    set(libnode-gtest-cflags
+        ${libnode-gtest-cflags}
+        --std=c++0x
+    )
+endif(LIBNODE_USE_CXX11)
+
+string(REPLACE ";" " " libnode-gtest-cflags "${libnode-gtest-cflags}")
 
 # build libraries ----------------------------------------------------------------------------------
 
@@ -214,7 +259,7 @@ target_link_libraries(node
     ${libnode-deps}
 )
 set_target_properties(node PROPERTIES
-    COMPILE_FLAGS "-Wall -fno-rtti -fno-exceptions -D_FILE_OFFSET_BITS=64"
+    COMPILE_FLAGS "${libnode-cflags}"
 )
 
 # build gtests -------------------------------------------------------------------------------------
@@ -230,12 +275,12 @@ if(LIBNODE_BUILD_GTEST)
     )
     if(APPLE)
         set_target_properties(libnode-gtest PROPERTIES
-            COMPILE_FLAGS "-Wall"
+            COMPILE_FLAGS "${libnode-gtest-cflags}"
             LINK_FLAGS "-framework CoreServices"
         )
     else(APPLE)
         set_target_properties(libnode-gtest PROPERTIES
-            COMPILE_FLAGS "-Wall"
+            COMPILE_FLAGS "${libnode-gtest-cflags}"
         )
     endif(APPLE)
 endif(LIBNODE_BUILD_GTEST)
