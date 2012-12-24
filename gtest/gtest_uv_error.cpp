@@ -10,9 +10,9 @@ namespace uv {
 TEST(GTestError, TestCreate) {
     Error::CPtr e;
     e = Error::create(Error::_UNKNOWN);
-    ASSERT_TRUE(e);
+    ASSERT_TRUE(!!e);
     e = Error::create(Error::_ENODEV);
-    ASSERT_TRUE(e);
+    ASSERT_TRUE(!!e);
 }
 
 TEST(GTestError, TestMessage) {

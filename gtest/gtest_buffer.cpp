@@ -8,12 +8,12 @@ namespace node {
 
 TEST(GTestBuffer, TestCreate) {
     Buffer::Ptr buf = Buffer::create();
-    ASSERT_TRUE(buf);
+    ASSERT_TRUE(!!buf);
 }
 
 TEST(GTestBuffer, TestCreate2) {
     Buffer::Ptr buf = Buffer::create("abc", 3);
-    ASSERT_TRUE(buf);
+    ASSERT_TRUE(!!buf);
     ASSERT_EQ(3, buf->length());
     ASSERT_TRUE(buf->toString()->equals(String::create("abc")));
 }
@@ -23,7 +23,7 @@ TEST(GTestBuffer, TestCreate3) {
     ary->add(static_cast<UByte>('0'));
     ary->add(static_cast<UByte>('1'));
     Buffer::Ptr buf = Buffer::create(ary);
-    ASSERT_TRUE(buf);
+    ASSERT_TRUE(!!buf);
     ASSERT_EQ(2, buf->length());
     ASSERT_TRUE(buf->toString()->equals(String::create("01")));
 }
@@ -38,7 +38,7 @@ TEST(GTestBuffer, TestCreate4) {
     String::CPtr str = String::create(d, String::UTF8);
     ASSERT_EQ(3, str->length());
     Buffer::Ptr buf = Buffer::create(str, Buffer::UTF8);
-    ASSERT_TRUE(buf);
+    ASSERT_TRUE(!!buf);
     ASSERT_EQ(9, buf->length());
     ASSERT_EQ(0x86, buf->at(8));
     ASSERT_TRUE(buf->toString()->equals(str));

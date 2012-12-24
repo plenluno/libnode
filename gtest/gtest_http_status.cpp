@@ -9,9 +9,9 @@ namespace http {
 
 TEST(GTestHttpStatus, TestCreate) {
     Status::CPtr s = Status::create(Status::OK);
-    ASSERT_TRUE(s);
+    ASSERT_TRUE(!!s);
     s = Status::create(libj::Status::OK);
-    ASSERT_TRUE(s);
+    ASSERT_TRUE(!!s);
 }
 
 TEST(GTestHttpStatus, TestMessage) {

@@ -67,7 +67,7 @@ class Sub : LIBJ_JS_FUNCTION(Sub)
 
 TEST(GTestEventEmitter, TestCreate) {
     EventEmitter::Ptr ee = EventEmitter::create();
-    ASSERT_TRUE(ee);
+    ASSERT_TRUE(!!ee);
 }
 
 TEST(GTestEventEmitter, TestOnAndAddListener) {

@@ -59,12 +59,12 @@ TEST(GTestUtil, TestBase64Decode) {
 
     String::CPtr str = String::create("QUJDREVGRw==");
     decoded = util::base64Decode(str);
-    ASSERT_TRUE(decoded);
+    ASSERT_TRUE(!!decoded);
     ASSERT_TRUE(decoded->toString()->equals(String::create("ABCDEFG")));
 
     str = String::create("QUJDREVGRw==@[]@");
     decoded = util::base64Decode(str);
-    ASSERT_FALSE(decoded);
+    ASSERT_TRUE(!decoded);
 }
 
 TEST(GTestUtil, TestPercentEncode) {

@@ -8,10 +8,10 @@ namespace node {
 namespace crypto {
 
 TEST(GTestCryptoHash, TestCreateHash) {
-    ASSERT_TRUE(createHash(Hash::MD5));
-    ASSERT_TRUE(createHash(Hash::SHA1));
-    ASSERT_TRUE(createHash(Hash::SHA256));
-    ASSERT_TRUE(createHash(Hash::SHA512));
+    ASSERT_TRUE(!!createHash(Hash::MD5));
+    ASSERT_TRUE(!!createHash(Hash::SHA1));
+    ASSERT_TRUE(!!createHash(Hash::SHA256));
+    ASSERT_TRUE(!!createHash(Hash::SHA512));
 }
 
 TEST(GTestCryptoHash, TestMD5) {
