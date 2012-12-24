@@ -106,6 +106,7 @@ class AgentImpl : public Agent {
 
         OnClose::Ptr onClose(new OnClose(
             this, socket, name, host, port, localAddress));
+        onClose->setRequest(req);
         socket->on(EVENT_CLOSE, onClose);
 
         OnRemove::Ptr onRemove(new OnRemove(
@@ -137,6 +138,7 @@ class AgentImpl : public Agent {
 
  private:
     class Free : LIBJ_JS_FUNCTION(Free)
+     public:
         Free(JsObject::Ptr reqs) : requests_(reqs) {}
 
         virtual Value operator()(JsArray::Ptr args) {
@@ -173,6 +175,7 @@ class AgentImpl : public Agent {
     };
 
     class OnFree : LIBJ_JS_FUNCTION(OnFree)
+     public:
         OnFree(
             AgentImpl* self,
             net::SocketImpl::Ptr socket,
@@ -199,6 +202,7 @@ class AgentImpl : public Agent {
     };
 
     class OnClose : LIBJ_JS_FUNCTION(OnClose)
+     public:
         OnClose(
             AgentImpl* self,
             net::SocketImpl::Ptr socket,
@@ -218,6 +222,10 @@ class AgentImpl : public Agent {
             return libj::Status::OK;
         }
 
+        void setRequest(OutgoingMessage::Ptr req) {
+            req_ = req;
+        }
+
      private:
         AgentImpl* self_;
         net::SocketImpl::Ptr socket_;
@@ -225,6 +233,7 @@ class AgentImpl : public Agent {
         String::CPtr host_;
         String::CPtr port_;
         String::CPtr localAddress_;
+        OutgoingMessage::Ptr req_;  // to retain OutgoingMessage
     };
 
     class OnRemove : LIBJ_JS_FUNCTION(OnRemove)

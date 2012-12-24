@@ -106,7 +106,6 @@ TEST(GTestHttpEcho, TestEcho) {
         http::ClientRequest::Ptr req = http::request(options, onResponse);
         req->write(msg);
         req->end();
-        reqs->add(req);  // TODO(plenluno): delete it
     }
 
     node::run();
