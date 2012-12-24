@@ -171,7 +171,7 @@ Buffer::Ptr base64Decode(String::CPtr str) {
     return decoded;
 }
 
-#else
+#else  // LIBNODE_USE_OPENSSL
 
 String::CPtr base64Encode(const void* data, Size len) {
     if (!data) return String::null();
@@ -208,37 +208,28 @@ Buffer::Ptr base64Decode(String::CPtr str) {
     return decoded;
 }
 
-#endif
+#endif  // LIBNODE_USE_OPENSSL
 
 // -- percentEncode & percentDecode --
 
-#define ASCII_ALPHA1_START  (0x41)  // A
-#define ASCII_ALPHA1_END    (0x5A)  // Z
-#define ASCII_ALPHA2_START  (0x61)  // a
-#define ASCII_ALPHA2_END    (0x7A)  // z
-#define ASCII_DIGIT_START   (0x30)  // 0
-#define ASCII_DIGIT_END     (0x39)  // 9
-#define ASCII_HYPHEN        (0x2D)  // -
-#define ASCII_PERIOD        (0x2E)  // .
-#define ASCII_UNDERSCORE    (0x5F)  // _
-#define ASCII_TILDA         (0x7E)  // ~
-
-static int valueFromHexChar(char hex) {
-    if ('0' <= hex && hex <= '9') {
+static UInt valueFromHexChar(char hex) {
+    if (hex >= '0' && hex <= '9') {
         return hex - '0';
-    } else if ('A' <= hex && hex <= 'F') {
+    } else if (hex >= 'A' && hex <= 'F') {
         return hex - 'A' + 10;
-    } else if ('a' <= hex && hex <= 'f') {
+    } else if (hex >= 'a' && hex <= 'f') {
         return hex - 'a' + 10;
     } else {
         return 0;
     }
 }
 
-static char hexCharFromValue(unsigned int value) {
-    if (16 <= value)
+static char hexCharFromValue(UInt value) {
+    if (value >= 16) {
         return '0';
-    return "0123456789ABCDEF"[value];
+    } else {
+        return "0123456789ABCDEF"[value];
+    }
 }
 
 static Size percentEncode(
@@ -254,13 +245,13 @@ static Size percentEncode(
     encodedLength--;
     while (source < sourceEnd && encodedLength) {
         temp = *source;
-        if ((ASCII_ALPHA1_START <= temp && temp <= ASCII_ALPHA1_END)
-            || (ASCII_ALPHA2_START <= temp && temp <= ASCII_ALPHA2_END)
-            || (ASCII_DIGIT_START <= temp && temp <= ASCII_DIGIT_END)
-            || temp == ASCII_HYPHEN
-            || temp == ASCII_PERIOD
-            || temp == ASCII_UNDERSCORE
-            || temp == ASCII_TILDA) {
+        if ((temp >= 'A' && temp <= 'Z') ||
+            (temp >= 'a' && temp <= 'z') ||
+            (temp >= '0' && temp <= '9') ||
+            temp == '-' ||
+            temp == '.' ||
+            temp == '_' ||
+            temp == '~') {
             *(encoded++) = temp;
         } else {
             *(encoded++) = '%';
