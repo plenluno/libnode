@@ -6,8 +6,7 @@
 
 #include <fcntl.h>
 #include <libj/js_array.h>
-
-#include "./fs/stats_impl.h"
+#include <libj/detail/js_object.h>
 
 namespace libj {
 namespace node {
@@ -96,7 +95,7 @@ static void onError(uv_fs_t* req) {
 }
 
 static Stats::Ptr getStats(uv_fs_t* req) {
-    Stats::Ptr stats = StatsImpl::create();
+    Stats::Ptr stats(new detail::JsObject<Stats>());
     const struct stat* s = static_cast<const struct stat*>(req->ptr);
     stats->put(STAT_DEV, static_cast<Long>(s->st_dev));
     stats->put(STAT_INO, static_cast<Long>(s->st_ino));
