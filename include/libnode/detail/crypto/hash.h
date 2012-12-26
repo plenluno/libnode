@@ -3,12 +3,12 @@
 #ifndef LIBNODE_DETAIL_CRYPTO_HASH_H_
 #define LIBNODE_DETAIL_CRYPTO_HASH_H_
 
+#include <libnode/buffer.h>
+#include <libj/detail/js_object.h>
+
 #include <assert.h>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
-
-#include <libnode/buffer.h>
-#include <libj/detail/js_object.h>
 
 namespace libj {
 namespace node {
