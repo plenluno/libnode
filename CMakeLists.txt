@@ -89,7 +89,6 @@ set(libnode-src
     src/url.cpp
     src/util.cpp
     src/uv/error.cpp
-    src/uv/stream.cpp
 )
 
 if(LIBNODE_USE_OPENSSL)

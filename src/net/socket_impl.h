@@ -13,8 +13,7 @@
 #include "libnode/uv/error.h"
 
 #include "../flag.h"
-#include "../uv/pipe.h"
-#include "../uv/tcp.h"
+#include "../uv/stream_common.h"
 
 namespace libj {
 namespace node {
