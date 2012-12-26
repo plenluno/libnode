@@ -45,7 +45,7 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
         JsArray::Ptr args = JsArray::null()) = 0;
 
     void emit(
-        String::CPtr event, const Value& val);
+        String::CPtr event, const Value& v);
 
     void emit(
         String::CPtr event,
