@@ -7,6 +7,7 @@
 #include <libj/js_function.h>
 #include <libj/status.h>
 #include <libj/detail/js_object.h>
+#include <libnode/detail/flags.h>
 
 namespace libj {
 namespace node {
@@ -14,22 +15,25 @@ namespace detail {
 namespace events {
 
 template<typename I>
-class EventEmitter : public libj::detail::JsObject<I> {
+class EventEmitter
+    : public libj::detail::JsObject<I>
+    , public node::detail::Flags {
  public:
     EventEmitter() : events_(JsObject::create()) {}
 
-    void on(String::CPtr event, JsFunction::Ptr listener) {
+    virtual void on(String::CPtr event, JsFunction::Ptr listener) {
         addListener(event, listener);
     }
 
-    void once(String::CPtr event, JsFunction::Ptr listener) {
+    virtual void once(String::CPtr event, JsFunction::Ptr listener) {
         if (!listener) return;
 
         JsFunction::Ptr cb(new Once(event, listener, this));
         addListener(event, cb);
     }
 
-    void addListener(String::CPtr event, JsFunction::Ptr listener) {
+    virtual void addListener(
+        String::CPtr event, JsFunction::Ptr listener) {
         if (!listener) return;
 
         JsArray::Ptr a;
@@ -44,7 +48,8 @@ class EventEmitter : public libj::detail::JsObject<I> {
         emit(I::EVENT_NEW_LISTENER);
     }
 
-    void removeListener(String::CPtr event, JsFunction::CPtr listener) {
+    virtual void removeListener(
+        String::CPtr event, JsFunction::CPtr listener) {
         JsArray::Ptr a = listeners(event);
         Size n = a->size();
         for (Size i = 0; i < n; i++) {
@@ -65,15 +70,16 @@ class EventEmitter : public libj::detail::JsObject<I> {
         }
     }
 
-    void removeAllListeners() {
+    virtual void removeAllListeners() {
         events_->clear();
     }
 
-    void removeAllListeners(String::CPtr event) {
+    virtual void removeAllListeners(String::CPtr event) {
         events_->remove(event);
     }
 
-    void emit(String::CPtr event, JsArray::Ptr args = JsArray::null()) {
+    virtual void emit(
+        String::CPtr event, JsArray::Ptr args = JsArray::null()) {
         JsArray::Ptr a = listeners(event);
         Size i = 0;
         while (i < a->size()) {
@@ -84,7 +90,7 @@ class EventEmitter : public libj::detail::JsObject<I> {
         }
     }
 
-    JsArray::Ptr listeners(String::CPtr event) {
+    virtual JsArray::Ptr listeners(String::CPtr event) {
         Value v = events_->get(event);
         if (v.isUndefined()) {
             JsArray::Ptr a = JsArray::create();
