@@ -3,7 +3,8 @@
 #ifndef LIBNODE_SRC_HTTP_SERVER_REQUEST_IMPL_H_
 #define LIBNODE_SRC_HTTP_SERVER_REQUEST_IMPL_H_
 
-#include "libnode/http/server_request.h"
+#include <libnode/http/server_request.h>
+#include <libnode/bridge/http/abstract_server_request.h>
 
 #include "./incoming_message.h"
 
@@ -11,7 +12,11 @@ namespace libj {
 namespace node {
 namespace http {
 
-class ServerRequestImpl : LIBNODE_HTTP_SERVER_REQUEST(ServerRequestImpl)
+typedef bridge::http::AbstractServerRequest<
+    ServerRequest,
+    IncomingMessage> ServerRequestBase;
+
+class ServerRequestImpl : public ServerRequestBase {
  public:
     static Ptr create(IncomingMessage::Ptr msg) {
         if (msg) {
@@ -22,11 +27,8 @@ class ServerRequestImpl : LIBNODE_HTTP_SERVER_REQUEST(ServerRequestImpl)
     }
 
  private:
-    IncomingMessage::Ptr msg_;
-
-    ServerRequestImpl(IncomingMessage::Ptr msg) : msg_(msg) {}
-
-    LIBNODE_HTTP_SERVER_REQUEST_IMPL(msg_);
+    ServerRequestImpl(IncomingMessage::Ptr msg)
+        : ServerRequestBase(msg) {}
 };
 
 }  // namespace http

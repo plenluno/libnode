@@ -3,7 +3,8 @@
 #ifndef LIBNODE_SRC_HTTP_SERVER_RESPONSE_IMPL_H_
 #define LIBNODE_SRC_HTTP_SERVER_RESPONSE_IMPL_H_
 
-#include "libnode/http/server_response.h"
+#include <libnode/http/server_response.h>
+#include <libnode/bridge/http/abstract_server_response.h>
 
 #include "./outgoing_message.h"
 
@@ -11,7 +12,11 @@ namespace libj {
 namespace node {
 namespace http {
 
-class ServerResponseImpl : LIBNODE_HTTP_SERVER_RESPONSE(ServerResponseImpl)
+typedef bridge::http::AbstractServerResponse<
+    ServerResponse,
+    OutgoingMessage> ServerResponseBase;
+
+class ServerResponseImpl : public ServerResponseBase {
  public:
     static Ptr create(OutgoingMessage::Ptr msg) {
         if (msg) {
@@ -22,11 +27,8 @@ class ServerResponseImpl : LIBNODE_HTTP_SERVER_RESPONSE(ServerResponseImpl)
     }
 
  private:
-    OutgoingMessage::Ptr msg_;
-
-    ServerResponseImpl(OutgoingMessage::Ptr msg) : msg_(msg) {}
-
-    LIBNODE_HTTP_SERVER_RESPONSE_IMPL(msg_);
+    ServerResponseImpl(OutgoingMessage::Ptr msg)
+        : ServerResponseBase(msg) {}
 };
 
 }  // namespace http
