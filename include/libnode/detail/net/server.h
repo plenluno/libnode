@@ -317,7 +317,7 @@ class Server : public events::EventEmitter<I> {
 
     class OnDestroy : LIBJ_JS_FUNCTION_TEMPLATE(OnDestroy)
      public:
-        OnDestroy(Server::Ptr srv) : self_(srv) {}
+        OnDestroy(typename Server::Ptr srv) : self_(srv) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             assert(!self_->handle_);
@@ -327,7 +327,7 @@ class Server : public events::EventEmitter<I> {
         }
 
      private:
-        Server::Ptr self_;
+        typename Server::Ptr self_;
     };
 
  public:
