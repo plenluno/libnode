@@ -3,7 +3,7 @@
 #ifndef LIBNODE_HTTP_AGENT_H_
 #define LIBNODE_HTTP_AGENT_H_
 
-#include "libnode/events.h"
+#include <libnode/events/event_emitter.h>
 
 namespace libj {
 namespace node {

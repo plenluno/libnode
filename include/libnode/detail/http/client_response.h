@@ -1,38 +1,39 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_HTTP_CLIENT_RESPONSE_IMPL_H_
-#define LIBNODE_SRC_HTTP_CLIENT_RESPONSE_IMPL_H_
+#ifndef LIBNODE_DETAIL_HTTP_CLIENT_RESPONSE_H_
+#define LIBNODE_DETAIL_HTTP_CLIENT_RESPONSE_H_
 
 #include <libnode/http/client_response.h>
+#include <libnode/detail/http/incoming_message.h>
 #include <libnode/bridge/http/abstract_client_response.h>
-
-#include "./incoming_message.h"
 
 namespace libj {
 namespace node {
+namespace detail {
 namespace http {
 
 typedef bridge::http::AbstractClientResponse<
-    ClientResponse,
+    node::http::ClientResponse,
     IncomingMessage> ClientResponseBase;
 
-class ClientResponseImpl : public ClientResponseBase {
+class ClientResponse : public ClientResponseBase {
  public:
     static Ptr create(IncomingMessage::Ptr msg) {
         if (msg) {
-            return Ptr(new ClientResponseImpl(msg));
+            return Ptr(new ClientResponse(msg));
         } else {
             return null();
         }
     }
 
  private:
-    ClientResponseImpl(IncomingMessage::Ptr msg)
+    ClientResponse(IncomingMessage::Ptr msg)
         : ClientResponseBase(msg) {}
 };
 
 }  // namespace http
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_HTTP_CLIENT_RESPONSE_IMPL_H_
+#endif  // LIBNODE_DETAIL_HTTP_CLIENT_RESPONSE_H_

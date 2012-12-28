@@ -2,10 +2,11 @@
 
 #include <libnode/path.h>
 
-#include <assert.h>
-#include <unistd.h>
 #include <libj/symbol.h>
 #include <libj/string_buffer.h>
+
+#include <assert.h>
+#include <unistd.h>
 
 namespace libj {
 namespace node {

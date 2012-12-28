@@ -3,9 +3,10 @@
 #include <libnode/querystring.h>
 #include <libnode/util.h>
 
-#include <assert.h>
 #include <libj/js_array.h>
 #include <libj/string_buffer.h>
+
+#include <assert.h>
 
 namespace libj {
 namespace node {

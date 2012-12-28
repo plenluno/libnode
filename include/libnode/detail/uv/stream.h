@@ -1,19 +1,32 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_UV_STREAM_H_
-#define LIBNODE_SRC_UV_STREAM_H_
+#ifndef LIBNODE_DETAIL_UV_STREAM_H_
+#define LIBNODE_DETAIL_UV_STREAM_H_
 
-#include "./handle.h"
-#include "./write.h"
+#include <libnode/detail/uv/handle.h>
+#include <libnode/detail/uv/write.h>
 
 namespace libj {
 namespace node {
+namespace detail {
 namespace uv {
 
 typedef class Req<uv_connect_t> Connect;
 typedef class Req<uv_shutdown_t> Shutdown;
 
 class Stream : public Handle {
+ protected:
+    Stream(uv_stream_t* stream)
+        : Handle(reinterpret_cast<uv_handle_t*>(stream))
+        , stream_(stream)
+        , buffer_(Buffer::null())
+        , owner_(NULL)
+        , onRead_(JsFunction::null())
+        , onConnection_(JsFunction::null()) {
+        assert(stream_);
+        stream_->data = this;
+    }
+
  public:
     virtual Int listen(Int backlog) = 0;
 
@@ -221,21 +234,11 @@ class Stream : public Handle {
     void* owner_;
     JsFunction::Ptr onRead_;
     JsFunction::Ptr onConnection_;
-
-    Stream(uv_stream_t* stream)
-        : Handle(reinterpret_cast<uv_handle_t*>(stream))
-        , stream_(stream)
-        , buffer_(Buffer::null())
-        , owner_(NULL)
-        , onRead_(JsFunction::null())
-        , onConnection_(JsFunction::null()) {
-        assert(stream_);
-        stream_->data = this;
-    }
 };
 
 }  // namespace uv
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_UV_STREAM_H_
+#endif  // LIBNODE_DETAIL_UV_STREAM_H_

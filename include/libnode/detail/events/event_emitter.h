@@ -3,11 +3,12 @@
 #ifndef LIBNODE_DETAIL_EVENTS_EVENT_EMITTER_H_
 #define LIBNODE_DETAIL_EVENTS_EVENT_EMITTER_H_
 
-#include <libj/js_object.h>
+#include <libnode/detail/flags.h>
+
 #include <libj/js_function.h>
+#include <libj/js_object.h>
 #include <libj/status.h>
 #include <libj/detail/js_object.h>
-#include <libnode/detail/flags.h>
 
 namespace libj {
 namespace node {
@@ -78,6 +79,17 @@ class EventEmitter
         events_->remove(event);
     }
 
+    virtual JsArray::Ptr listeners(String::CPtr event) {
+        Value v = events_->get(event);
+        if (v.isUndefined()) {
+            JsArray::Ptr a = JsArray::create();
+            events_->put(event, a);
+            return a;
+        } else {
+            return toPtr<JsArray>(v);
+        }
+    }
+
     virtual void emit(
         String::CPtr event, JsArray::Ptr args = JsArray::null()) {
         JsArray::Ptr a = listeners(event);
@@ -90,15 +102,122 @@ class EventEmitter
         }
     }
 
-    virtual JsArray::Ptr listeners(String::CPtr event) {
-        Value v = events_->get(event);
-        if (v.isUndefined()) {
-            JsArray::Ptr a = JsArray::create();
-            events_->put(event, a);
-            return a;
-        } else {
-            return toPtr<JsArray>(v);
-        }
+ public:
+    void emit(
+        String::CPtr event,
+        const Value& v1) {
+        JsArray::Ptr args = JsArray::create();
+        args->add(v1);
+        emit(event, args);
+    }
+
+    void emit(
+        String::CPtr event,
+        const Value& v1, const Value& v2) {
+        JsArray::Ptr args = JsArray::create();
+        args->add(v1);
+        args->add(v2);
+        emit(event, args);
+    }
+
+    void emit(
+        String::CPtr event,
+        const Value& v1, const Value& v2, const Value& v3) {
+        JsArray::Ptr args = JsArray::create();
+        args->add(v1);
+        args->add(v2);
+        args->add(v3);
+        emit(event, args);
+    }
+
+    void emit(
+        String::CPtr event,
+        const Value& v1, const Value& v2, const Value& v3,
+        const Value& v4) {
+        JsArray::Ptr args = JsArray::create();
+        args->add(v1);
+        args->add(v2);
+        args->add(v3);
+        args->add(v4);
+        emit(event, args);
+    }
+
+    void emit(
+        String::CPtr event,
+        const Value& v1, const Value& v2, const Value& v3,
+        const Value& v4, const Value& v5) {
+        JsArray::Ptr args = JsArray::create();
+        args->add(v1);
+        args->add(v2);
+        args->add(v3);
+        args->add(v4);
+        args->add(v5);
+        emit(event, args);
+    }
+
+    void emit(
+        String::CPtr event,
+        const Value& v1, const Value& v2, const Value& v3,
+        const Value& v4, const Value& v5, const Value& v6) {
+        JsArray::Ptr args = JsArray::create();
+        args->add(v1);
+        args->add(v2);
+        args->add(v3);
+        args->add(v4);
+        args->add(v5);
+        args->add(v6);
+        emit(event, args);
+    }
+
+    void emit(
+        String::CPtr event,
+        const Value& v1, const Value& v2, const Value& v3,
+        const Value& v4, const Value& v5, const Value& v6,
+        const Value& v7) {
+        JsArray::Ptr args = JsArray::create();
+        args->add(v1);
+        args->add(v2);
+        args->add(v3);
+        args->add(v4);
+        args->add(v5);
+        args->add(v6);
+        args->add(v7);
+        emit(event, args);
+    }
+
+    void emit(
+        String::CPtr event,
+        const Value& v1, const Value& v2, const Value& v3,
+        const Value& v4, const Value& v5, const Value& v6,
+        const Value& v7, const Value& v8) {
+        JsArray::Ptr args = JsArray::create();
+        args->add(v1);
+        args->add(v2);
+        args->add(v3);
+        args->add(v4);
+        args->add(v5);
+        args->add(v6);
+        args->add(v7);
+        args->add(v8);
+        emit(event, args);
+    }
+
+    void emit(
+        String::CPtr event,
+        const Value& v1, const Value& v2, const Value& v3,
+        const Value& v4, const Value& v5, const Value& v6,
+        const Value& v7, const Value& v8, const Value& v9) {
+        JsArray::Ptr args = JsArray::create();
+        args->add(v1);
+        args->add(v2);
+        args->add(v3);
+        args->add(v4);
+        args->add(v5);
+        args->add(v6);
+        args->add(v7);
+        args->add(v8);
+        args->add(v9);
+        emit(event, args);
     }
 
  private:
@@ -115,7 +234,7 @@ class EventEmitter
         Value operator()(JsArray::Ptr args) {
             (*listener_)(args);
             ee_->removeListener(event_, listener_);
-            return libj::Status::OK;
+            return Status::OK;
         }
 
         JsFunction::Ptr listener() {

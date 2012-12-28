@@ -1,13 +1,14 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_UV_TIMER_H_
-#define LIBNODE_SRC_UV_TIMER_H_
+#ifndef LIBNODE_DETAIL_UV_TIMER_H_
+#define LIBNODE_DETAIL_UV_TIMER_H_
 
-#include "./handle.h"
-#include "./write.h"
+#include <libnode/detail/uv/handle.h>
+#include <libnode/detail/uv/write.h>
 
 namespace libj {
 namespace node {
+namespace detail {
 namespace uv {
 
 class Timer : public Handle {
@@ -65,7 +66,8 @@ class Timer : public Handle {
 };
 
 }  // namespace uv
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_UV_TIMER_H_
+#endif  // LIBNODE_DETAIL_UV_TIMER_H_

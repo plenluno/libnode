@@ -44,8 +44,10 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
         String::CPtr event,
         JsArray::Ptr args = JsArray::null()) = 0;
 
+ public:
     void emit(
-        String::CPtr event, const Value& v);
+        String::CPtr event,
+        const Value& v1);
 
     void emit(
         String::CPtr event,
@@ -98,89 +100,5 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
 #define LIBNODE_EVENT_EMITTER(T) \
     public libj::node::events::EventEmitter { \
     LIBJ_MUTABLE_DEFS(T, libj::node::events::EventEmitter)
-
-#include <libj/bridge/deprecated_macro.h>
-
-#define LIBNODE_EVENT_EMITTER_IMPL(EE) \
-    LIBJ_JS_OBJECT_IMPL(EE); \
-public: \
-    void on(String::CPtr event, JsFunction::Ptr listener) { \
-        EE->on(event, listener); \
-    } \
-    void once(String::CPtr event, JsFunction::Ptr listener) { \
-        EE->once(event, listener); \
-    } \
-    void addListener(String::CPtr event, JsFunction::Ptr listener) { \
-        EE->addListener(event, listener); \
-    } \
-    void removeListener(String::CPtr event, JsFunction::CPtr listener) { \
-        EE->removeListener(event, listener); \
-    } \
-    void removeAllListeners() { \
-        EE->removeAllListeners(); \
-    } \
-    void removeAllListeners(String::CPtr event) { \
-        EE->removeAllListeners(event); \
-    } \
-    JsArray::Ptr listeners(String::CPtr event) { \
-        return EE->listeners(event); \
-    } \
-    void emit(String::CPtr event, JsArray::Ptr args = JsArray::null()) { \
-        EE->emit(event, args); \
-    } \
-    void emit( \
-        String::CPtr event, \
-        const Value& v1) { \
-        EE->emit(event, v1); \
-    } \
-    void emit( \
-        String::CPtr event, \
-        const Value& v1, const Value& v2) { \
-        EE->emit(event, v1, v2); \
-    } \
-    void emit( \
-        String::CPtr event, \
-        const Value& v1, const Value& v2, const Value& v3) { \
-        EE->emit(event, v1, v2, v3); \
-    } \
-    void emit( \
-        String::CPtr event, \
-        const Value& v1, const Value& v2, const Value& v3, \
-        const Value& v4) { \
-        EE->emit(event, v1, v2, v3, v4); \
-    } \
-    void emit( \
-        String::CPtr event, \
-        const Value& v1, const Value& v2, const Value& v3, \
-        const Value& v4, const Value& v5) { \
-        EE->emit(event, v1, v2, v3, v4, v5); \
-    } \
-    void emit( \
-        String::CPtr event, \
-        const Value& v1, const Value& v2, const Value& v3, \
-        const Value& v4, const Value& v5, const Value& v6) { \
-        EE->emit(event, v1, v2, v3, v4, v5, v6); \
-    } \
-    void emit( \
-        String::CPtr event, \
-        const Value& v1, const Value& v2, const Value& v3, \
-        const Value& v4, const Value& v5, const Value& v6, \
-        const Value& v7) { \
-        EE->emit(event, v1, v2, v3, v4, v5, v6, v7); \
-    } \
-    void emit( \
-        String::CPtr event, \
-        const Value& v1, const Value& v2, const Value& v3, \
-        const Value& v4, const Value& v5, const Value& v6, \
-        const Value& v7, const Value& v8) { \
-        EE->emit(event, v1, v2, v3, v4, v5, v6, v7, v8); \
-    } \
-    void emit( \
-        String::CPtr event, \
-        const Value& v1, const Value& v2, const Value& v3, \
-        const Value& v4, const Value& v5, const Value& v6, \
-        const Value& v7, const Value& v8, const Value& v9) { \
-        EE->emit(event, v1, v2, v3, v4, v5, v6, v7, v8, v9); \
-    }
 
 #endif  // LIBNODE_EVENTS_EVENT_EMITTER_H_

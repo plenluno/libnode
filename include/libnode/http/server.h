@@ -3,7 +3,7 @@
 #ifndef LIBNODE_HTTP_SERVER_H_
 #define LIBNODE_HTTP_SERVER_H_
 
-#include "libnode/net/server.h"
+#include <libnode/net/server.h>
 
 namespace libj {
 namespace node {

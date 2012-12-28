@@ -1,13 +1,15 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_UV_HANDLE_H_
-#define LIBNODE_SRC_UV_HANDLE_H_
+#ifndef LIBNODE_DETAIL_UV_HANDLE_H_
+#define LIBNODE_DETAIL_UV_HANDLE_H_
+
+#include <libnode/uv/error.h>
 
 #include <assert.h>
-#include <libnode/uv/error.h>
 
 namespace libj {
 namespace node {
+namespace detail {
 namespace uv {
 
 class Handle {
@@ -54,7 +56,7 @@ class Handle {
 
  protected:
     static void setLastError() {
-        Error::setLast(uv_last_error(uv_default_loop()).code);
+        node::uv::Error::setLast(uv_last_error(uv_default_loop()).code);
     }
 
  private:
@@ -70,7 +72,8 @@ class Handle {
 };
 
 }  // namespace uv
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_UV_HANDLE_H_
+#endif  // LIBNODE_DETAIL_UV_HANDLE_H_

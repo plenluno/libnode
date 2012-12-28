@@ -4,9 +4,10 @@
 #include <libnode/fs.h>
 #include <libnode/uv/error.h>
 
-#include <fcntl.h>
 #include <libj/js_array.h>
 #include <libj/detail/js_object.h>
+
+#include <fcntl.h>
 
 namespace libj {
 namespace node {

@@ -1,38 +1,39 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_NET_SERVER_IMPL_H_
-#define LIBNODE_SRC_NET_SERVER_IMPL_H_
+#ifndef LIBNODE_DETAIL_NET_SERVER_H_
+#define LIBNODE_DETAIL_NET_SERVER_H_
+
+#include <libnode/detail/net/socket.h>
 
 #include <libj/string_buffer.h>
-#include <libnode/net.h>
-
-#include "./socket_impl.h"
-#include "../flag.h"
 
 namespace libj {
 namespace node {
+namespace detail {
 namespace net {
 
-class ServerImpl
-    : public FlagMixin
-    , LIBNODE_NET_SERVER(ServerImpl)
+template<typename I>
+class Server : public events::EventEmitter<I> {
  public:
-    static Symbol::CPtr EVENT_DESTROY;
-    static Symbol::CPtr OPTION_ALLOW_HALF_OPEN;
+    LIBJ_MUTABLE_TEMPLATE_DEFS(Server, I);
 
     static Ptr create(
-        JsObject::CPtr options = JsObject::null(),
+        libj::JsObject::CPtr options = libj::JsObject::null(),
         JsFunction::Ptr listener = JsFunction::null()) {
-        Ptr server(new ServerImpl());
+        LIBJ_STATIC_SYMBOL_DEF(EVENT_DESTROY, "destroy");
+
+        Ptr server(new Server());
 
         if (options) {
             Boolean allowHalfOpen = false;
-            to<Boolean>(options->get(OPTION_ALLOW_HALF_OPEN), &allowHalfOpen);
+            to<Boolean>(
+                options->get(node::net::OPTION_ALLOW_HALF_OPEN),
+                &allowHalfOpen);
             if (allowHalfOpen) server->setFlag(ALLOW_HALF_OPEN);
         }
 
         if (listener) {
-            server->on(EVENT_CONNECTION, listener);
+            server->on(node::net::Server::EVENT_CONNECTION, listener);
         }
 
         JsFunction::Ptr onDestroy(new OnDestroy(server));
@@ -40,62 +41,64 @@ class ServerImpl
         return server;
     }
 
-    Value address() {
+    virtual Value address() {
         if (handle_ && handle_->type() == UV_TCP) {
             uv::Tcp* tcp = static_cast<uv::Tcp*>(handle_);
             return tcp->getSockName();
         } else if (pipeName_) {
             return pipeName_;
         } else {
-            return JsObject::null();
+            return libj::JsObject::null();
         }
     }
 
-    Size connections() const {
+    virtual Size connections() const {
         return connections_;
     }
 
-    Size maxConnections() const {
+    virtual Size maxConnections() const {
         return maxConnections_;
     }
 
-    void setMaxConnections(Size max) {
+    virtual void setMaxConnections(Size max) {
         maxConnections_ = max;
     }
 
-    Boolean listen(
+    virtual Boolean listen(
         Int port,
-        String::CPtr host = IN_ADDR_ANY,
+        String::CPtr host = node::net::Server::IN_ADDR_ANY,
         Int backlog = 511,
         JsFunction::Ptr callback = JsFunction::null()) {
         if (handle_) return false;
 
-        if (callback) once(EVENT_LISTENING, callback);
+        if (callback) this->once(node::net::Server::EVENT_LISTENING, callback);
 
-        Int addressType = isIP(host);
+        Int addressType = node::net::isIP(host);
         if (addressType) {
             return listen(host, port, addressType, backlog);
         } else {
-            emit(EVENT_ERROR, Error::create(Error::ILLEGAL_ARGUMENT));
+            this->emit(
+                node::net::Server::EVENT_ERROR,
+                Error::create(Error::ILLEGAL_ARGUMENT));
             return false;
         }
     }
 
-    Boolean listen(
+    virtual Boolean listen(
         String::CPtr path,
         JsFunction::Ptr callback = JsFunction::null()) {
         if (handle_) return false;
 
-        if (callback) once(EVENT_LISTENING, callback);
+        if (callback) this->once(node::net::Server::EVENT_LISTENING, callback);
 
         return listen(path, -1, -1);
     }
 
-    Boolean close(
+    virtual Boolean close(
         JsFunction::Ptr callback = JsFunction::null()) {
         if (!handle_) return false;
 
-        if (callback) once(EVENT_CLOSE, callback);
+        if (callback) this->once(node::net::Server::EVENT_CLOSE, callback);
 
         handle_->close();
         handle_ = NULL;
@@ -103,6 +106,7 @@ class ServerImpl
         return true;
     }
 
+ public:
     void ref() {
         if (handle_) handle_->ref();
     }
@@ -166,13 +170,13 @@ class ServerImpl
         if (!handle_) {
             handle_ = createServerHandle(address, port, addressType, fd);
             if (!handle_) {
-                EmitError::Ptr emitError(new EmitError(this));
+                typename EmitError::Ptr emitError(new EmitError(this));
                 process::nextTick(emitError);
                 return false;
             }
         }
 
-        OnConnection::Ptr onConnection(new OnConnection(this));
+        typename OnConnection::Ptr onConnection(new OnConnection(this));
         handle_->setOnConnection(onConnection);
         handle_->setOwner(this);
 
@@ -180,7 +184,7 @@ class ServerImpl
         if (r) {
             handle_->close();
             handle_ = NULL;
-            EmitError::Ptr emitError(new EmitError(this));
+            typename EmitError::Ptr emitError(new EmitError(this));
             process::nextTick(emitError);
             return false;
         } else {
@@ -191,7 +195,7 @@ class ServerImpl
             key->appendChar(':');
             key->append(String::valueOf(port));
             connectionKey_ = key->toString();
-            EmitListening::Ptr emitListening(new EmitListening(this));
+            typename EmitListening::Ptr emitListening(new EmitListening(this));
             process::nextTick(emitListening);
             return true;
         }
@@ -200,17 +204,14 @@ class ServerImpl
     void emitCloseIfDrained() {
         if (handle_ || connections_) return;
 
-        EmitClose::Ptr emitClose(new EmitClose(this));
+        typename EmitClose::Ptr emitClose(new EmitClose(this));
         process::nextTick(emitClose);
     }
 
  private:
-    class OnConnection : LIBJ_JS_FUNCTION(OnConnection)
-     private:
-        ServerImpl* self_;
-
+    class OnConnection : LIBJ_JS_FUNCTION_TEMPLATE(OnConnection)
      public:
-        OnConnection(ServerImpl* srv) : self_(srv) {}
+        OnConnection(Server* srv) : self_(srv) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             Value client = args->get(0);
@@ -223,7 +224,9 @@ class ServerImpl
                 clientHandle = tcp;
             }
             if (!clientHandle) {
-                self_->emit(EVENT_ERROR, uv::Error::last());
+                self_->emit(
+                    node::net::Server::EVENT_ERROR,
+                    node::uv::Error::last());
                 return Error::ILLEGAL_STATE;
             }
 
@@ -233,84 +236,88 @@ class ServerImpl
                 return Status::OK;
             }
 
-            SocketImpl::Ptr socket = SocketImpl::create(
+            Socket::Ptr socket = Socket::create(
                 clientHandle,
                 self_->hasFlag(ALLOW_HALF_OPEN));
-            socket->setFlag(SocketImpl::READABLE);
-            socket->setFlag(SocketImpl::WRITABLE);
+            socket->setFlag(Socket::READABLE);
+            socket->setFlag(Socket::WRITABLE);
 
             clientHandle->readStart();
 
             self_->connections_++;
             JsFunction::Ptr removeConnection(new RemoveConnection(self_));
-            socket->on(EVENT_CLOSE, removeConnection);
+            socket->on(node::net::Server::EVENT_CLOSE, removeConnection);
 
-            self_->emit(EVENT_CONNECTION, socket);
-            socket->emit(SocketImpl::EVENT_CONNECT);
+            self_->emit(node::net::Server::EVENT_CONNECTION, socket);
+            socket->emit(Socket::EVENT_CONNECT);
             return Status::OK;
         }
+
+     private:
+        Server* self_;
     };
 
-    class RemoveConnection : LIBJ_JS_FUNCTION(RemoveConnection)
-     private:
-        ServerImpl* self_;
-
+    class RemoveConnection : LIBJ_JS_FUNCTION_TEMPLATE(RemoveConnection)
      public:
-        RemoveConnection(ServerImpl* srv) : self_(srv) {}
+        RemoveConnection(Server* srv) : self_(srv) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             self_->connections_--;
             self_->emitCloseIfDrained();
             return Status::OK;
         }
+
+     private:
+        Server* self_;
     };
 
-    class EmitClose : LIBJ_JS_FUNCTION(EmitClose)
-     private:
-        ServerImpl* self_;
-
+    class EmitClose : LIBJ_JS_FUNCTION_TEMPLATE(EmitClose)
      public:
-        EmitClose(ServerImpl* srv) : self_(srv) {}
+        EmitClose(Server* srv) : self_(srv) {}
 
         virtual Value operator()(JsArray::Ptr args) {
-            self_->emit(EVENT_CLOSE);
+            LIBJ_STATIC_SYMBOL_DEF(EVENT_DESTROY, "destroy");
+
+            self_->emit(node::net::Server::EVENT_CLOSE);
             self_->emit(EVENT_DESTROY);
             return Status::OK;
         }
+
+     private:
+        Server* self_;
     };
 
-    class EmitError : LIBJ_JS_FUNCTION(EmitError)
-     private:
-        ServerImpl* self_;
-
+    class EmitError : LIBJ_JS_FUNCTION_TEMPLATE(EmitError)
      public:
-        EmitError(ServerImpl* srv) : self_(srv) {}
+        EmitError(Server* srv) : self_(srv) {}
 
         virtual Value operator()(JsArray::Ptr args) {
-            self_->emit(EVENT_ERROR, uv::Error::last());
+            self_->emit(
+                node::net::Server::EVENT_ERROR,
+                node::uv::Error::last());
             return Status::OK;
         }
+
+     private:
+        Server* self_;
     };
 
-    class EmitListening : LIBJ_JS_FUNCTION(EmitListening)
-     private:
-        ServerImpl* self_;
-
+    class EmitListening : LIBJ_JS_FUNCTION_TEMPLATE(EmitListening)
      public:
-        EmitListening(ServerImpl* srv) : self_(srv) {}
+        EmitListening(Server* srv) : self_(srv) {}
 
         virtual Value operator()(JsArray::Ptr args) {
-            self_->emit(EVENT_LISTENING);
+            self_->emit(node::net::Server::EVENT_LISTENING);
             return Status::OK;
         }
+
+     private:
+        Server* self_;
     };
 
-    class OnDestroy : LIBJ_JS_FUNCTION(OnDestroy)
-     private:
-        ServerImpl::Ptr self_;
-
+    class OnDestroy : LIBJ_JS_FUNCTION_TEMPLATE(OnDestroy)
      public:
-        OnDestroy(ServerImpl::Ptr srv) : self_(srv) {}
+        OnDestroy(Server::Ptr srv) : self_(srv) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             assert(!self_->handle_);
@@ -318,11 +325,15 @@ class ServerImpl
             self_->removeAllListeners();
             return Status::OK;
         }
+
+     private:
+        Server::Ptr self_;
     };
 
  public:
     enum Flag {
-        ALLOW_HALF_OPEN = 1 << 0,
+        ALLOW_HALF_OPEN      = 1 << 0,
+        HTTP_ALLOW_HALF_OPEN = 1 << 1,
     };
 
  private:
@@ -331,21 +342,19 @@ class ServerImpl
     Size maxConnections_;
     String::CPtr pipeName_;
     String::CPtr connectionKey_;
-    events::EventEmitter::Ptr ee_;
 
-    ServerImpl()
+ protected:
+    Server()
         : handle_(NULL)
         , connections_(0)
         , maxConnections_(0)
         , pipeName_(String::null())
-        , connectionKey_(String::null())
-        , ee_(events::EventEmitter::create()) {}
-
-    LIBNODE_EVENT_EMITTER_IMPL(ee_);
+        , connectionKey_(String::null()) {}
 };
 
 }  // namespace net
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_NET_SERVER_IMPL_H_
+#endif  // LIBNODE_DETAIL_NET_SERVER_H_

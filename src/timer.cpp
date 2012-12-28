@@ -1,8 +1,7 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <libnode/timer.h>
-
-#include "./uv/timer.h"
+#include <libnode/detail/uv/timer.h>
 
 namespace libj {
 namespace node {
@@ -16,7 +15,7 @@ namespace {
         OnTimeout(
             JsFunction::Ptr callback,
             JsArray::Ptr args,
-            uv::Timer* timer,
+            detail::uv::Timer* timer,
             Boolean repeat)
             : callback_(callback)
             , args_(args)
@@ -34,7 +33,7 @@ namespace {
      private:
         JsFunction::Ptr callback_;
         JsArray::Ptr args_;
-        uv::Timer* timer_;
+        detail::uv::Timer* timer_;
         Boolean repeat_;
     };
 
@@ -44,7 +43,7 @@ Value setTimeout(JsFunction::Ptr callback, UInt delay, JsArray::Ptr args) {
     if (!callback) return UNDEFINED;
 
     if (delay == 0 || delay > TIMEOUT_MAX) delay = 1;
-    uv::Timer* timer = new uv::Timer();
+    detail::uv::Timer* timer = new detail::uv::Timer();
     OnTimeout::Ptr onTimeout(new OnTimeout(callback, args, timer, false));
     timer->setOnTimeout(onTimeout);
     timer->start(delay, 0);
@@ -55,7 +54,7 @@ Value setInterval(JsFunction::Ptr callback, UInt delay, JsArray::Ptr args) {
     if (!callback) return UNDEFINED;
 
     if (delay == 0 || delay > TIMEOUT_MAX) delay = 1;
-    uv::Timer* timer = new uv::Timer();
+    detail::uv::Timer* timer = new detail::uv::Timer();
     OnTimeout::Ptr onTimeout(new OnTimeout(callback, args, timer, true));
     timer->setOnTimeout(onTimeout);
     timer->start(delay, delay);
@@ -63,8 +62,8 @@ Value setInterval(JsFunction::Ptr callback, UInt delay, JsArray::Ptr args) {
 }
 
 Boolean clearTimeout(const Value& timeoutId) {
-    uv::Timer* timer = NULL;
-    if (to<uv::Timer*>(timeoutId, &timer) && timer) {
+    detail::uv::Timer* timer = NULL;
+    if (to<detail::uv::Timer*>(timeoutId, &timer) && timer) {
         timer->close();
         return true;
     } else {
@@ -73,8 +72,8 @@ Boolean clearTimeout(const Value& timeoutId) {
 }
 
 Boolean clearInterval(const Value& intervalId) {
-    uv::Timer* timer = NULL;
-    if (to<uv::Timer*>(intervalId, &timer) && timer) {
+    detail::uv::Timer* timer = NULL;
+    if (to<detail::uv::Timer*>(intervalId, &timer) && timer) {
         timer->close();
         return true;
     } else {

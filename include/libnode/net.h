@@ -3,6 +3,7 @@
 #ifndef LIBNODE_NET_H_
 #define LIBNODE_NET_H_
 
+#include <libnode/net/option.h>
 #include <libnode/net/socket.h>
 #include <libnode/net/server.h>
 

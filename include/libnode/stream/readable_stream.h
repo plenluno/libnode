@@ -3,8 +3,8 @@
 #ifndef LIBNODE_STREAM_READABLE_STREAM_H_
 #define LIBNODE_STREAM_READABLE_STREAM_H_
 
-#include "libnode/buffer.h"
-#include "libnode/stream/stream.h"
+#include <libnode/buffer.h>
+#include <libnode/stream/stream.h>
 
 namespace libj {
 namespace node {
@@ -23,26 +23,10 @@ class ReadableStream : LIBNODE_STREAM(ReadableStream)
     virtual Boolean setEncoding(Buffer::Encoding enc) = 0;
 };
 
-#define LIBNODE_READABLE_STREAM(T) public libj::node::ReadableStream { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::ReadableStream)
-
-#define LIBNODE_READABLE_STREAM_IMPL(S) \
-    LIBNODE_STREAM_IMPL(S); \
-public: \
-    virtual Boolean readable() const { \
-        return S->readable(); \
-    } \
-    virtual Boolean pause() { \
-        return S->pause(); \
-    } \
-    virtual Boolean resume() { \
-        return S->resume(); \
-    } \
-    virtual Boolean setEncoding(Buffer::Encoding enc) { \
-        return S->setEncoding(enc); \
-    }
-
 }  // namespace node
 }  // namespace libj
+
+#define LIBNODE_READABLE_STREAM(T) public libj::node::ReadableStream { \
+    LIBJ_MUTABLE_DEFS(T, libj::node::ReadableStream)
 
 #endif  // LIBNODE_STREAM_READABLE_STREAM_H_

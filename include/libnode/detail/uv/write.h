@@ -1,14 +1,14 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_UV_WRITE_H_
-#define LIBNODE_SRC_UV_WRITE_H_
+#ifndef LIBNODE_DETAIL_UV_WRITE_H_
+#define LIBNODE_DETAIL_UV_WRITE_H_
 
 #include <libnode/buffer.h>
-
-#include "./req.h"
+#include <libnode/detail/uv/req.h>
 
 namespace libj {
 namespace node {
+namespace detail {
 namespace uv {
 
 class Write : public Req<uv_write_t> {
@@ -24,7 +24,8 @@ class Write : public Req<uv_write_t> {
 };
 
 }  // namespace uv
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_UV_WRITE_H_
+#endif  // LIBNODE_DETAIL_UV_WRITE_H_

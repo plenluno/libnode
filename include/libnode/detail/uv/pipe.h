@@ -1,12 +1,13 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_UV_PIPE_H_
-#define LIBNODE_SRC_UV_PIPE_H_
+#ifndef LIBNODE_DETAIL_UV_PIPE_H_
+#define LIBNODE_DETAIL_UV_PIPE_H_
 
-#include "./stream.h"
+#include <libnode/detail/uv/stream.h>
 
 namespace libj {
 namespace node {
+namespace detail {
 namespace uv {
 
 class Pipe : public Stream {
@@ -70,7 +71,8 @@ class Pipe : public Stream {
 };
 
 }  // namespace uv
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_UV_PIPE_H_
+#endif  // LIBNODE_DETAIL_UV_PIPE_H_

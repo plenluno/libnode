@@ -4,6 +4,7 @@
 #define LIBNODE_DETAIL_STRING_DECODER_H_
 
 #include <libnode/buffer.h>
+
 #include <libj/detail/js_object.h>
 
 namespace libj {

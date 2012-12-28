@@ -1,10 +1,8 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#include "libnode/http.h"
-#include "libnode/url.h"
-
-#include "./http/client_request_impl.h"
-#include "./http/outgoing_message.h"
+#include <libnode/http.h>
+#include <libnode/url.h>
+#include <libnode/detail/http/client_request.h>
 
 namespace libj {
 namespace node {
@@ -26,26 +24,24 @@ Server::Ptr createServer(JsFunction::Ptr requestListener) {
 ClientRequest::Ptr request(
     const Value& options,
     JsFunction::Ptr callback) {
-    LIBJ_STATIC_SYMBOL_DEF(symHttp,     "http:");
-    LIBJ_STATIC_SYMBOL_DEF(symProtocol, "protocol");
+    LIBJ_STATIC_SYMBOL_DEF(symHttp, "http:");
 
-    JsObject::CPtr opt = JsObject::null();
+    JsObject::CPtr opts = JsObject::null();
     String::CPtr url = toCPtr<String>(options);
     if (url) {
-        opt = url::parse(url);
+        opts = url::parse(url);
     } else {
-        opt = toCPtr<JsObject>(options);
+        opts = toCPtr<JsObject>(options);
     }
 
-    if (opt) {
-        String::CPtr protocol = opt->getCPtr<String>(symProtocol);
+    if (opts) {
+        String::CPtr protocol = opts->getCPtr<String>(url::PROTOCOL);
         if (protocol && !protocol->equals(symHttp)) {
             return ClientRequest::null();
         }
     }
 
-    OutgoingMessage::Ptr msg = OutgoingMessage::createInClient(opt, callback);
-    return ClientRequestImpl::create(msg);
+    return detail::http::ClientRequest::create(opts, callback);
 }
 
 ClientRequest::Ptr get(

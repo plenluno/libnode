@@ -71,12 +71,14 @@ set(libnode-src
     src/fs/stats.cpp
     src/http.cpp
     src/http/agent.cpp
+    src/http/client.cpp
     src/http/header.cpp
     src/http/method.cpp
-    src/http/outgoing_message.cpp
+    src/http/option.cpp
     src/http/server.cpp
     src/http/status.cpp
     src/net.cpp
+    src/net/option.cpp
     src/net/server.cpp
     src/net/socket.cpp
     src/node.cpp

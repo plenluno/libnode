@@ -1,14 +1,15 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_UV_TCP_H_
-#define LIBNODE_SRC_UV_TCP_H_
+#ifndef LIBNODE_DETAIL_UV_TCP_H_
+#define LIBNODE_DETAIL_UV_TCP_H_
+
+#include <libnode/detail/uv/stream.h>
 
 #include <libj/symbol.h>
 
-#include "./stream.h"
-
 namespace libj {
 namespace node {
+namespace detail {
 namespace uv {
 
 class Tcp : public Stream {
@@ -175,7 +176,8 @@ class Tcp : public Stream {
 };
 
 }  // namespace uv
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_UV_TCP_H_
+#endif  // LIBNODE_DETAIL_UV_TCP_H_

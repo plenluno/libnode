@@ -29,12 +29,12 @@ class AbstractServerResponse : public stream::AbstractWritableStream<I> {
         return response_->statusCode();
     }
 
-    virtual void setHeader(String::CPtr name, String::CPtr value) {
-        response_->setHeader(name, value);
-    }
-
     virtual String::CPtr getHeader(String::CPtr name) const {
         return response_->getHeader(name);
+    }
+
+    virtual void setHeader(String::CPtr name, String::CPtr value) {
+        response_->setHeader(name, value);
     }
 
     virtual void removeHeader(String::CPtr name) {

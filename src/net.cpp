@@ -1,11 +1,10 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
 #include <libnode/net.h>
+#include <libnode/detail/net/server.h>
+#include <libnode/detail/net/socket.h>
 
 #include <uv.h>
-
-#include "./net/server_impl.h"
-#include "./net/socket_impl.h"
 
 namespace libj {
 namespace node {
@@ -40,13 +39,13 @@ Boolean isIPv6(String::CPtr ip) {
 Server::Ptr createServer(
     JsObject::CPtr options,
     JsFunction::Ptr onConnection) {
-    return ServerImpl::create(options, onConnection);
+    return detail::net::Server<Server>::create(options, onConnection);
 }
 
 Socket::Ptr createConnection(
     JsObject::CPtr options,
     JsFunction::Ptr onConnect) {
-    SocketImpl::Ptr sock = SocketImpl::create(options);
+    detail::net::Socket::Ptr sock = detail::net::Socket::create(options);
     sock->connect(options, onConnect);
     return sock;
 }
@@ -55,7 +54,7 @@ Socket::Ptr createConnection(
     Int port,
     String::CPtr host,
     JsFunction::Ptr onConnect) {
-    SocketImpl::Ptr sock = SocketImpl::create();
+    detail::net::Socket::Ptr sock = detail::net::Socket::create();
     sock->connect(port, host, onConnect);
     return sock;
 }
@@ -63,7 +62,7 @@ Socket::Ptr createConnection(
 Socket::Ptr createConnection(
     String::CPtr path,
     JsFunction::Ptr onConnect) {
-    SocketImpl::Ptr sock = SocketImpl::create();
+    detail::net::Socket::Ptr sock = detail::net::Socket::create();
     sock->connect(path, onConnect);
     return sock;
 }

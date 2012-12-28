@@ -3,7 +3,7 @@
 #ifndef LIBNODE_HTTP_CLIENT_RESPONSE_H_
 #define LIBNODE_HTTP_CLIENT_RESPONSE_H_
 
-#include "libnode/stream/readable_stream.h"
+#include <libnode/stream/readable_stream.h>
 
 namespace libj {
 namespace node {
@@ -19,26 +19,6 @@ class ClientResponse : LIBNODE_READABLE_STREAM(ClientResponse)
 
     virtual JsObject::CPtr trailers() const = 0;
 };
-
-#define LIBNODE_HTTP_CLIENT_RESPONSE(T) \
-    public libj::node::http::ClientResponse { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::http::ClientResponse)
-
-#define LIBNODE_HTTP_CLIENT_RESPONSE_IMPL(CR) \
-    LIBNODE_READABLE_STREAM_IMPL(CR); \
-public: \
-    virtual Int statusCode() const { \
-        return CR->statusCode(); \
-    } \
-    virtual String::CPtr httpVersion() const { \
-        return CR->httpVersion(); \
-    } \
-    virtual JsObject::CPtr headers() const { \
-        return CR->headers(); \
-    } \
-    virtual JsObject::CPtr trailers() const { \
-        return CR->trailers(); \
-    }
 
 }  // namespace http
 }  // namespace node

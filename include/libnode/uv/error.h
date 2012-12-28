@@ -3,8 +3,9 @@
 #ifndef LIBNODE_UV_ERROR_H_
 #define LIBNODE_UV_ERROR_H_
 
-#include <uv.h>
 #include <libj/error.h>
+
+#include <uv.h>
 
 namespace libj {
 namespace node {

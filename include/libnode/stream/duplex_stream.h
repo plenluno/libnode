@@ -3,8 +3,8 @@
 #ifndef LIBNODE_STREAM_DUPLEX_STREAM_H_
 #define LIBNODE_STREAM_DUPLEX_STREAM_H_
 
-#include "libnode/buffer.h"
-#include "libnode/stream/stream.h"
+#include <libnode/buffer.h>
+#include <libnode/stream/stream.h>
 
 namespace libj {
 namespace node {
@@ -39,42 +39,10 @@ class DuplexStream : LIBNODE_STREAM(DuplexStream)
     virtual Boolean destroySoon() = 0;
 };
 
-#define LIBNODE_DUPLEX_STREAM(T) public libj::node::DuplexStream { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::DuplexStream)
-
-#define LIBNODE_DUPLEX_STREAM_IMPL(S) \
-    LIBNODE_STREAM_IMPL(S); \
-public: \
-    virtual Boolean readable() const { \
-        return S->readable(); \
-    } \
-    virtual Boolean pause() { \
-        return S->pause(); \
-    } \
-    virtual Boolean resume() { \
-        return S->resume(); \
-    } \
-    virtual Boolean setEncoding(Buffer::Encoding enc) { \
-        return S->setEncoding(enc); \
-    } \
-    virtual Boolean writable() const { \
-        return S->writable(); \
-    } \
-    virtual Boolean write( \
-        const Value& data, \
-        Buffer::Encoding enc = Buffer::NONE) { \
-        return S->write(data, enc); \
-    } \
-    virtual Boolean end( \
-        const Value& data = UNDEFINED, \
-        Buffer::Encoding enc = Buffer::NONE) { \
-        return S->end(data, enc); \
-    } \
-    virtual Boolean destroySoon() { \
-        return S->destroySoon(); \
-    }
-
 }  // namespace node
 }  // namespace libj
+
+#define LIBNODE_DUPLEX_STREAM(T) public libj::node::DuplexStream { \
+    LIBJ_MUTABLE_DEFS(T, libj::node::DuplexStream)
 
 #endif  // LIBNODE_STREAM_DUPLEX_STREAM_H_

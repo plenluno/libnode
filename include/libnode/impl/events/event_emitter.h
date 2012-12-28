@@ -9,9 +9,9 @@ namespace events {
 
 inline void EventEmitter::emit(
     String::CPtr event,
-    const Value& val) {
+    const Value& v1) {
     JsArray::Ptr args = JsArray::create();
-    args->add(val);
+    args->add(v1);
     emit(event, args);
 }
 

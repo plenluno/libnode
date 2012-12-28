@@ -1,30 +1,31 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_HTTP_INCOMING_MESSAGE_H_
-#define LIBNODE_SRC_HTTP_INCOMING_MESSAGE_H_
+#ifndef LIBNODE_DETAIL_HTTP_INCOMING_MESSAGE_H_
+#define LIBNODE_DETAIL_HTTP_INCOMING_MESSAGE_H_
 
-#include <assert.h>
+#include <libnode/http/header.h>
+#include <libnode/process.h>
+#include <libnode/stream/readable_stream.h>
+#include <libnode/string_decoder.h>
+#include <libnode/detail/net/socket.h>
+#include <libnode/detail/events/event_emitter.h>
+
 #include <libj/linked_list.h>
 
-#include "libnode/http/header.h"
-#include "libnode/process.h"
-#include "libnode/stream/readable_stream.h"
-#include "libnode/string_decoder.h"
-
-#include "../flag.h"
-#include "../net/socket_impl.h"
+#include <assert.h>
 
 namespace libj {
 namespace node {
+namespace detail {
 namespace http {
 
 class OutgoingMessage;
 
-class IncomingMessage
-    : public FlagMixin
-    , LIBNODE_READABLE_STREAM(IncomingMessage)
+class IncomingMessage : public events::EventEmitter<ReadableStream> {
  public:
-    static Ptr create(net::SocketImpl::Ptr sock) {
+    LIBJ_MUTABLE_DEFS(IncomingMessage, ReadableStream);
+
+    static Ptr create(net::Socket::Ptr sock) {
         if (sock) {
             return Ptr(new IncomingMessage(sock));
         } else {
@@ -32,14 +33,32 @@ class IncomingMessage
         }
     }
 
-    net::Socket::Ptr socket() const {
-        return socket_;
+    virtual Boolean readable() const {
+        return hasFlag(READABLE);
     }
 
-    net::Socket::Ptr connection() const {
-        return socket_;
+    virtual Boolean setEncoding(Buffer::Encoding enc) {
+        decoder_ = StringDecoder::create(enc);
+        return !!decoder_;
     }
 
+    virtual Boolean pause() {
+        setFlag(PAUSED);
+        return socket_ && socket_->pause();
+    }
+
+    virtual Boolean resume() {
+        unsetFlag(PAUSED);
+        Boolean res = socket_ && socket_->resume();
+        emitPending();
+        return res;
+    }
+
+    virtual Boolean destroy() {
+        return socket_ && socket_->destroy();
+    }
+
+ public:
     Int statusCode() const {
         return statusCode_;
     }
@@ -48,48 +67,35 @@ class IncomingMessage
         return httpVersion_;
     }
 
-    JsObject::CPtr headers() const {
+    libj::JsObject::CPtr headers() const {
         return headers_;
     }
 
-    JsObject::CPtr trailers() const {
+    libj::JsObject::CPtr trailers() const {
         return trailers_;
-    }
-
-    String::CPtr url() const {
-        return url_;
     }
 
     String::CPtr method() const {
         return method_;
     }
 
-    Boolean readable() const {
-        return hasFlag(READABLE);
+    String::CPtr url() const {
+        return url_;
     }
 
-    Boolean pause() {
-        setFlag(PAUSED);
-        return socket_ && socket_->pause();
+    node::net::Socket::Ptr socket() const {
+        return socket_;
     }
 
-    Boolean resume() {
-        unsetFlag(PAUSED);
-        Boolean res = socket_ && socket_->resume();
-        emitPending();
-        return res;
-    }
-
-    Boolean destroy() {
-        return socket_ && socket_->destroy();
-    }
-
-    Boolean setEncoding(Buffer::Encoding enc) {
-        decoder_ = StringDecoder::create(enc);
-        return !!decoder_;
+    node::net::Socket::Ptr connection() const {
+        return socket_;
     }
 
  public:
+    void setStatusCode(Int statusCode) {
+        statusCode_ = statusCode;
+    }
+
     Int httpVersionMajor() const {
         return httpVersionMajor_;
     }
@@ -110,10 +116,6 @@ class IncomingMessage
         httpVersionMinor_ = minor;
     }
 
-    void setStatusCode(Int statusCode) {
-        statusCode_ = statusCode;
-    }
-
     String::CPtr getHeader(String::CPtr name) const {
         return headers_->getCPtr<String>(name);
     }
@@ -128,25 +130,25 @@ class IncomingMessage
         static Set::Ptr commaSeparated = Set::null();
         if (!commaSeparated) {
             commaSeparated = Set::create();
-            commaSeparated->add(LHEADER_ACCEPT);
-            commaSeparated->add(LHEADER_ACCEPT_CHARSET);
-            commaSeparated->add(LHEADER_ACCEPT_ENCODING);
-            commaSeparated->add(LHEADER_ACCEPT_LANGUAGE);
-            commaSeparated->add(LHEADER_CONNECTION);
-            commaSeparated->add(LHEADER_COOKIE);
-            commaSeparated->add(LHEADER_PRAGMA);
-            commaSeparated->add(LHEADER_LINK);
-            commaSeparated->add(LHEADER_WWW_AUTHENTICATE);
-            commaSeparated->add(LHEADER_PROXY_AUTHENTICATE);
-            commaSeparated->add(LHEADER_SEC_WEBSOCKET_EXTENSIONS);
-            commaSeparated->add(LHEADER_SEC_WEBSOCKET_PROTOCOL);
+            commaSeparated->add(node::http::LHEADER_ACCEPT);
+            commaSeparated->add(node::http::LHEADER_ACCEPT_CHARSET);
+            commaSeparated->add(node::http::LHEADER_ACCEPT_ENCODING);
+            commaSeparated->add(node::http::LHEADER_ACCEPT_LANGUAGE);
+            commaSeparated->add(node::http::LHEADER_CONNECTION);
+            commaSeparated->add(node::http::LHEADER_COOKIE);
+            commaSeparated->add(node::http::LHEADER_PRAGMA);
+            commaSeparated->add(node::http::LHEADER_LINK);
+            commaSeparated->add(node::http::LHEADER_WWW_AUTHENTICATE);
+            commaSeparated->add(node::http::LHEADER_PROXY_AUTHENTICATE);
+            commaSeparated->add(node::http::LHEADER_SEC_WEBSOCKET_EXTENSIONS);
+            commaSeparated->add(node::http::LHEADER_SEC_WEBSOCKET_PROTOCOL);
         }
 
         assert(name && value);
 
-        JsObject::Ptr dest = hasFlag(COMPLETE) ? trailers_ : headers_;
+        libj::JsObject::Ptr dest = hasFlag(COMPLETE) ? trailers_ : headers_;
         String::CPtr field = name->toLowerCase();
-        if (field->equals(LHEADER_SET_COOKIE)) {
+        if (field->equals(node::http::LHEADER_SET_COOKIE)) {
             JsArray::Ptr vals = headers_->getPtr<JsArray>(field);
             if (vals) {
                 vals->add(value);
@@ -172,12 +174,12 @@ class IncomingMessage
         }
     }
 
-    void setUrl(String::CPtr url) {
-        url_ = url;
-    }
-
     void setMethod(String::CPtr method) {
         method_ = method;
+    }
+
+    void setUrl(String::CPtr url) {
+        url_ = url;
     }
 
     Buffer::Encoding encoding() const {
@@ -227,15 +229,6 @@ class IncomingMessage
         }
     }
 
- public:
-    typedef enum {
-        COMPLETE    = 1 << 0,
-        READABLE    = 1 << 1,
-        PAUSED      = 1 << 2,
-        END_EMITTED = 1 << 3,
-        UPGRADE     = 1 << 4,
-    } Flag;
-
  private:
     class EmitPending : LIBJ_JS_FUNCTION(EmitPending)
      public:
@@ -260,7 +253,7 @@ class IncomingMessage
                 }
             }
             if (callback_) (*callback_)();
-            return libj::Status::OK;
+            return Status::OK;
         }
 
      private:
@@ -268,22 +261,30 @@ class IncomingMessage
         JsFunction::Ptr callback_;
     };
 
+ public:
+    typedef enum {
+        COMPLETE    = 1 << 0,
+        READABLE    = 1 << 1,
+        PAUSED      = 1 << 2,
+        END_EMITTED = 1 << 3,
+        UPGRADE     = 1 << 4,
+    } Flag;
+
  private:
-    net::SocketImpl::Ptr socket_;
+    net::Socket::Ptr socket_;
     String::CPtr method_;
     String::CPtr url_;
     String::CPtr httpVersion_;
     Int httpVersionMajor_;
     Int httpVersionMinor_;
     Int statusCode_;
-    JsObject::Ptr headers_;
-    JsObject::Ptr trailers_;
+    libj::JsObject::Ptr headers_;
+    libj::JsObject::Ptr trailers_;
     LinkedList::Ptr pendings_;
     StringDecoder::Ptr decoder_;
     OutgoingMessage* req_;
-    EventEmitter::Ptr ee_;
 
-    IncomingMessage(net::SocketImpl::Ptr sock)
+    IncomingMessage(net::Socket::Ptr sock)
         : socket_(sock)
         , method_(String::null())
         , url_(String::create())
@@ -291,20 +292,18 @@ class IncomingMessage
         , httpVersionMajor_(0)
         , httpVersionMinor_(0)
         , statusCode_(0)
-        , headers_(JsObject::create())
-        , trailers_(JsObject::create())
+        , headers_(libj::JsObject::create())
+        , trailers_(libj::JsObject::create())
         , pendings_(LinkedList::create())
         , decoder_(StringDecoder::null())
-        , req_(NULL)
-        , ee_(EventEmitter::create()) {
+        , req_(NULL) {
         setFlag(READABLE);
     }
-
-    LIBNODE_EVENT_EMITTER_IMPL(ee_);
 };
 
 }  // namespace http
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_HTTP_INCOMING_MESSAGE_H_
+#endif  // LIBNODE_DETAIL_HTTP_INCOMING_MESSAGE_H_

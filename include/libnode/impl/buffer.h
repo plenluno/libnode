@@ -3,8 +3,9 @@
 #ifndef LIBNODE_IMPL_BUFFER_H_
 #define LIBNODE_IMPL_BUFFER_H_
 
-#include <libj/exception.h>
 #include <libnode/util.h>
+
+#include <libj/exception.h>
 
 namespace libj {
 namespace node {

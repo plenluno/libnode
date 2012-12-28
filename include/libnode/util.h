@@ -3,8 +3,9 @@
 #ifndef LIBNODE_UTIL_H_
 #define LIBNODE_UTIL_H_
 
-#include <libj/string.h>
 #include <libnode/buffer.h>
+
+#include <libj/string.h>
 
 namespace libj {
 namespace node {

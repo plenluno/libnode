@@ -2,8 +2,9 @@
 
 #include <libnode/url.h>
 
-#include <url_parser.h>
 #include <libj/string_buffer.h>
+
+#include <url_parser.h>
 
 namespace libj {
 namespace node {

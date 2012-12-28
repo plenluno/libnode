@@ -4,6 +4,7 @@
 #define LIBNODE_DETAIL_CRYPTO_HASH_H_
 
 #include <libnode/buffer.h>
+
 #include <libj/detail/js_object.h>
 
 #include <assert.h>

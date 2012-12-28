@@ -3,8 +3,9 @@
 #ifndef LIBNODE_CRYPTO_HASH_H_
 #define LIBNODE_CRYPTO_HASH_H_
 
-#include <libj/js_object.h>
 #include <libnode/buffer.h>
+
+#include <libj/js_object.h>
 
 namespace libj {
 namespace node {

@@ -1,26 +1,27 @@
 // Copyright (c) 2012 Plenluno All rights reserved.
 
-#ifndef LIBNODE_SRC_HTTP_PARSER_H_
-#define LIBNODE_SRC_HTTP_PARSER_H_
+#ifndef LIBNODE_DETAIL_HTTP_PARSER_H_
+#define LIBNODE_DETAIL_HTTP_PARSER_H_
+
+#include <libnode/buffer.h>
+#include <libnode/http/method.h>
+#include <libnode/detail/flags.h>
+#include <libnode/detail/net/socket.h>
+#include <libnode/detail/http/incoming_message.h>
 
 #include <assert.h>
 #include <http_parser.h>
 
-#include "libnode/buffer.h"
-#include "libnode/http/method.h"
-
-#include "./incoming_message.h"
-#include "../flag.h"
-
 namespace libj {
 namespace node {
+namespace detail {
 namespace http {
 
-class Parser : public FlagMixin {
+class Parser : public Flags {
  public:
     Parser(
         enum http_parser_type type,
-        net::SocketImpl::Ptr sock,
+        net::Socket::Ptr sock,
         Size maxHeadersCount = 0)
         : url_(String::null())
         , method_(String::null())
@@ -81,7 +82,7 @@ class Parser : public FlagMixin {
             keeper->add(socket_->setOnEnd(JsFunction::null()));
             socket_->setParser(NULL);
         }
-        socket_ = net::SocketImpl::null();
+        socket_ = net::Socket::null();
         incoming_ = IncomingMessage::null();
         return keeper;
     }
@@ -158,28 +159,28 @@ class Parser : public FlagMixin {
             String::CPtr method;
             switch (parser->method) {
             case HTTP_DELETE:
-                method = METHOD_DELETE;
+                method = node::http::METHOD_DELETE;
                 break;
             case HTTP_GET:
-                method = METHOD_GET;
+                method = node::http::METHOD_GET;
                 break;
             case HTTP_HEAD:
-                method = METHOD_HEAD;
+                method = node::http::METHOD_HEAD;
                 break;
             case HTTP_POST:
-                method = METHOD_POST;
+                method = node::http::METHOD_POST;
                 break;
             case HTTP_PUT:
-                method = METHOD_PUT;
+                method = node::http::METHOD_PUT;
                 break;
             case HTTP_CONNECT:
-                method = METHOD_CONNECT;
+                method = node::http::METHOD_CONNECT;
                 break;
             case HTTP_OPTIONS:
-                method = METHOD_OPTIONS;
+                method = node::http::METHOD_OPTIONS;
                 break;
             case HTTP_TRACE:
-                method = METHOD_TRACE;
+                method = node::http::METHOD_TRACE;
                 break;
             default:
                 method = String::create();
@@ -326,13 +327,14 @@ class Parser : public FlagMixin {
     JsArray::Ptr fields_;
     JsArray::Ptr values_;
     Size maxHeadersCount_;
-    net::SocketImpl::Ptr socket_;
+    net::Socket::Ptr socket_;
     IncomingMessage::Ptr incoming_;
     JsFunction::Ptr onIncoming_;
 };
 
 }  // namespace http
+}  // namespace detail
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_SRC_HTTP_PARSER_H_
+#endif  // LIBNODE_DETAIL_HTTP_PARSER_H_

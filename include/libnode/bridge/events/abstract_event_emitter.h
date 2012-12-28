@@ -4,6 +4,7 @@
 #define LIBNODE_BRIDGE_EVENTS_ABSTRACT_EVENT_EMITTER_H_
 
 #include <libnode/events/event_emitter.h>
+
 #include <libj/bridge/abstract_js_object.h>
 
 namespace libj {
@@ -55,9 +56,11 @@ class AbstractEventEmitter : public libj::bridge::AbstractJsObject<I> {
         ee_->emit(event, args);
     }
 
+ public:
     void emit(
-        String::CPtr event, const Value& v) {
-        ee_->emit(event, v);
+        String::CPtr event,
+        const Value& v1) {
+        ee_->emit(event, v1);
     }
 
     void emit(
