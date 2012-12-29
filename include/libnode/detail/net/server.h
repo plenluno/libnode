@@ -315,6 +315,7 @@ class Server : public events::EventEmitter<I> {
         Server* self_;
     };
 
+ protected:
     class OnDestroy : LIBJ_JS_FUNCTION_TEMPLATE(OnDestroy)
      public:
         OnDestroy(typename Server::Ptr srv) : self_(srv) {}
