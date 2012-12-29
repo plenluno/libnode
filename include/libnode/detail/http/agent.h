@@ -38,6 +38,8 @@ class Agent : public events::EventEmitter<node::http::Agent> {
         String::CPtr host,
         String::CPtr port,
         String::CPtr localAddress) {
+        LIBJ_STATIC_SYMBOL_DEF(symRequest, "$request");
+
         StringBuffer::Ptr sb = StringBuffer::create();
         sb->append(host);
         sb->appendChar(':');
@@ -53,8 +55,12 @@ class Agent : public events::EventEmitter<node::http::Agent> {
             ss = JsArray::create();
             sockets_->put(name, ss);
         }
+
         if (ss->length() < maxSockets_) {
-            req->onSocket(createSocket(name, host, port, localAddress, req));
+            net::Socket::Ptr socket =
+                createSocket(name, host, port, localAddress, req);
+            req->onSocket(socket);
+            socket->put(symRequest, req);
         } else {
             JsArray::Ptr rs = requests_->getPtr<JsArray>(name);
             if (!rs) {
@@ -106,7 +112,6 @@ class Agent : public events::EventEmitter<node::http::Agent> {
 
         OnClose::Ptr onClose(new OnClose(
             this, socket, name, host, port, localAddress));
-        onClose->setRequest(req);
         socket->on(EVENT_CLOSE, onClose);
 
         OnRemove::Ptr onRemove(new OnRemove(
@@ -144,6 +149,8 @@ class Agent : public events::EventEmitter<node::http::Agent> {
         Free(libj::JsObject::Ptr reqs) : requests_(reqs) {}
 
         virtual Value operator()(JsArray::Ptr args) {
+            LIBJ_STATIC_SYMBOL_DEF(symRequest, "$request");
+
             net::Socket::Ptr socket = args->getPtr<net::Socket>(0);
             String::CPtr host = args->getCPtr<String>(1);
             String::CPtr port = args->getCPtr<String>(2);
@@ -163,11 +170,14 @@ class Agent : public events::EventEmitter<node::http::Agent> {
             if (rs && rs->length()) {
                 OutgoingMessage::Ptr req = toPtr<OutgoingMessage>(rs->shift());
                 req->onSocket(socket);
+                socket->put(symRequest, req);
+
                 if (rs->isEmpty()) {
                     requests_->remove(name);
                 }
             } else {
                 socket->destroy();
+                socket->remove(symRequest);
             }
             return Status::OK;
         }
@@ -219,16 +229,11 @@ class Agent : public events::EventEmitter<node::http::Agent> {
             , name_(name)
             , host_(host)
             , port_(port)
-            , localAddress_(localAddress)
-            , req_(OutgoingMessage::null()) {}
+            , localAddress_(localAddress) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             self_->removeSocket(socket_, name_, host_, port_, localAddress_);
             return Status::OK;
-        }
-
-        void setRequest(OutgoingMessage::Ptr req) {
-            req_ = req;
         }
 
      private:
@@ -238,7 +243,6 @@ class Agent : public events::EventEmitter<node::http::Agent> {
         String::CPtr host_;
         String::CPtr port_;
         String::CPtr localAddress_;
-        OutgoingMessage::Ptr req_;  // to retain OutgoingMessage
     };
 
     class OnRemove : LIBJ_JS_FUNCTION(OnRemove)

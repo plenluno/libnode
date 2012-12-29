@@ -3,9 +3,6 @@
 #include <gtest/gtest.h>
 #include <libnode/url.h>
 
-#include <assert.h>
-#include <libj/json.h>
-
 #include "./gtest_http_common.h"
 
 namespace libj {
@@ -25,9 +22,11 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
         , res_(res)
         , onData_(onData) {}
 
-    virtual Value operator()(JsArray::Ptr args) {
-        static UInt count = 0;
+    static void clear() {
+        count_ = 0;
+    }
 
+    virtual Value operator()(JsArray::Ptr args) {
         String::CPtr body = onData_->string();
 
         res_->setHeader(
@@ -39,17 +38,21 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
         res_->write(body);
         res_->end();
 
-        count++;
-        if (count >= NUM_REQS) srv_->close();
+        count_++;
+        if (count_ >= NUM_REQS) srv_->close();
         return Status::OK;
     }
 
  private:
+    static UInt count_;
+
     http::Server::Ptr srv_;
     http::ServerRequest::Ptr req_;
     http::ServerResponse::Ptr res_;
     GTestOnData::Ptr onData_;
 };
+
+UInt GTestHttpServerOnEnd::count_ = 0;
 
 class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
  public:
@@ -78,9 +81,51 @@ class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
     http::Server::Ptr srv_;
 };
 
-TEST(GTestHttpEcho, TestEcho) {
+TEST(GTestHttpEcho, TestConnectionKeepAlive) {
     GTestOnEnd::clear();
     GTestOnClose::clear();
+    GTestHttpServerOnEnd::clear();
+
+    String::CPtr msg = String::create("abc");
+
+    http::Server::Ptr srv = http::Server::create();
+    GTestHttpServerOnRequest::Ptr onRequest(new GTestHttpServerOnRequest(srv));
+    srv->on(http::Server::EVENT_REQUEST, onRequest);
+    srv->listen(10000);
+
+    String::CPtr url = String::create("http://127.0.0.1:10000/xyz");
+    JsObject::Ptr options = url::parse(url);
+    JsObject::Ptr headers = JsObject::create();
+    headers->put(
+        http::HEADER_CONTENT_LENGTH,
+        String::valueOf(Buffer::byteLength(msg)));
+    options->put(http::OPTION_HEADERS, headers);
+
+    GTestHttpClientOnResponse::Ptr onResponse(new GTestHttpClientOnResponse());
+    for (Size i = 0; i < NUM_REQS; i++) {
+        http::ClientRequest::Ptr req = http::request(options, onResponse);
+        req->write(msg);
+        req->end();
+    }
+
+    node::run();
+
+    ASSERT_EQ(0, GTestOnClose::count());
+
+    JsArray::CPtr messages = GTestOnEnd::messages();
+    Size numMsgs = messages->length();
+    ASSERT_EQ(NUM_REQS, numMsgs);
+    for (Size i = 0; i < numMsgs; i++) {
+        console::printf(console::INFO, ".");
+        ASSERT_TRUE(messages->get(i).equals(msg));
+    }
+    console::printf(console::INFO, "\n");
+}
+
+TEST(GTestHttpEcho, TestConnectionClose) {
+    GTestOnEnd::clear();
+    GTestOnClose::clear();
+    GTestHttpServerOnEnd::clear();
 
     String::CPtr msg = String::create("xyz");
 
@@ -98,10 +143,9 @@ TEST(GTestHttpEcho, TestEcho) {
     headers->put(
         http::HEADER_CONTENT_LENGTH,
         String::valueOf(Buffer::byteLength(msg)));
-    options->put(String::create("headers"), headers);
+    options->put(http::OPTION_HEADERS, headers);
 
     GTestHttpClientOnResponse::Ptr onResponse(new GTestHttpClientOnResponse());
-    JsArray::Ptr reqs = JsArray::create();
     for (Size i = 0; i < NUM_REQS; i++) {
         http::ClientRequest::Ptr req = http::request(options, onResponse);
         req->write(msg);
