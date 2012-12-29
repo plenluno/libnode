@@ -23,17 +23,24 @@ class Server : public net::Server<node::http::Server> {
     LIBJ_MUTABLE_DEFS(Server, node::http::Server);
 
     static Ptr create(JsFunction::Ptr requestListener) {
-        Server* srv = new Server();
-        srv->on(
+        LIBJ_STATIC_SYMBOL_DEF(EVENT_DESTROY, "destroy");
+
+        Server* server = new Server();
+
+        server->on(
             EVENT_CONNECTION,
-            JsFunction::Ptr(new ServerOnConnection(srv)));
-        srv->on(
+            JsFunction::Ptr(new ServerOnConnection(server)));
+        server->on(
             EVENT_CLIENT_ERROR,
             JsFunction::Ptr(new ServerOnClientError()));
+
         if (requestListener) {
-            srv->on(EVENT_REQUEST, requestListener);
+            server->on(EVENT_REQUEST, requestListener);
         }
-        return Ptr(srv);
+
+        Ptr srv(server);
+        server->on(EVENT_DESTROY, JsFunction::Ptr(new OnDestroy(srv)));
+        return srv;
     }
 
     virtual Size maxHeadersCount() const {
