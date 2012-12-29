@@ -62,7 +62,7 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
     headers->put(
         http::HEADER_CONTENT_LENGTH,
         String::valueOf(Buffer::byteLength(msg)));
-    options->put(String::create("headers"), headers);
+    options->put(http::OPTION_HEADERS, headers);
 
     GTestHttpClientOnResponse::Ptr onResponse(new GTestHttpClientOnResponse());
     http::ClientRequest::Ptr req = http::request(options, onResponse);
