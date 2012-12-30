@@ -73,17 +73,19 @@ class Parser : public Flags {
     }
 
     JsArray::Ptr free() {
-        JsArray::Ptr keeper = JsArray::create();
         fields_ = JsArray::create();
         values_ = JsArray::create();
-        onIncoming_ = JsFunction::null();
+
+        JsArray::Ptr keeper = JsArray::create();
         if (socket_) {
             keeper->add(socket_->setOnData(JsFunction::null()));
             keeper->add(socket_->setOnEnd(JsFunction::null()));
             socket_->setParser(NULL);
         }
         socket_ = net::Socket::null();
+
         incoming_ = IncomingMessage::null();
+        onIncoming_ = JsFunction::null();
         return keeper;
     }
 

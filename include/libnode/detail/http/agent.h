@@ -233,6 +233,7 @@ class Agent : public events::EventEmitter<node::http::Agent> {
 
         virtual Value operator()(JsArray::Ptr args) {
             self_->removeSocket(socket_, name_, host_, port_, localAddress_);
+            process::nextTick(JsFunction::Ptr(new SocketFree(socket_)));
             return Status::OK;
         }
 
@@ -285,6 +286,28 @@ class Agent : public events::EventEmitter<node::http::Agent> {
         String::CPtr localAddress_;
         OnFree::Ptr onFree_;
         OnClose::Ptr onClose_;
+    };
+
+    class SocketFree : LIBJ_JS_FUNCTION(SocketFree)
+     public:
+         SocketFree(net::Socket::Ptr socket)
+            : socket_(socket) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
+            LIBJ_STATIC_SYMBOL_DEF(symRequest, "$request");
+
+            socket_->remove(symRequest);
+
+            Parser* parser = socket_->parser();
+            if (parser) {
+                delete parser;
+                socket_->setParser(NULL);
+            }
+            return Status::OK;
+        }
+
+     private:
+        net::Socket::Ptr socket_;
     };
 
  private:

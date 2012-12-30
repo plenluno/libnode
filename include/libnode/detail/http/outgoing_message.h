@@ -321,6 +321,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
     static JsArray::Ptr freeParser(Parser* parser, OutgoingMessage* req) {
         assert(parser);
+        assert(!req || !req->parser_ || req->parser_ == parser);
         JsArray::Ptr keeper = parser->free();
         delete parser;
         if (req) {
@@ -906,7 +907,12 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             , socket_(socket) {}
 
         virtual Value operator()(JsArray::Ptr args) {
-            Parser* parser = new Parser(HTTP_RESPONSE, socket_);
+            Parser* parser = socket_->parser();
+            if (parser) {
+                freeParser(parser, self_);
+            }
+
+            parser = new Parser(HTTP_RESPONSE, socket_);
             self_->socket_ = socket_;
             self_->parser_ = parser;
 
