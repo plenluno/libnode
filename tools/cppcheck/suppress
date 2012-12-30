@@ -1,0 +1,3 @@
+unnecessaryQualification:include/libnode/detail/net/socket.h:38
+unnecessaryQualification:include/libnode/detail/http/agent.h:20
+unnecessaryQualification:include/libnode/detail/http/server.h:23
