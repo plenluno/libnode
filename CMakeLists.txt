@@ -8,7 +8,7 @@ include(CMakeDependentOption)
 
 option(LIBNODE_USE_CXX11 "Use C++11" OFF)
 option(LIBNODE_USE_OPENSSL "Use OpenSSL" ON)
-option(LIBNODE_BUILD_GTEST "Build Google Tests" OFF)
+option(LIBNODE_BUILD_TESTS "Build Tests" OFF)
 
 cmake_dependent_option(LIBJ_USE_CXX11 "Use C++11" ON "LIBNODE_USE_CXX11" OFF)
 cmake_dependent_option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON "LIBNODE_USE_OPENSSL" OFF)
@@ -16,27 +16,7 @@ cmake_dependent_option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON "LIBNODE_USE_OPE
 message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
 message(STATUS "LIBNODE_USE_OPENSSL=${LIBNODE_USE_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
-message(STATUS "LIBNODE_BUILD_GTEST=${LIBNODE_BUILD_GTEST}")
-
-# find libraries -----------------------------------------------------------------------------------
-
-find_library(PTHREAD pthread REQUIRED)
-if(NOT EXISTS ${PTHREAD})
-    message(FATAL_ERROR "libpthread not found.")
-endif()
-
-if(LIBNODE_BUILD_GTEST)
-    find_library(GTEST gtest REQUIRED)
-    if(NOT EXISTS ${GTEST})
-        message(FATAL_ERROR "libgtest not found.")
-    endif()
-endif(LIBNODE_BUILD_GTEST)
-
-# configure ----------------------------------------------------------------------------------------
-
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h )
+message(STATUS "LIBNODE_BUILD_TESTS=${LIBNODE_BUILD_TESTS}")
 
 # variables ----------------------------------------------------------------------------------------
 
@@ -62,6 +42,13 @@ if(LIBNODE_BUILD_OPENSSL)
         deps/openssl/include
     )
 endif(LIBNODE_BUILD_OPENSSL)
+
+if(LIBJ_BUILD_GTEST)
+    set(libnode-include
+        ${libnode-include}
+        deps/libj/deps/googletest/include
+    )
+endif(LIBJ_BUILD_GTEST)
 
 ## libnode-src
 set(libnode-src
@@ -146,8 +133,8 @@ endif(LIBNODE_USE_CXX11)
 
 string(REPLACE ";" " " libnode-cflags "${libnode-cflags}")
 
-## libnode-gtest-src
-set(libnode-gtest-src
+## libnode-test-src
+set(libnode-test-src
     gtest/gtest_main.cpp
     gtest/gtest_buffer.cpp
     gtest/gtest_common.cpp
@@ -167,32 +154,45 @@ set(libnode-gtest-src
 )
 
 if(LIBNODE_USE_OPENSSL)
-    set(libnode-gtest-src
-        ${libnode-gtest-src}
+    set(libnode-test-src
+        ${libnode-test-src}
         gtest/gtest_crypto_hash.cpp
     )
 endif(LIBNODE_USE_OPENSSL)
 
 if(LIBNODE_USE_CXX11)
-    set(libnode-gtest-src
-        ${libnode-gtest-src}
+    set(libnode-test-src
+        ${libnode-test-src}
         gtest/gtest_http_echo_cxx11.cpp
     )
 endif(LIBNODE_USE_CXX11)
 
-## libnode-gtest-cflags
-set(libnode-gtest-cflags
+## libnode-test-cflags
+set(libnode-test-cflags
     -Wall
 )
 
 if(LIBNODE_USE_CXX11)
-    set(libnode-gtest-cflags
-        ${libnode-gtest-cflags}
+    set(libnode-test-cflags
+        ${libnode-test-cflags}
         --std=c++0x
     )
 endif(LIBNODE_USE_CXX11)
 
-string(REPLACE ";" " " libnode-gtest-cflags "${libnode-gtest-cflags}")
+string(REPLACE ";" " " libnode-test-cflags "${libnode-test-cflags}")
+
+# configure ----------------------------------------------------------------------------------------
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h )
+
+# find libraries -----------------------------------------------------------------------------------
+
+find_library(PTHREAD pthread REQUIRED)
+if(NOT EXISTS ${PTHREAD})
+    message(FATAL_ERROR "libpthread not found.")
+endif(NOT EXISTS ${PTHREAD})
 
 # build libraries ----------------------------------------------------------------------------------
 
@@ -239,12 +239,14 @@ if(LIBNODE_BUILD_OPENSSL)
         COMMAND rsync -av ${CMAKE_CURRENT_LIST_DIR}/deps/openssl ${CMAKE_BINARY_DIR}/deps/
         COMMAND cd ${CMAKE_BINARY_DIR}/deps/openssl && ./config
     )
+
     if(APPLE)
         add_custom_command(
             TARGET httpparser PRE_BUILD
             COMMAND cd ${CMAKE_BINARY_DIR}/deps/openssl && ./Configure darwin64-x86_64-cc
         )
     endif(APPLE)
+
     add_custom_command(
         TARGET httpparser PRE_BUILD
         COMMAND make -C ${CMAKE_BINARY_DIR}/deps/openssl
@@ -256,32 +258,36 @@ endif(LIBNODE_BUILD_OPENSSL)
 add_library(node STATIC
     ${libnode-src}
 )
+
 target_link_libraries(node
     ${libnode-deps}
 )
+
 set_target_properties(node PROPERTIES
     COMPILE_FLAGS "${libnode-cflags}"
 )
 
 # build gtests -------------------------------------------------------------------------------------
 
-if(LIBNODE_BUILD_GTEST)
-    add_executable(libnode-gtest
-        ${libnode-gtest-src}
+if(LIBNODE_BUILD_TESTS)
+    add_executable(libnode-test
+        ${libnode-test-src}
     )
-    target_link_libraries(libnode-gtest
+
+    target_link_libraries(libnode-test
         ${libnode-deps}
         gtest
         node
     )
+
     if(APPLE)
-        set_target_properties(libnode-gtest PROPERTIES
-            COMPILE_FLAGS "${libnode-gtest-cflags}"
+        set_target_properties(libnode-test PROPERTIES
+            COMPILE_FLAGS "${libnode-test-cflags}"
             LINK_FLAGS "-framework CoreServices"
         )
     else(APPLE)
-        set_target_properties(libnode-gtest PROPERTIES
-            COMPILE_FLAGS "${libnode-gtest-cflags}"
+        set_target_properties(libnode-test PROPERTIES
+            COMPILE_FLAGS "${libnode-test-cflags}"
         )
     endif(APPLE)
-endif(LIBNODE_BUILD_GTEST)
+endif(LIBNODE_BUILD_TESTS)
