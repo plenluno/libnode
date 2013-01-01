@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 #define LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
