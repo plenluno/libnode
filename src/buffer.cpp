@@ -16,7 +16,7 @@ Buffer::Ptr Buffer::create(const void* data, Size length) {
     detail::Buffer<Buffer>* buf(new detail::Buffer<Buffer>(length));
     const UByte* d = static_cast<const UByte*>(data);
     for (Size i = 0; i < length; i++) {
-        buf->setUInt8(i, d[i]);
+        buf->writeUInt8(d[i], i);
     }
     return Ptr(buf);
 }
@@ -27,10 +27,7 @@ Buffer::Ptr Buffer::create(TypedJsArray<UByte>::CPtr array) {
     Size length = array->length();
     detail::Buffer<Buffer>* buf(new detail::Buffer<Buffer>(length));
     for (Size i = 0; i < length; i++) {
-        Value v = array->get(i);
-        UByte b;
-        to<UByte>(v, &b);
-        buf->setUInt8(i, b);
+        buf->writeUInt8(array->getTyped(i), i);
     }
     return Ptr(buf);
 }
@@ -71,48 +68,6 @@ Buffer::Ptr Buffer::create(String::CPtr str, Buffer::Encoding enc) {
         return util::hexDecode(str);
     default:
         return null();
-    }
-}
-
-String::CPtr Buffer::toString(
-    Encoding enc,
-    Size start,
-    Size end) const {
-    const Size size = length();
-    if (end > size) end = size;
-    if (start > end || start > size) return String::null();
-    if (start == end) return String::create();
-
-    Ptr buf;
-    const void* dp;
-    Size len;
-    if (start == 0 && end == size) {
-        dp = data();
-        len = size;
-    } else {
-        buf = create(end - start);
-        copy(buf, 0, start, end);
-        dp = buf->data();
-        len = buf->length();
-    }
-
-    switch (enc) {
-    case UTF8:
-        return String::create(dp, String::UTF8);
-    case UTF16BE:
-        return String::create(dp, String::UTF16BE);
-    case UTF16LE:
-        return String::create(dp, String::UTF16LE);
-    case UTF32BE:
-        return String::create(dp, String::UTF32BE);
-    case UTF32LE:
-        return String::create(dp, String::UTF32LE);
-    case BASE64:
-        return util::base64Encode(dp, len);
-    case HEX:
-        return util::hexEncode(dp, len);
-    default:
-        return String::null();
     }
 }
 

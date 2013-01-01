@@ -1,15 +1,14 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_BUFFER_H_
 #define LIBNODE_BUFFER_H_
 
-#include <libj/js_array_buffer.h>
 #include <libj/typed_js_array.h>
 
 namespace libj {
 namespace node {
 
-class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
+class Buffer : LIBJ_MUTABLE(Buffer)
  public:
     enum Encoding {
         UTF8,
@@ -36,82 +35,88 @@ class Buffer : LIBJ_JS_ARRAY_BUFFER(Buffer)
 
     static Ptr concat(JsArray::CPtr list, Size total = NO_SIZE);
 
+    virtual Ptr concat(CPtr other) const = 0;
+
     virtual String::CPtr toString() const = 0;
 
-    Ptr concat(CPtr other) const;
+    virtual String::CPtr toString(
+        Encoding enc, Size start = 0, Size end = NO_POS) const = 0;
 
-    String::CPtr toString(
-        Encoding enc, Size start = 0, Size end = NO_POS) const;
+    virtual Ptr slice(Size start = 0, Size end = NO_POS) const = 0;
 
-    Int write(
+    virtual Int write(
         String::CPtr str,
         Size offset = 0,
         Size length = NO_SIZE,
-        Encoding enc = UTF8);
+        Encoding enc = UTF8) = 0;
 
-    Size copy(
+    virtual Size copy(
         Ptr target,
         Size targetStart = 0,
         Size sourceStart = 0,
-        Size sourceEnd = NO_POS) const;
+        Size sourceEnd = NO_POS) const = 0;
 
-    UByte at(Size offset) const;
+    virtual Size length() const = 0;
 
-    Boolean readUInt8(Size offset, UByte* value) const;
+    virtual const void* data() const = 0;
 
-    Boolean readUInt16LE(Size offset, UShort* value) const;
+    virtual UByte at(Size offset) const = 0;
 
-    Boolean readUInt16BE(Size offset, UShort* value) const;
+    virtual Boolean readUInt8(Size offset, UByte* value) const = 0;
 
-    Boolean readUInt32LE(Size offset, UInt* value) const;
+    virtual Boolean readUInt16LE(Size offset, UShort* value) const = 0;
 
-    Boolean readUInt32BE(Size offset, UInt* value) const;
+    virtual Boolean readUInt16BE(Size offset, UShort* value) const = 0;
 
-    Boolean readInt8(Size offset, Byte* value) const;
+    virtual Boolean readUInt32LE(Size offset, UInt* value) const = 0;
 
-    Boolean readInt16LE(Size offset, Short* value) const;
+    virtual Boolean readUInt32BE(Size offset, UInt* value) const = 0;
 
-    Boolean readInt16BE(Size offset, Short* value) const;
+    virtual Boolean readInt8(Size offset, Byte* value) const = 0;
 
-    Boolean readInt32LE(Size offset, Int* value) const;
+    virtual Boolean readInt16LE(Size offset, Short* value) const = 0;
 
-    Boolean readInt32BE(Size offset, Int* value) const;
+    virtual Boolean readInt16BE(Size offset, Short* value) const = 0;
 
-    Boolean readFloatLE(Size offset, Float* value) const;
+    virtual Boolean readInt32LE(Size offset, Int* value) const = 0;
 
-    Boolean readFloatBE(Size offset, Float* value) const;
+    virtual Boolean readInt32BE(Size offset, Int* value) const = 0;
 
-    Boolean readDoubleLE(Size offset, Double* value) const;
+    virtual Boolean readFloatLE(Size offset, Float* value) const = 0;
 
-    Boolean readDoubleBE(Size offset, Double* value) const;
+    virtual Boolean readFloatBE(Size offset, Float* value) const = 0;
 
-    Boolean writeUInt8(UByte value, Size offset);
+    virtual Boolean readDoubleLE(Size offset, Double* value) const = 0;
 
-    Boolean writeUInt16LE(UShort value, Size offset);
+    virtual Boolean readDoubleBE(Size offset, Double* value) const = 0;
 
-    Boolean writeUInt16BE(UShort value, Size offset);
+    virtual Boolean writeUInt8(UByte value, Size offset) = 0;
 
-    Boolean writeUInt32LE(UInt value, Size offset);
+    virtual Boolean writeUInt16LE(UShort value, Size offset) = 0;
 
-    Boolean writeUInt32BE(UInt value, Size offset);
+    virtual Boolean writeUInt16BE(UShort value, Size offset) = 0;
 
-    Boolean writeInt8(Byte value, Size offset);
+    virtual Boolean writeUInt32LE(UInt value, Size offset) = 0;
 
-    Boolean writeInt16LE(Short value, Size offset);
+    virtual Boolean writeUInt32BE(UInt value, Size offset) = 0;
 
-    Boolean writeInt16BE(Short value, Size offset);
+    virtual Boolean writeInt8(Byte value, Size offset) = 0;
 
-    Boolean writeInt32LE(Int value, Size offset);
+    virtual Boolean writeInt16LE(Short value, Size offset) = 0;
 
-    Boolean writeInt32BE(Int value, Size offset);
+    virtual Boolean writeInt16BE(Short value, Size offset) = 0;
 
-    Boolean writeFloatLE(Float value, Size offset);
+    virtual Boolean writeInt32LE(Int value, Size offset) = 0;
 
-    Boolean writeFloatBE(Float value, Size offset);
+    virtual Boolean writeInt32BE(Int value, Size offset) = 0;
 
-    Boolean writeDoubleLE(Double value, Size offset);
+    virtual Boolean writeFloatLE(Float value, Size offset) = 0;
 
-    Boolean writeDoubleBE(Double value, Size offset);
+    virtual Boolean writeFloatBE(Float value, Size offset) = 0;
+
+    virtual Boolean writeDoubleLE(Double value, Size offset) = 0;
+
+    virtual Boolean writeDoubleBE(Double value, Size offset) = 0;
 };
 
 }  // namespace node

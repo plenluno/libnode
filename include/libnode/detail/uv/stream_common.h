@@ -30,7 +30,7 @@ inline void Stream::onReadCommon(
     }
 
     assert(buf.base != NULL);
-    stream->buffer_->shrink(nread);
+    stream->buffer_ = stream->buffer_->slice(0, nread);
 
     if (nread == 0) return;
     assert(static_cast<size_t>(nread) <= buf.len);

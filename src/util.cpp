@@ -48,7 +48,7 @@ Boolean extend(JsObject::Ptr extended, JsObject::CPtr original) {
 
 String::CPtr hexEncode(Buffer::CPtr buf) {
     if (buf) {
-        if (buf->isEmpty()) {
+        if (!buf->length()) {
             return String::create();
         } else {
             return hexEncode(buf->data(), buf->length());
@@ -113,7 +113,7 @@ Buffer::Ptr hexDecode(String::CPtr str) {
 
 String::CPtr base64Encode(Buffer::CPtr buf) {
     if (buf) {
-        if (buf->isEmpty()) {
+        if (!buf->length()) {
             return String::create();
         } else {
             return base64Encode(buf->data(), buf->length());

@@ -47,7 +47,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (str) {
             if (str->isEmpty()) return false;
         } else if (buf) {
-            if (buf->isEmpty()) return false;
+            if (!buf->length()) return false;
         } else {
             return false;
         }
@@ -356,7 +356,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (str && str->isEmpty()) return true;
 
         Buffer::CPtr buf = toCPtr<Buffer>(data);
-        if (buf && buf->isEmpty()) return true;
+        if (buf && !buf->length()) return true;
 
         assert(str || buf);
 
@@ -384,7 +384,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (str && str->isEmpty()) return true;
 
         Buffer::CPtr buf = toCPtr<Buffer>(data);
-        if (buf && buf->isEmpty()) return true;
+        if (buf && !buf->length()) return true;
 
         assert(str || buf);
 
