@@ -40,7 +40,9 @@ TEST(GTestBuffer, TestCreate4) {
     Buffer::Ptr buf = Buffer::create(str, Buffer::UTF8);
     ASSERT_TRUE(!!buf);
     ASSERT_EQ(9, buf->length());
-    ASSERT_EQ(0x86, buf->at(8));
+    UByte b = 0;
+    ASSERT_TRUE(buf->readUInt8(8, &b));
+    ASSERT_EQ(0x86, b);
     ASSERT_TRUE(buf->toString()->equals(str));
 }
 

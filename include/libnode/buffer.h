@@ -60,8 +60,6 @@ class Buffer : LIBJ_MUTABLE(Buffer)
 
     virtual const void* data() const = 0;
 
-    virtual UByte at(Size offset) const = 0;
-
     virtual Boolean readUInt8(Size offset, UByte* value) const = 0;
 
     virtual Boolean readUInt16LE(Size offset, UShort* value) const = 0;

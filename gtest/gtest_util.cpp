@@ -34,7 +34,9 @@ TEST(GTestUtil, TestHexDecode) {
 
     decoded = util::hexDecode(String::create("a9"));
     ASSERT_EQ(1, decoded->length());
-    ASSERT_EQ(0xa9, decoded->at(0));
+    UByte b = 0;
+    ASSERT_TRUE(decoded->readUInt8(0, &b));
+    ASSERT_EQ(0xa9, b);
 
     decoded = util::hexDecode(String::create("uv"));
     ASSERT_FALSE(decoded);

@@ -161,14 +161,6 @@ class Buffer : public I {
         return static_cast<const Byte*>(buffer_->data()) + offset_;
     }
 
-    virtual UByte at(Size offset) const {
-        UByte b;
-        if (!readUInt8(offset, &b)) {
-            LIBJ_THROW(Error::INDEX_OUT_OF_BOUNDS);
-        }
-        return b;
-    }
-
     virtual Boolean readUInt8(Size offset, UByte* value) const {
         offset += offset_;
         return buffer_->getUint8(offset, value);
