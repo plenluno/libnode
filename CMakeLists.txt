@@ -8,15 +8,18 @@ include(CMakeDependentOption)
 
 option(LIBNODE_USE_CXX11 "Use C++11" OFF)
 option(LIBNODE_USE_OPENSSL "Use OpenSSL" ON)
-option(LIBNODE_BUILD_TESTS "Build Tests" OFF)
+option(LIBNODE_USE_THREAD "Use Threads" ON)
+option(LIBNODE_BUILD_TEST "Build Tests" OFF)
 
 cmake_dependent_option(LIBJ_USE_CXX11 "Use C++11" ON "LIBNODE_USE_CXX11" OFF)
+cmake_dependent_option(LIBJ_USE_THREAD "Use Threads" ON "LIBNODE_USE_THREAD" OFF)
 cmake_dependent_option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON "LIBNODE_USE_OPENSSL" OFF)
 
 message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
 message(STATUS "LIBNODE_USE_OPENSSL=${LIBNODE_USE_OPENSSL}")
+message(STATUS "LIBNODE_USE_THREAD=${LIBNODE_USE_THREAD}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
-message(STATUS "LIBNODE_BUILD_TESTS=${LIBNODE_BUILD_TESTS}")
+message(STATUS "LIBNODE_BUILD_TEST=${LIBNODE_BUILD_TEST}")
 
 # variables ----------------------------------------------------------------------------------------
 
@@ -269,7 +272,7 @@ set_target_properties(node PROPERTIES
 
 # build gtests -------------------------------------------------------------------------------------
 
-if(LIBNODE_BUILD_TESTS)
+if(LIBNODE_BUILD_TEST)
     add_executable(libnode-test
         ${libnode-test-src}
     )
@@ -290,4 +293,4 @@ if(LIBNODE_BUILD_TESTS)
             COMPILE_FLAGS "${libnode-test-cflags}"
         )
     endif(APPLE)
-endif(LIBNODE_BUILD_TESTS)
+endif(LIBNODE_BUILD_TEST)
