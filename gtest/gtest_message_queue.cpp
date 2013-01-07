@@ -6,7 +6,6 @@
 
 #include <libj/status.h>
 #include <libj/thread.h>
-#include <libj/console.h>
 
 namespace libj {
 namespace node {
@@ -23,9 +22,11 @@ class GTestMsgQueueOnMessage : LIBJ_JS_FUNCTION(GTestMsgQueueOnMessage)
     UInt count() { return count_; }
 
     virtual Value operator()(JsArray::Ptr args) {
-        console::log(args->get(0));
         count_++;
-        if (count_ >= numPost_) msgQueue_->stop();
+        if (count_ >= numPost_) {
+            msgQueue_->stop();
+            msgQueue_ = MessageQueue::null();
+        }
         return Status::OK;
     }
 
