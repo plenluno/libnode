@@ -91,6 +91,13 @@ if(LIBNODE_USE_OPENSSL)
     )
 endif(LIBNODE_USE_OPENSSL)
 
+if(LIBNODE_USE_THREAD)
+    set(libnode-src
+        ${libnode-src}
+        src/message_queue.cpp
+    )
+endif(LIBNODE_USE_THREAD)
+
 ## libnode-deps
 set(libnode-deps
     httpparser
@@ -169,6 +176,13 @@ if(LIBNODE_USE_CXX11)
         gtest/gtest_http_echo_cxx11.cpp
     )
 endif(LIBNODE_USE_CXX11)
+
+if(LIBNODE_USE_THREAD)
+    set(libnode-test-src
+        ${libnode-test-src}
+        gtest/gtest_message_queue.cpp
+    )
+endif(LIBNODE_USE_THREAD)
 
 ## libnode-test-cflags
 set(libnode-test-cflags
