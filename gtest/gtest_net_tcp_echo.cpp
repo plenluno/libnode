@@ -7,6 +7,8 @@
 namespace libj {
 namespace node {
 
+static const UInt NUM_CONNS = 7;
+
 TEST(GTestNetTcpEcho, TestTcpEcho) {
     GTestOnEnd::clear();
     GTestOnClose::clear();
@@ -15,7 +17,7 @@ TEST(GTestNetTcpEcho, TestTcpEcho) {
     net::Server::Ptr server = net::createServer();
     server->on(
         net::Server::EVENT_CONNECTION,
-        JsFunction::Ptr(new GTestNetServerOnConnection(server)));
+        JsFunction::Ptr(new GTestNetServerOnConnection(server, NUM_CONNS)));
     server->listen(port);
 
     for (Size i = 0; i < NUM_CONNS; i++) {

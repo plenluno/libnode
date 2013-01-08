@@ -10,8 +10,6 @@
 namespace libj {
 namespace node {
 
-extern const Size NUM_CONNS;
-
 class GTestNetServerOnData : LIBJ_JS_FUNCTION(GTestNetServerOnData)
  public:
     GTestNetServerOnData(net::Socket::Ptr sock) : sock_(sock) {}
@@ -29,9 +27,11 @@ class GTestNetServerOnEnd : LIBJ_JS_FUNCTION(GTestNetServerOnEnd)
  public:
     GTestNetServerOnEnd(
         net::Server::Ptr srv,
-        net::Socket::Ptr sock)
+        net::Socket::Ptr sock,
+        UInt numConns)
         : srv_(srv)
-        , sock_(sock) {}
+        , sock_(sock)
+        , numConns_(numConns) {}
 
     virtual Value operator()(JsArray::Ptr args) {
         static UInt count = 0;
@@ -39,25 +39,30 @@ class GTestNetServerOnEnd : LIBJ_JS_FUNCTION(GTestNetServerOnEnd)
         sock_->end();
 
         count++;
-        if (count >= NUM_CONNS) srv_->close();
+        if (count >= numConns_) srv_->close();
         return Status::OK;
     }
 
  private:
     net::Server::Ptr srv_;
     net::Socket::Ptr sock_;
+    UInt numConns_;
 };
 
 class GTestNetServerOnConnection : LIBJ_JS_FUNCTION(GTestNetServerOnConnection)
  public:
-    GTestNetServerOnConnection(net::Server::Ptr srv) : srv_(srv) {}
+    GTestNetServerOnConnection(
+        net::Server::Ptr srv,
+        UInt numConns)
+        : srv_(srv)
+        , numConns_(numConns) {}
 
     virtual Value operator()(JsArray::Ptr args) {
         net::Socket::Ptr sock = args->getPtr<net::Socket>(0);
         GTestNetServerOnData::Ptr onData(
             new GTestNetServerOnData(sock));
         GTestNetServerOnEnd::Ptr onEnd(
-            new GTestNetServerOnEnd(srv_, sock));
+            new GTestNetServerOnEnd(srv_, sock, numConns_));
         sock->on(net::Socket::EVENT_DATA, onData);
         sock->on(net::Socket::EVENT_END, onEnd);
         return Status::OK;
@@ -65,6 +70,7 @@ class GTestNetServerOnConnection : LIBJ_JS_FUNCTION(GTestNetServerOnConnection)
 
  private:
     net::Server::Ptr srv_;
+    UInt numConns_;
 };
 
 class GTestNetSocketOnConnect : LIBJ_JS_FUNCTION(GTestNetSocketOnConnect)

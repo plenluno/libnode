@@ -7,7 +7,7 @@
 namespace libj {
 namespace node {
 
-const Size NUM_CONNS = 7;
+static const UInt NUM_CONNS = 7;
 
 TEST(GTestNetPipeEcho, TestPipeEcho) {
     GTestOnEnd::clear();
@@ -17,7 +17,7 @@ TEST(GTestNetPipeEcho, TestPipeEcho) {
     net::Server::Ptr server = net::createServer();
     server->on(
         net::Server::EVENT_CONNECTION,
-        JsFunction::Ptr(new GTestNetServerOnConnection(server)));
+        JsFunction::Ptr(new GTestNetServerOnConnection(server, NUM_CONNS)));
     server->listen(path);
 
     for (Size i = 0; i < NUM_CONNS; i++) {
