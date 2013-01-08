@@ -1,8 +1,9 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_INCOMING_MESSAGE_H_
 #define LIBNODE_DETAIL_HTTP_INCOMING_MESSAGE_H_
 
+#include <libnode/config.h>
 #include <libnode/http/header.h>
 #include <libnode/process.h>
 #include <libnode/stream/readable_stream.h>
@@ -222,10 +223,12 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
         if (!hasFlag(END_EMITTED)) {
             emit(EVENT_END);
             setFlag(END_EMITTED);
+#ifdef LIBNODE_REMOVE_LISTENER
             // 'end' only once
             removeAllListeners(EVENT_END);
             // no 'data' after 'end'
             removeAllListeners(EVENT_DATA);
+#endif
         }
     }
 

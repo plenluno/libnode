@@ -1,8 +1,9 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_NET_SERVER_H_
 #define LIBNODE_DETAIL_NET_SERVER_H_
 
+#include <libnode/config.h>
 #include <libnode/detail/net/socket.h>
 
 #include <libj/string_buffer.h>
@@ -323,7 +324,9 @@ class Server : public events::EventEmitter<I> {
         virtual Value operator()(JsArray::Ptr args) {
             assert(!self_->handle_);
             assert(!self_->connections_);
+#ifdef LIBNODE_REMOVE_LISTENER
             self_->removeAllListeners();
+#endif
             return Status::OK;
         }
 

@@ -3,6 +3,7 @@
 #ifndef LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 #define LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 
+#include <libnode/config.h>
 #include <libnode/http/agent.h>
 #include <libnode/http/client_request.h>
 #include <libnode/detail/http/parser.h>
@@ -643,8 +644,10 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         virtual Value operator()(JsArray::Ptr args) {
             res_->emitEnd();
             res_->emit(IncomingMessage::EVENT_CLOSE);
+#ifdef LIBNODE_REMOVE_LISTENER
             // no event after 'end' and 'close'
             res_->removeAllListeners();
+#endif
             res_ = IncomingMessage::null();
             return Status::OK;
         }

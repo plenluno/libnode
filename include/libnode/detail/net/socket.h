@@ -1,8 +1,9 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_NET_SOCKET_H_
 #define LIBNODE_DETAIL_NET_SOCKET_H_
 
+#include <libnode/config.h>
 #include <libnode/net.h>
 #include <libnode/process.h>
 #include <libnode/string_decoder.h>
@@ -558,9 +559,12 @@ class Socket : public events::EventEmitter<node::net::Socket> {
 
     Boolean destroy(Error::CPtr err, JsFunction::Ptr cb) {
         if (hasFlag(DESTROYED)) {
+#ifdef LIBNODE_REMOVE_LISTENER
             // OnDestroy has already called removeAllListeners
             // check the return value 'false' instead of calling:
-            // fireErrorCallbacks(err, cb);
+#else
+            fireErrorCallbacks(err, cb);
+#endif
             return false;
         }
 
@@ -905,7 +909,9 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         virtual Value operator()(JsArray::Ptr args) {
             assert(!self_->handle_);
             assert(self_->hasFlag(DESTROYED));
+#ifdef LIBNODE_REMOVE_LISTENER
             self_->removeAllListeners();
+#endif
             return Status::OK;
         }
 

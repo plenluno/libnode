@@ -3,6 +3,9 @@
 #ifndef LIBNODE_CONFIG_H_
 #define LIBNODE_CONFIG_H_
 
+#include <libj/config.h>
+
 #cmakedefine LIBNODE_USE_OPENSSL
+#cmakedefine LIBNODE_REMOVE_LISTENER
 
 #endif  // LIBNODE_CONFIG_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_AGENT_H_
 #define LIBNODE_DETAIL_HTTP_AGENT_H_
@@ -273,11 +273,25 @@ class Agent : public events::EventEmitter<node::http::Agent> {
             self_->removeSocket(socket_, name_, host_, port_, localAddress_);
             socket_->removeListener(EVENT_FREE, onFree_);
             socket_->removeListener(EVENT_CLOSE, onClose_);
-            socket_->removeAllListeners(EVENT_AGENT_REMOVE);
+            socket_->removeListener(EVENT_AGENT_REMOVE, getMe());
             return Status::OK;
         }
 
      private:
+        JsFunction::CPtr getMe() {
+            LIBJ_STATIC_SYMBOL_DEF(EVENT_AGENT_REMOVE, "agentRemove");
+
+            JsArray::Ptr cbs = socket_->listeners(EVENT_AGENT_REMOVE);
+            Size len = cbs->length();
+            for (Size i = 0; i < len; i++) {
+                JsFunction::CPtr cb = cbs->getCPtr<JsFunction>(i);
+                if (&(*cb) == this) {
+                    return cb;
+                }
+            }
+            return JsFunction::null();
+        }
+
         Agent* self_;
         net::Socket::Ptr socket_;
         String::CPtr name_;

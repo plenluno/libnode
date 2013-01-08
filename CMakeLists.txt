@@ -10,6 +10,7 @@ option(LIBNODE_USE_CXX11 "Use C++11" OFF)
 option(LIBNODE_USE_OPENSSL "Use OpenSSL" ON)
 option(LIBNODE_USE_THREAD "Use Threads" ON)
 option(LIBNODE_BUILD_TEST "Build Tests" OFF)
+option(LIBNODE_REMOVE_LISTENER "Remove Listeners" ON)
 
 cmake_dependent_option(LIBJ_USE_CXX11 "Use C++11" ON "LIBNODE_USE_CXX11" OFF)
 cmake_dependent_option(LIBJ_USE_THREAD "Use Threads" ON "LIBNODE_USE_THREAD" OFF)
@@ -20,6 +21,7 @@ message(STATUS "LIBNODE_USE_OPENSSL=${LIBNODE_USE_OPENSSL}")
 message(STATUS "LIBNODE_USE_THREAD=${LIBNODE_USE_THREAD}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_TEST=${LIBNODE_BUILD_TEST}")
+message(STATUS "LIBNODE_REMOVE_LISTENER=${LIBNODE_REMOVE_LISTENER}")
 
 # variables ----------------------------------------------------------------------------------------
 
@@ -152,7 +154,7 @@ set(libnode-test-src
     gtest/gtest_http_echo.cpp
     gtest/gtest_http_static.cpp
     gtest/gtest_http_status.cpp
-    gtest/gtest_net_pipe_echo.cpp
+#   gtest/gtest_net_pipe_echo.cpp
     gtest/gtest_net_tcp_echo.cpp
     gtest/gtest_path.cpp
     gtest/gtest_process.cpp
