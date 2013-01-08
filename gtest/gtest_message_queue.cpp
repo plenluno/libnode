@@ -23,10 +23,7 @@ class GTestMsgQueueOnMessage : LIBJ_JS_FUNCTION(GTestMsgQueueOnMessage)
 
     virtual Value operator()(JsArray::Ptr args) {
         count_++;
-        if (count_ >= numPost_) {
-            msgQueue_->stop();
-            msgQueue_ = MessageQueue::null();
-        }
+        if (count_ >= numPost_) msgQueue_->close();
         return Status::OK;
     }
 
@@ -69,7 +66,7 @@ static const UInt NUM_THREADS = 5;
 
 TEST(GTestMessageQueue, TestPostMessageSameThread) {
     MessageQueue::Ptr mq = MessageQueue::create();
-    mq->start();
+    mq->open();
 
     GTestMsgQueueOnMessage::Ptr onMessage(
         new GTestMsgQueueOnMessage(mq, NUM_POSTS));
@@ -86,7 +83,7 @@ TEST(GTestMessageQueue, TestPostMessageSameThread) {
 
 TEST(GTestMessageQueue, TestPostMessageMultiThread) {
     MessageQueue::Ptr mq = MessageQueue::create();
-    mq->start();
+    mq->open();
 
     GTestMsgQueueOnMessage::Ptr onMessage(
         new GTestMsgQueueOnMessage(mq, NUM_POSTS * NUM_THREADS));

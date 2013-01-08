@@ -14,9 +14,9 @@ class MessageQueue : LIBNODE_EVENT_EMITTER(MessageQueue)
 
     static Ptr create();
 
-    virtual Boolean start() = 0;
+    virtual Boolean open() = 0;
 
-    virtual Boolean stop() = 0;
+    virtual Boolean close() = 0;
 
     virtual Boolean postMessage(const Value& msg) = 0;
 };

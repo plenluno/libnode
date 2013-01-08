@@ -3,11 +3,13 @@
 #ifndef LIBNODE_DETAIL_MESSAGE_QUEUE_H_
 #define LIBNODE_DETAIL_MESSAGE_QUEUE_H_
 
+#include <libnode/config.h>
 #include <libnode/detail/events/event_emitter.h>
 
 #include <libj/concurrent_linked_queue.h>
 
 #include <uv.h>
+#include <assert.h>
 
 namespace libj {
 namespace node {
@@ -17,41 +19,54 @@ template<typename I>
 class MessageQueue : public events::EventEmitter<I> {
  public:
     MessageQueue()
-        : alive_(false)
+        : open_(false)
         , queue_(ConcurrentLinkedQueue::create()) {
         async_.data = this;
     }
 
     virtual ~MessageQueue() {
-        stop();
+        close();
     }
 
-    virtual Boolean start() {
-        if (alive_) {
+    virtual Boolean open() {
+        assert(queue_->isEmpty());
+        if (open_) {
             return false;
         } else {
-            alive_ = true;
+            open_ = true;
             return !uv_async_init(uv_default_loop(), &async_, receive);
         }
     }
 
-    virtual Boolean stop() {
-        if (alive_) {
+    virtual Boolean close() {
+        if (open_) {
+            open_ = false;
             uv_close(reinterpret_cast<uv_handle_t*>(&async_), NULL);
-            alive_ = false;
-            return false;
+            emitMessage(this);
+#ifdef LIBNODE_REMOVE_LISTENER
+            this->removeAllListeners();
+#endif
+            return true;
         } else {
             return false;
         }
     }
 
     virtual Boolean postMessage(const Value& v) {
-        return queue_->offer(v) && !uv_async_send(&async_);
+        if (open_) {
+            return queue_->offer(v) && !uv_async_send(&async_);
+        } else {
+            return false;
+        }
     }
 
  private:
     static void receive(uv_async_t* handle, int status) {
         MessageQueue* mq = static_cast<MessageQueue*>(handle->data);
+        emitMessage(mq);
+    }
+
+    static void emitMessage(MessageQueue* mq) {
         while (!mq->queue_->isEmpty()) {
             Value msg = mq->queue_->poll();
             mq->emit(I::EVENT_MESSAGE, msg);
@@ -59,7 +74,7 @@ class MessageQueue : public events::EventEmitter<I> {
     }
 
     uv_async_t async_;
-    Boolean alive_;
+    Boolean open_;
     ConcurrentLinkedQueue::Ptr queue_;
 };
 
