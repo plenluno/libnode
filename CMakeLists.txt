@@ -115,6 +115,7 @@ if(LIBNODE_USE_OPENSSL)
     set(libnode-deps
         ${libnode-deps}
         crypto
+        dl
     )
 else(LIBNODE_USE_OPENSSL)
     set(libnode-deps
