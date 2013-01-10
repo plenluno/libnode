@@ -89,6 +89,8 @@ if(LIBNODE_USE_OPENSSL)
     set(libnode-src
         ${libnode-src}
         src/crypto.cpp
+        src/crypto/cipher.cpp
+        src/crypto/decipher.cpp
         src/crypto/hash.cpp
     )
 endif(LIBNODE_USE_OPENSSL)
@@ -168,6 +170,7 @@ set(libnode-test-src
 if(LIBNODE_USE_OPENSSL)
     set(libnode-test-src
         ${libnode-test-src}
+        gtest/gtest_crypto_cipher.cpp
         gtest/gtest_crypto_hash.cpp
     )
 endif(LIBNODE_USE_OPENSSL)
