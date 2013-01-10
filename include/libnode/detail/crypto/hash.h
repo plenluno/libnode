@@ -52,7 +52,7 @@ class Hash : public libj::detail::JsObject<I> {
         }
     }
 
-    ~Hash() {
+    virtual ~Hash() {
         switch (algorithm_) {
         case I::MD5:
             delete static_cast<MD5_CTX*>(context_);
