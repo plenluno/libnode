@@ -22,7 +22,9 @@ class Cipher : LIBJ_JS_OBJECT(Cipher)
         AES_256_ECB,
     };
 
-    static Ptr create(Algorithm algo, Buffer::CPtr password);
+    static Ptr create(Algorithm algo, Buffer::CPtr passwd);
+
+    static Ptr create(Algorithm algo, Buffer::CPtr key, Buffer::CPtr iv);
 
     virtual Buffer::CPtr update(Buffer::CPtr data) = 0;
 

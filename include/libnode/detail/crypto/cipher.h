@@ -19,6 +19,20 @@ class Cipher : public CipherBase<I> {
         this->initializeCipher(
             algo,
             passwd,
+            Buffer::null(),
+            Buffer::null(),
+            true,
+            &this->ctx_,
+            &this->cipher_,
+            &this->initialized_);
+    }
+
+    Cipher(Algorithm algo, Buffer::CPtr key, Buffer::CPtr iv) {
+        this->initializeCipher(
+            algo,
+            Buffer::null(),
+            key,
+            iv,
             true,
             &this->ctx_,
             &this->cipher_,

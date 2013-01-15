@@ -13,9 +13,17 @@ namespace crypto {
 
 Hash::Ptr createHash(Hash::Algorithm algo);
 
-Cipher::Ptr createCipher(Cipher::Algorithm algo, Buffer::CPtr password);
+Cipher::Ptr createCipher(
+    Cipher::Algorithm algo, Buffer::CPtr password);
 
-Decipher::Ptr createDecipher(Cipher::Algorithm algo, Buffer::CPtr password);
+Cipher::Ptr createCipheriv(
+    Cipher::Algorithm algo, Buffer::CPtr key, Buffer::CPtr iv);
+
+Decipher::Ptr createDecipher(
+    Cipher::Algorithm algo, Buffer::CPtr password);
+
+Decipher::Ptr createDecipheriv(
+    Cipher::Algorithm algo, Buffer::CPtr key, Buffer::CPtr iv);
 
 }  // namespace crypto
 }  // namespace node

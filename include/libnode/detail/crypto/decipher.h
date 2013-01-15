@@ -19,6 +19,20 @@ class Decipher : public CipherBase<I> {
         this->initializeCipher(
             algo,
             passwd,
+            Buffer::null(),
+            Buffer::null(),
+            false,
+            &this->ctx_,
+            &this->cipher_,
+            &this->initialized_);
+    }
+
+    Decipher(Algorithm algo, Buffer::CPtr key, Buffer::CPtr iv) {
+        this->initializeCipher(
+            algo,
+            Buffer::null(),
+            key,
+            iv,
             false,
             &this->ctx_,
             &this->cipher_,

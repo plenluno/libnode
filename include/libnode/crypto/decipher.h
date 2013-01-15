@@ -11,7 +11,11 @@ namespace crypto {
 
 class Decipher : LIBJ_JS_OBJECT(Decipher)
  public:
-    static Ptr create(Cipher::Algorithm algo, Buffer::CPtr password);
+    static Ptr create(
+        Cipher::Algorithm algo, Buffer::CPtr passwd);
+
+    static Ptr create(
+        Cipher::Algorithm algo, Buffer::CPtr key, Buffer::CPtr iv);
 
     virtual Buffer::CPtr update(Buffer::CPtr buf) = 0;
 

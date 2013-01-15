@@ -76,10 +76,16 @@ class CipherBase : public libj::detail::JsObject<I> {
         }
     }
 
+    Boolean isInitialized() const {
+        return initialized_;
+    }
+
  protected:
     static void initializeCipher(
         Algorithm algo,
         Buffer::CPtr passwd,
+        Buffer::CPtr key,
+        Buffer::CPtr iv,
         Boolean encrypt,
         EVP_CIPHER_CTX* ctx,
         const EVP_CIPHER** cipher,
@@ -114,17 +120,36 @@ class CipherBase : public libj::detail::JsObject<I> {
         }
         assert(!!*cipher);
 
-        unsigned char key[EVP_MAX_KEY_LENGTH];
-        unsigned char iv[EVP_MAX_IV_LENGTH];
-        int keyLen = EVP_BytesToKey(
-            *cipher,
-            EVP_md5(),
-            NULL,
-            static_cast<unsigned char*>(const_cast<void*>(passwd->data())),
-            passwd->length(),
-            1,
-            key,
-            iv);
+        unsigned char* pKey;
+        unsigned char* pIv;
+        unsigned char _key[EVP_MAX_KEY_LENGTH];
+        unsigned char _iv[EVP_MAX_IV_LENGTH];
+        int keyLen;
+
+        if (passwd) {
+            keyLen = EVP_BytesToKey(
+                *cipher,
+                EVP_md5(),
+                NULL,
+                static_cast<unsigned char*>(const_cast<void*>(passwd->data())),
+                passwd->length(),
+                1,
+                _key,
+                _iv);
+            pKey = _key;
+            pIv = _iv;
+        } else {
+            assert(key && iv);
+            int ivLen = iv->length();
+            if (EVP_CIPHER_iv_length(*cipher) != ivLen &&
+                !(EVP_CIPHER_mode(*cipher) == EVP_CIPH_ECB_MODE && !ivLen)) {
+                return;
+            }
+
+            keyLen = key->length();
+            pKey = static_cast<unsigned char*>(const_cast<void*>(key->data()));
+            pIv = static_cast<unsigned char*>(const_cast<void*>(iv->data()));
+        }
 
         EVP_CIPHER_CTX_init(ctx);
         EVP_CipherInit_ex(ctx, *cipher, NULL, NULL, NULL, encrypt);
@@ -134,7 +159,7 @@ class CipherBase : public libj::detail::JsObject<I> {
             return;
         }
 
-        EVP_CipherInit_ex(ctx, NULL, NULL, key, iv, encrypt);
+        EVP_CipherInit_ex(ctx, NULL, NULL, pKey, pIv, encrypt);
         *initialized = true;
     }
 

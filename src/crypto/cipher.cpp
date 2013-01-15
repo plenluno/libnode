@@ -7,8 +7,31 @@ namespace libj {
 namespace node {
 namespace crypto {
 
-Cipher::Ptr Cipher::create(Algorithm algo, Buffer::CPtr password) {
-    return Ptr(new detail::crypto::Cipher<Cipher>(algo, password));
+Cipher::Ptr Cipher::create(
+    Algorithm algo,
+    Buffer::CPtr passwd) {
+    detail::crypto::Cipher<Cipher>* cipher =
+        new detail::crypto::Cipher<Cipher>(algo, passwd);
+    if (cipher->isInitialized()) {
+        return Ptr(cipher);
+    } else {
+        delete cipher;
+        return null();
+    }
+}
+
+Cipher::Ptr Cipher::create(
+    Algorithm algo,
+    Buffer::CPtr key,
+    Buffer::CPtr iv) {
+    detail::crypto::Cipher<Cipher>* cipher =
+        new detail::crypto::Cipher<Cipher>(algo, key, iv);
+    if (cipher->isInitialized()) {
+        return Ptr(cipher);
+    } else {
+        delete cipher;
+        return null();
+    }
 }
 
 }  // namespace crypto
