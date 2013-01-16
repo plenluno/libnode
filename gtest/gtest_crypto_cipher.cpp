@@ -3,8 +3,6 @@
 #include <gtest/gtest.h>
 #include <libnode/crypto.h>
 
-#include <libj/console.h>
-
 namespace libj {
 namespace node {
 namespace crypto {
@@ -37,18 +35,11 @@ TEST(GTestCryptoHash, TestCBC) {
     Buffer::CPtr buf1 = cipher->update(data);
     Buffer::CPtr buf2 = cipher->final();
 
-    console::log(buf1->toString(Buffer::BASE64));
-    console::log(buf2->toString(Buffer::BASE64));
-
     Decipher::Ptr decipher = createDecipher(Cipher::AES_128_CBC, passwd);
     JsArray::Ptr bufs = JsArray::create();
     bufs->add(decipher->update(buf1));
     bufs->add(decipher->update(buf2));
     bufs->add(decipher->final());
-
-    for (Size i = 0; i < bufs->length(); i++) {
-        console::log(bufs->getCPtr<Buffer>(i)->toString());
-    }
 
     ASSERT_TRUE(data->toString()->equals(Buffer::concat(bufs)->toString()));
 }
@@ -61,18 +52,11 @@ TEST(GTestCryptoHash, TestECB) {
     Buffer::CPtr buf1 = cipher->update(data);
     Buffer::CPtr buf2 = cipher->final();
 
-    console::log(buf1->toString(Buffer::BASE64));
-    console::log(buf2->toString(Buffer::BASE64));
-
     Decipher::Ptr decipher = createDecipher(Cipher::AES_128_ECB, passwd);
     JsArray::Ptr bufs = JsArray::create();
     bufs->add(decipher->update(buf1));
     bufs->add(decipher->update(buf2));
     bufs->add(decipher->final());
-
-    for (Size i = 0; i < bufs->length(); i++) {
-        console::log(bufs->getCPtr<Buffer>(i)->toString());
-    }
 
     ASSERT_TRUE(data->toString()->equals(Buffer::concat(bufs)->toString()));
 }
