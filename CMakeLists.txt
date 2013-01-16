@@ -1,3 +1,5 @@
+# Copyright (c) 2012-2013 Plenluno All rights reserved.
+
 cmake_minimum_required(VERSION 2.8)
 
 project(libnode)
@@ -92,6 +94,9 @@ if(LIBNODE_USE_OPENSSL)
         src/crypto/cipher.cpp
         src/crypto/decipher.cpp
         src/crypto/hash.cpp
+        src/crypto/rsa/cipher.cpp
+        src/crypto/rsa/decipher.cpp
+        src/crypto/rsa/key_pair.cpp
     )
 endif(LIBNODE_USE_OPENSSL)
 
@@ -173,6 +178,7 @@ if(LIBNODE_USE_OPENSSL)
         ${libnode-test-src}
         gtest/gtest_crypto_cipher.cpp
         gtest/gtest_crypto_hash.cpp
+#       gtest/gtest_crypto_rsa.cpp
     )
 endif(LIBNODE_USE_OPENSSL)
 

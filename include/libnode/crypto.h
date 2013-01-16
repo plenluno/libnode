@@ -3,6 +3,7 @@
 #ifndef LIBNODE_CRYPTO_H_
 #define LIBNODE_CRYPTO_H_
 
+#include <libnode/crypto/rsa.h>
 #include <libnode/crypto/hash.h>
 #include <libnode/crypto/cipher.h>
 #include <libnode/crypto/decipher.h>
