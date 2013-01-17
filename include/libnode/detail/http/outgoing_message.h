@@ -5,6 +5,7 @@
 
 #include <libnode/config.h>
 #include <libnode/http/agent.h>
+#include <libnode/http/status.h>
 #include <libnode/http/client_request.h>
 #include <libnode/detail/http/parser.h>
 #include <libnode/detail/http/client_response.h>
@@ -1120,7 +1121,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
     OutgoingMessage()
         : socket_(net::Socket::null())
-        , statusCode_(Status::OK)
+        , statusCode_(node::http::Status::OK)
         , method_(String::null())
         , path_(String::null())
         , header_(String::null())
