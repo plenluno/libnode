@@ -24,7 +24,8 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInServer(
         (req->httpVersionMajor() == 1 &&
          req->httpVersionMinor() == 0)) {
         self->unsetFlag(OutgoingMessage::SHOULD_KEEP_ALIVE);
-        if (req->getHeader(node::http::HEADER_TE)->equals(symChunked)) {
+        String::CPtr te = req->getHeader(node::http::HEADER_TE);
+        if (te && te->equals(symChunked)) {
             self->setFlag(OutgoingMessage::USE_CHUNKED_ENCODING_BY_DEFAULT);
         }
     }
