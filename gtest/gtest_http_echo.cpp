@@ -85,6 +85,7 @@ TEST(GTestHttpEcho, TestConnectionKeepAlive) {
     GTestOnEnd::clear();
     GTestOnClose::clear();
     GTestHttpServerOnEnd::clear();
+    GTestHttpClientOnResponse::clear();
 
     String::CPtr msg = String::create("abc");
 
@@ -113,11 +114,15 @@ TEST(GTestHttpEcho, TestConnectionKeepAlive) {
     ASSERT_EQ(0, GTestOnClose::count());
 
     JsArray::CPtr messages = GTestOnEnd::messages();
+    JsArray::CPtr statusCodes = GTestHttpClientOnResponse::statusCodes();
     Size numMsgs = messages->length();
+    Size numCodes = statusCodes->length();
     ASSERT_EQ(NUM_REQS, numMsgs);
+    ASSERT_EQ(NUM_REQS, numCodes);
     for (Size i = 0; i < numMsgs; i++) {
-        console::printf(console::INFO, ".");
         ASSERT_TRUE(messages->get(i).equals(msg));
+        ASSERT_TRUE(statusCodes->get(i).equals(200));
+        console::printf(console::INFO, ".");
     }
     console::printf(console::INFO, "\n");
 }
@@ -126,6 +131,7 @@ TEST(GTestHttpEcho, TestConnectionClose) {
     GTestOnEnd::clear();
     GTestOnClose::clear();
     GTestHttpServerOnEnd::clear();
+    GTestHttpClientOnResponse::clear();
 
     String::CPtr msg = String::create("xyz");
 
@@ -157,11 +163,15 @@ TEST(GTestHttpEcho, TestConnectionClose) {
     ASSERT_EQ(0, GTestOnClose::count());
 
     JsArray::CPtr messages = GTestOnEnd::messages();
+    JsArray::CPtr statusCodes = GTestHttpClientOnResponse::statusCodes();
     Size numMsgs = messages->length();
+    Size numCodes = statusCodes->length();
     ASSERT_EQ(NUM_REQS, numMsgs);
+    ASSERT_EQ(NUM_REQS, numCodes);
     for (Size i = 0; i < numMsgs; i++) {
-        console::printf(console::INFO, ".");
         ASSERT_TRUE(messages->get(i).equals(msg));
+        ASSERT_TRUE(statusCodes->get(i).equals(200));
+        console::printf(console::INFO, ".");
     }
     console::printf(console::INFO, "\n");
 }

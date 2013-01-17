@@ -12,9 +12,15 @@ namespace node {
 
 class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
  public:
+    static JsArray::CPtr statusCodes() { return statusCodes_; }
+
+    static void clear() { statusCodes_->clear(); }
+
     virtual Value operator()(JsArray::Ptr args) {
         http::ClientResponse::Ptr res =
             toPtr<http::ClientResponse>(args->get(0));
+
+        statusCodes_->add(res->statusCode());
 
         GTestOnData::Ptr onData(new GTestOnData());
         GTestOnClose::Ptr onClose(new GTestOnClose());
@@ -25,6 +31,9 @@ class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
         res->on(http::ClientResponse::EVENT_CLOSE, onClose);
         return Status::OK;
     }
+
+ private:
+    static JsArray::Ptr statusCodes_;
 };
 
 }  // namespace node

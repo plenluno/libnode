@@ -14,7 +14,7 @@ namespace node {
 
 TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
     GTestOnEnd::clear();
-    ASSERT_TRUE(GTestOnEnd::messages()->isEmpty());
+    GTestHttpClientOnResponse::clear();
 
     http::Server::Ptr srv = http::Server::create();
     srv->on(
@@ -72,8 +72,11 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
     node::run();
 
     JsArray::CPtr msgs = GTestOnEnd::messages();
+    JsArray::CPtr codes = GTestHttpClientOnResponse::statusCodes();
     ASSERT_EQ(1, msgs->length());
+    ASSERT_EQ(1, codes->length());
     ASSERT_TRUE(msgs->get(0).equals(msg));
+    ASSERT_TRUE(codes->get(0).equals(200));
 }
 
 }  // namespace node
