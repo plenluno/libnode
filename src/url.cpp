@@ -4,7 +4,7 @@
 
 #include <libj/string_buffer.h>
 
-#include <url_parser.h>
+#include <http_parser.h>
 
 namespace libj {
 namespace node {
@@ -22,74 +22,108 @@ LIBJ_SYMBOL_DEF(PATH,     "path");
 LIBJ_SYMBOL_DEF(QUERY,    "query");
 LIBJ_SYMBOL_DEF(HASH,     "hash");
 
+static String::CPtr getField(
+    const char* url,
+    http_parser_url_fields field,
+    const http_parser_url* info) {
+    assert(url && info);
+    if (info->field_set & (1 << field)) {
+        Size offset = info->field_data[field].off;
+        Size length = info->field_data[field].len;
+        return String::create(url + offset, String::UTF8, length);
+    } else {
+        return String::null();
+    }
+}
+
 JsObject::Ptr parse(String::CPtr urlStr) {
-    if (!urlStr) {
-        return JsObject::null();
+    if (!urlStr) return JsObject::null();
+
+    http_parser_url info;
+    std::string str = urlStr->toStdString();
+    const char* cstr = str.c_str();
+    int r = http_parser_parse_url(
+        cstr,
+        str.length(),
+        0,
+        &info);
+    if (r) return JsObject::null();
+
+    String::CPtr scheme   = getField(cstr, UF_SCHEMA,   &info);
+    String::CPtr host     = getField(cstr, UF_HOST,     &info);
+    String::CPtr port     = getField(cstr, UF_PORT,     &info);
+    String::CPtr path     = getField(cstr, UF_PATH,     &info);
+    String::CPtr query    = getField(cstr, UF_QUERY,    &info);
+    String::CPtr fragment = getField(cstr, UF_FRAGMENT, &info);
+    String::CPtr userinfo = getField(cstr, UF_USERINFO, &info);
+
+    JsObject::Ptr urlObj = JsObject::create();
+
+    // TODO(plenluno): protocol and host are lowercased
+    urlObj->put(HREF, urlStr);
+
+    if (scheme) {
+        scheme = scheme->toLowerCase();
+        StringBuffer::Ptr sb = StringBuffer::create();
+        sb->append(scheme);
+        sb->appendChar(':');
+        urlObj->put(PROTOCOL, sb->toString());
     }
 
-    struct parsed_url* url = parse_url(urlStr->toStdString().c_str());
-    JsObject::Ptr obj = JsObject::create();
+    if (host) {
+        host = host->toLowerCase();
+        urlObj->put(HOSTNAME, host);
 
-    obj->put(HREF, urlStr);
-    if (url->scheme) {
-        StringBuffer::Ptr protocol = StringBuffer::create();
-        protocol->appendCStr(url->scheme);
-        protocol->appendChar(':');
-        obj->put(PROTOCOL, protocol->toString()->toLowerCase());
-    }
-    String::CPtr port = String::null();
-    if (url->port) {
-        port = String::create(url->port);
-        obj->put(PORT, port);
-    }
-    if (url->host) {
-        String::CPtr hostname = String::create(url->host)->toLowerCase();
-        obj->put(HOSTNAME, hostname);
         if (port) {
             StringBuffer::Ptr sb = StringBuffer::create();
-            sb->append(hostname);
+            sb->append(host);
             sb->appendChar(':');
             sb->append(port);
-            obj->put(HOST, sb->toString());
+            urlObj->put(HOST, sb->toString());
         } else {
-            obj->put(HOST, hostname);
+            urlObj->put(HOST, host);
         }
-    }
-    String::CPtr query = String::null();
-    if (url->query) {
-        query = String::create(url->query);
-        obj->put(QUERY, query);
-    }
-    if (url->path) {
-        StringBuffer::Ptr sb = StringBuffer::create();
-        sb->appendChar('/');
-        sb->appendCStr(url->path);
-        String::CPtr pathname = sb->toString();
-        obj->put(PATHNAME, pathname);
-        if (query) {
-            sb->appendChar('?');
-            sb->append(query);
-            obj->put(PATH, sb->toString());
-        } else {
-            obj->put(PATH, pathname);
-        }
-    }
-    if (url->username && url->password) {
-        StringBuffer::Ptr sb = StringBuffer::create();
-        sb->appendCStr(url->username);
-        sb->appendChar(':');
-        sb->appendCStr(url->password);
-        obj->put(AUTH, sb->toString());
-    }
-    if (url->fragment) {
-        StringBuffer::Ptr sb = StringBuffer::create();
-        sb->appendChar('#');
-        sb->appendCStr(url->fragment);
-        obj->put(HASH, sb->toString());
     }
 
-    parsed_url_free(url);
-    return obj;
+    if (port) {
+        urlObj->put(PORT, port);
+    }
+
+    if (path) {
+        urlObj->put(PATHNAME, path);
+
+        if (query) {
+            StringBuffer::Ptr sb = StringBuffer::create();
+            sb->append(path);
+            sb->appendChar('?');
+            sb->append(query);
+            urlObj->put(PATH, sb->toString());
+        } else {
+            urlObj->put(PATH, path);
+        }
+    }
+
+    if (query) {
+        urlObj->put(QUERY, query);
+
+        StringBuffer::Ptr sb = StringBuffer::create();
+        sb->appendChar('?');
+        sb->append(query);
+        urlObj->put(SEARCH, sb->toString());
+    }
+
+    if (fragment) {
+        StringBuffer::Ptr sb = StringBuffer::create();
+        sb->appendChar('#');
+        sb->append(fragment);
+        urlObj->put(HASH, sb->toString());
+    }
+
+    if (userinfo) {
+        urlObj->put(AUTH, userinfo);
+    }
+
+    return urlObj;
 }
 
 String::CPtr format(JsObject::CPtr urlObj) {

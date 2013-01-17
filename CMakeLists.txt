@@ -36,7 +36,6 @@ set(libnode-include
     include
     deps
     deps/http-parser
-    deps/url_parser
     deps/b64/include
     deps/libj/include
     deps/libuv/include
@@ -112,7 +111,6 @@ set(libnode-deps
     httpparser
     j
     pthread
-    urlparser
     uv
 )
 
@@ -159,6 +157,7 @@ set(libnode-test-src
     gtest/gtest_buffer.cpp
     gtest/gtest_common.cpp
     gtest/gtest_event_emitter.cpp
+    gtest/gtest_http_common.cpp
     gtest/gtest_http_echo.cpp
     gtest/gtest_http_static.cpp
     gtest/gtest_http_status.cpp
@@ -242,11 +241,6 @@ if(NOT LIBNODE_USE_OPENSSL)
         deps/b64/src/b64.c
     )
 endif(NOT LIBNODE_USE_OPENSSL)
-
-## url_parser
-add_library(urlparser
-    deps/url_parser/url_parser.c
-)
 
 ## http-parser
 add_library(httpparser

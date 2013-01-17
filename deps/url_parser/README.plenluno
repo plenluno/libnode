@@ -1,4 +1,0 @@
-url_parser.h and url_parser.cpp are copied from
-http://draft.scyphus.co.jp/lang/c/url_parser.html
-
-Plenluno modified them to extend the functionality and fix build errors.
