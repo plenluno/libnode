@@ -98,7 +98,7 @@ class Async : public libj::detail::JsObject<I> {
             JsArray::Ptr msg = args->getPtr<JsArray>(0);
             assert(msg);
             JsFunction::Ptr callback =
-                toPtr<JsFunction>(callbacks_->get(msg->get(0)));
+                toPtr<JsFunction>(callbacks_->remove(msg->get(0)));
             if (callback) {
                 callback->call(msg->get(1));
             }
