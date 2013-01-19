@@ -7,6 +7,8 @@
 #include <libnode/detail/crypto/rsa/public_key.h>
 #include <libnode/detail/crypto/rsa/private_key.h>
 
+#include <assert.h>
+
 namespace libj {
 namespace node {
 namespace detail {
