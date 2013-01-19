@@ -4,6 +4,7 @@
 
 #include <libj/string_buffer.h>
 
+#include <assert.h>
 #include <http_parser.h>
 
 namespace libj {
