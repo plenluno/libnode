@@ -17,6 +17,8 @@ If g++ supports C++11 in your environment,
 
 ### Example
 
+The following HTTP server responds with "Hello World" for every request.
+
     http::Server::Ptr srv = http::Server::create(
         JsClosure::create([] (JsArray::Ptr args) -> Value {
             http::ServerResponse::Ptr res =
@@ -30,5 +32,4 @@ If g++ supports C++11 in your environment,
     srv->listen(1337, String::create("127.0.0.1"));
     node::run();
 
-Here is an example of a web server which responds with "Hello World" for every request.  
 For more information about the usage, please refer to libnode/gtest.
