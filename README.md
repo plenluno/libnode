@@ -30,4 +30,5 @@ If g++ supports C++11 in your environment,
     srv->listen(1337, String::create("127.0.0.1"));
     node::run();
 
+Here is an example of a web server which responds with "Hello World" for every request.  
 For more information about the usage, please refer to libnode/gtest.
