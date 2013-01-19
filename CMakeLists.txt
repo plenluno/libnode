@@ -102,6 +102,7 @@ endif(LIBNODE_USE_OPENSSL)
 if(LIBNODE_USE_THREAD)
     set(libnode-src
         ${libnode-src}
+        src/async.cpp
         src/message_queue.cpp
     )
 endif(LIBNODE_USE_THREAD)
@@ -191,6 +192,7 @@ endif(LIBNODE_USE_CXX11)
 if(LIBNODE_USE_THREAD)
     set(libnode-test-src
         ${libnode-test-src}
+        gtest/gtest_async.cpp
         gtest/gtest_message_queue.cpp
     )
 endif(LIBNODE_USE_THREAD)
