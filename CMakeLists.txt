@@ -8,7 +8,7 @@ include(CMakeDependentOption)
 
 # options ------------------------------------------------------------------------------------------
 
-option(LIBNODE_USE_CXX11 "Use C++11" OFF)
+option(LIBNODE_USE_CXX11 "Use C++11" ON)
 option(LIBNODE_USE_OPENSSL "Use OpenSSL" ON)
 option(LIBNODE_USE_THREAD "Use Threads" ON)
 option(LIBNODE_BUILD_TEST "Build Tests" OFF)
