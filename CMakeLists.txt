@@ -34,7 +34,6 @@ set(CMAKE_CXX_FLAGS_RELEASE
 ## libnode-include
 set(libnode-include
     include
-    deps
     deps/http-parser
     deps/b64/include
     deps/libj/include
