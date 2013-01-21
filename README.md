@@ -11,7 +11,7 @@ libnode is a native implementation of Node.js.
     cmake ..
     make
 
-If g++ supports C++11 in your environment,
+If your C++ compiler supports C++11,
 
     cmake -DLIBNODE_USE_CXX11=ON ..
 
