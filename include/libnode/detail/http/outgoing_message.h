@@ -197,7 +197,8 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         String::CPtr reasonPhrase = String::null(),
         libj::JsObject::CPtr obj = libj::JsObject::null()) {
         statusCode_ = statusCode;
-        Status::CPtr status = Status::create(statusCode, reasonPhrase);
+        node::http::Status::CPtr status =
+            node::http::Status::create(statusCode, reasonPhrase);
 
         libj::JsObject::CPtr headers;
         if (obj && headers_) {
