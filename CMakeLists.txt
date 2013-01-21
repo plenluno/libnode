@@ -162,6 +162,7 @@ set(libnode-test-src
     gtest/gtest_event_emitter.cpp
     gtest/gtest_http_common.cpp
     gtest/gtest_http_echo.cpp
+    gtest/gtest_http_echo_old.cpp
     gtest/gtest_http_static.cpp
     gtest/gtest_http_status.cpp
 #   gtest/gtest_net_pipe_echo.cpp

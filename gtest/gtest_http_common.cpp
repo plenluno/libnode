@@ -5,6 +5,8 @@
 namespace libj {
 namespace node {
 
+UInt GTestHttpServerOnEnd::count_ = 0;
+
 JsArray::Ptr GTestHttpClientOnResponse::statusCodes_ = JsArray::create();
 
 }  // namespace node
