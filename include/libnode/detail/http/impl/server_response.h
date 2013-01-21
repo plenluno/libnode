@@ -27,6 +27,8 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInServer(
         String::CPtr te = req->getHeader(node::http::HEADER_TE);
         if (te && te->equals(symChunked)) {
             self->setFlag(OutgoingMessage::USE_CHUNKED_ENCODING_BY_DEFAULT);
+        } else {
+            self->unsetFlag(OutgoingMessage::USE_CHUNKED_ENCODING_BY_DEFAULT);
         }
     }
     return self;
