@@ -13,3 +13,6 @@
 [submodule "deps/b64"]
 	path = deps/b64
 	url = https://github.com/plenluno/b64.git
+[submodule "deps/libuv"]
+	path = deps/libuv
+	url = https://github.com/plenluno/libuv.git
