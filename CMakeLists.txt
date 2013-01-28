@@ -120,6 +120,7 @@ set(libnode-deps
 if(LIBNODE_USE_OPENSSL)
     set(libnode-deps
         ${libnode-deps}
+        ssl
         crypto
         dl
     )
@@ -257,24 +258,7 @@ add_subdirectory(deps/libuv)
 
 ## openssl
 if(LIBNODE_BUILD_OPENSSL)
-    add_custom_command(
-        TARGET httpparser PRE_BUILD
-        COMMAND rsync -av ${CMAKE_CURRENT_LIST_DIR}/deps/openssl ${CMAKE_BINARY_DIR}/deps/
-        COMMAND cd ${CMAKE_BINARY_DIR}/deps/openssl && ./config
-    )
-
-    if(APPLE)
-        add_custom_command(
-            TARGET httpparser PRE_BUILD
-            COMMAND cd ${CMAKE_BINARY_DIR}/deps/openssl && ./Configure darwin64-x86_64-cc
-        )
-    endif(APPLE)
-
-    add_custom_command(
-        TARGET httpparser PRE_BUILD
-        COMMAND make -C ${CMAKE_BINARY_DIR}/deps/openssl
-        COMMAND ln -sf ${CMAKE_BINARY_DIR}/deps/openssl/libcrypto.a ${CMAKE_BINARY_DIR}/libcrypto.a
-    )
+    add_subdirectory(deps/openssl)
 endif(LIBNODE_BUILD_OPENSSL)
 
 ## libnode
