@@ -253,12 +253,7 @@ add_library(httpparser
 )
 
 ## libuv
-add_custom_command(
-    TARGET httpparser PRE_BUILD
-    COMMAND rsync -av ${CMAKE_CURRENT_LIST_DIR}/deps/libuv ${CMAKE_BINARY_DIR}/deps/
-    COMMAND make -C ${CMAKE_BINARY_DIR}/deps/libuv
-    COMMAND ln -sf ${CMAKE_BINARY_DIR}/deps/libuv/uv.a ${CMAKE_BINARY_DIR}/libuv.a
-)
+add_subdirectory(deps/libuv)
 
 ## openssl
 if(LIBNODE_BUILD_OPENSSL)
