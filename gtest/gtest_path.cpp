@@ -3,8 +3,14 @@
 #include <gtest/gtest.h>
 #include <libnode/path.h>
 
-#include <unistd.h>
 #include <libj/js_object.h>
+
+#ifdef LIBJ_PF_WINDOWS
+    #include <direct.h>
+    #define getcwd _getcwd
+#else
+    #include <unistd.h>
+#endif
 
 namespace libj {
 namespace node {

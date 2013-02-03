@@ -6,7 +6,13 @@
 #include <libj/string_buffer.h>
 
 #include <assert.h>
-#include <unistd.h>
+
+#ifdef LIBJ_PF_WINDOWS
+    #include <direct.h>
+    #define getcwd _getcwd
+#else
+    #include <unistd.h>
+#endif
 
 namespace libj {
 namespace node {
