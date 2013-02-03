@@ -12,6 +12,10 @@
 
 #include <fcntl.h>
 
+#ifdef LIBJ_PF_WINDOWS
+    #define O_SYNC 0
+#endif
+
 namespace libj {
 namespace node {
 namespace detail {
@@ -67,11 +71,13 @@ static node::fs::Stats::Ptr getStats(uv_fs_t* req) {
     stats->put(node::fs::STAT_GID,     static_cast<Long>(s->st_gid));
     stats->put(node::fs::STAT_RDEV,    static_cast<Long>(s->st_rdev));
     stats->put(node::fs::STAT_SIZE,    static_cast<Long>(s->st_size));
-    stats->put(node::fs::STAT_BLKSIZE, static_cast<Long>(s->st_blksize));
-    stats->put(node::fs::STAT_BLOCKS,  static_cast<Long>(s->st_blocks));
     stats->put(node::fs::STAT_ATIME,   static_cast<Long>(s->st_atime));
     stats->put(node::fs::STAT_MTIME,   static_cast<Long>(s->st_mtime));
     stats->put(node::fs::STAT_CTIME,   static_cast<Long>(s->st_ctime));
+#ifdef LIBJ_PF_UNIX
+    stats->put(node::fs::STAT_BLKSIZE, static_cast<Long>(s->st_blksize));
+    stats->put(node::fs::STAT_BLOCKS,  static_cast<Long>(s->st_blocks));
+#endif
     return stats;
 }
 
