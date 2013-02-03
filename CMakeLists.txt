@@ -47,7 +47,7 @@ set(libnode-include
 if(LIBNODE_BUILD_OPENSSL)
     set(libnode-include
         ${libnode-include}
-        deps/openssl/include
+        deps/openssl/openssl/include
     )
 endif(LIBNODE_BUILD_OPENSSL)
 
@@ -220,13 +220,6 @@ string(REPLACE ";" " " libnode-test-cflags "${libnode-test-cflags}")
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h.in
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h )
-
-# find libraries -----------------------------------------------------------------------------------
-
-find_library(PTHREAD pthread REQUIRED)
-if(NOT EXISTS ${PTHREAD})
-    message(FATAL_ERROR "libpthread not found.")
-endif(NOT EXISTS ${PTHREAD})
 
 # build libraries ----------------------------------------------------------------------------------
 
