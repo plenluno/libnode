@@ -248,7 +248,7 @@ class EventEmitter
     };
 
  private:
-    JsObject::Ptr events_;
+    libj::JsObject::Ptr events_;
 };
 
 }  // namespace events

@@ -20,7 +20,7 @@ class Async : public libj::detail::JsObject<I> {
         Size numThreads,
         ThreadFactory::Ptr threadFactory)
         : nextId_(0)
-        , callbacks_(Map::create())
+        , callbacks_(libj::Map::create())
         , msgQueue_(MessageQueue::create())
         , exec_(executors::createFixedThreadPool(
             numThreads,
@@ -92,7 +92,7 @@ class Async : public libj::detail::JsObject<I> {
 
     class OnMessage : LIBJ_JS_FUNCTION_TEMPLATE(OnMessage)
      public:
-        OnMessage(Map::Ptr callbacks) : callbacks_(callbacks) {}
+        OnMessage(libj::Map::Ptr callbacks) : callbacks_(callbacks) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             JsArray::Ptr msg = args->getPtr<JsArray>(0);
@@ -106,12 +106,12 @@ class Async : public libj::detail::JsObject<I> {
         }
 
      private:
-        Map::Ptr callbacks_;
+        libj::Map::Ptr callbacks_;
     };
 
  private:
     ULong nextId_;
-    Map::Ptr callbacks_;
+    libj::Map::Ptr callbacks_;
     MessageQueue::Ptr msgQueue_;
     ExecutorService::Ptr exec_;
 };
