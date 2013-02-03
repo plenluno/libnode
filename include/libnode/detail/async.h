@@ -71,7 +71,9 @@ class Async : public libj::detail::JsObject<I> {
             try {
                 res = (*task_)();
             } catch(const libj::Exception& e) {
-                res = Error::create(static_cast<Error::Code>(e.code()), e.message());
+                res = Error::create(
+                    static_cast<Error::Code>(e.code()),
+                    e.message());
             }
 #else
             res = (*task_)();
