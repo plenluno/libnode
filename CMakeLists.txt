@@ -113,17 +113,29 @@ endif(LIBNODE_USE_THREAD)
 set(libnode-deps
     httpparser
     j
-    pthread
     uv
 )
+
+if(UNIX)
+    set(libnode-deps
+        ${libnode-deps}
+        pthread
+    )
+endif(UNIX)
 
 if(LIBNODE_USE_OPENSSL)
     set(libnode-deps
         ${libnode-deps}
         ssl
         crypto
-        dl
     )
+
+    if(UNIX)
+        set(libnode-deps
+            ${libnode-deps}
+            dl
+        )
+    endif(UNIX)
 else(LIBNODE_USE_OPENSSL)
     set(libnode-deps
         ${libnode-deps}
@@ -131,12 +143,12 @@ else(LIBNODE_USE_OPENSSL)
     )
 endif(LIBNODE_USE_OPENSSL)
 
-if(NOT APPLE)
+if(UXIX AND NOT APPLE)
     set(libnode-deps
         ${libnode-deps}
         rt
     )
-endif(NOT APPLE)
+endif(UNIX AND NOT APPLE)
 
 ## libnode-cflags
 if(UNIX)
@@ -204,16 +216,22 @@ if(LIBNODE_USE_THREAD)
 endif(LIBNODE_USE_THREAD)
 
 ## libnode-test-cflags
-set(libnode-test-cflags
-    -Wall
-)
-
-if(LIBNODE_USE_CXX11)
+if(UNIX)
     set(libnode-test-cflags
-        ${libnode-test-cflags}
-        --std=c++0x
+        -Wall
     )
-endif(LIBNODE_USE_CXX11)
+
+    if(LIBNODE_USE_CXX11)
+        set(libnode-test-cflags
+            ${libnode-test-cflags}
+            --std=c++0x
+        )
+    endif(LIBNODE_USE_CXX11)
+else(UNIX)
+    set(libnode-test-cflags
+        /D_VARIADIC_MAX=10
+    )
+endif(UNIX)
 
 string(REPLACE ";" " " libnode-test-cflags "${libnode-test-cflags}")
 
