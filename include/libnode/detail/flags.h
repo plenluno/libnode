@@ -18,7 +18,7 @@ class Flags {
     }
 
     Boolean hasFlag(UInt flag) const {
-        return flags_ & flag;
+        return !!(flags_ & flag);
     }
 
  protected:
