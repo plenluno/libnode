@@ -139,19 +139,21 @@ if(NOT APPLE)
 endif(NOT APPLE)
 
 ## libnode-cflags
-set(libnode-cflags
-    -Wall
-    -fno-rtti
-    -fno-exceptions
-    -D_FILE_OFFSET_BITS=64
-)
-
-if(LIBNODE_USE_CXX11)
+if(UNIX)
     set(libnode-cflags
-        ${libnode-cflags}
-        --std=c++0x
+        -Wall
+        -fno-rtti
+        -fno-exceptions
+        -D_FILE_OFFSET_BITS=64
     )
-endif(LIBNODE_USE_CXX11)
+
+    if(LIBNODE_USE_CXX11)
+        set(libnode-cflags
+            ${libnode-cflags}
+            --std=c++0x
+        )
+    endif(LIBNODE_USE_CXX11)
+endif(UNIX)
 
 string(REPLACE ";" " " libnode-cflags "${libnode-cflags}")
 
