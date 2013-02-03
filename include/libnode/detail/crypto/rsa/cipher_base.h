@@ -54,7 +54,7 @@ class CipherBase : public libj::detail::JsObject<I> {
 
  protected:
     RSA* rsa_;
-    JsObject::CPtr key_;
+    libj::JsObject::CPtr key_;
     Padding padding_;
     JsArray::Ptr bufs_;
 };
