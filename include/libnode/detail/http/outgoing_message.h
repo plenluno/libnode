@@ -15,6 +15,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+#ifdef LIBJ_PF_WINDOWS
+    #define snprintf _snprintf
+#endif
+
 namespace libj {
 namespace node {
 namespace detail {
