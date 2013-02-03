@@ -20,7 +20,7 @@ class EventEmitter
     : public libj::detail::JsObject<I>
     , public node::detail::Flags {
  public:
-    EventEmitter() : events_(JsObject::create()) {}
+    EventEmitter() : events_(libj::JsObject::create()) {}
 
     virtual void on(String::CPtr event, JsFunction::Ptr listener) {
         addListener(event, listener);
