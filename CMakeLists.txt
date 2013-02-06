@@ -6,19 +6,31 @@ project(libnode)
 
 include(CMakeDependentOption)
 
-# options ------------------------------------------------------------------------------------------
+# options ----------------------------------------------------------------------
 
-option(LIBNODE_USE_BDWGC "Use BDW-GC" OFF)
-option(LIBNODE_USE_CXX11 "Use C++11" OFF)
-option(LIBNODE_USE_OPENSSL "Use OpenSSL" ON)
-option(LIBNODE_USE_THREAD "Use Threads" ON)
-option(LIBNODE_BUILD_TEST "Build Tests" OFF)
+option(LIBNODE_USE_BDWGC       "Use BDW-GC"       OFF)
+option(LIBNODE_USE_CXX11       "Use C++11"        OFF)
+option(LIBNODE_USE_OPENSSL     "Use OpenSSL"      ON)
+option(LIBNODE_USE_THREAD      "Use Threads"      ON)
+option(LIBNODE_BUILD_TEST      "Build Tests"      OFF)
 option(LIBNODE_REMOVE_LISTENER "Remove Listeners" ON)
 
-cmake_dependent_option(LIBJ_USE_BDWGC "Use BDW-GC" ON "LIBNODE_USE_BDWGC" OFF)
-cmake_dependent_option(LIBJ_USE_CXX11 "Use C++11" ON "LIBNODE_USE_CXX11" OFF)
-cmake_dependent_option(LIBJ_USE_THREAD "Use Threads" ON "LIBNODE_USE_THREAD" OFF)
-cmake_dependent_option(LIBNODE_BUILD_OPENSSL "Build OpenSSL" ON "LIBNODE_USE_OPENSSL" OFF)
+cmake_dependent_option(LIBJ_USE_BDWGC
+    "Use BDW-GC" ON
+    "LIBNODE_USE_BDWGC" OFF
+)
+cmake_dependent_option(LIBJ_USE_CXX11
+    "Use C++11" ON
+    "LIBNODE_USE_CXX11" OFF
+)
+cmake_dependent_option(LIBJ_USE_THREAD
+    "Use Threads" ON
+    "LIBNODE_USE_THREAD" OFF
+)
+cmake_dependent_option(LIBNODE_BUILD_OPENSSL
+    "Build OpenSSL" ON
+    "LIBNODE_USE_OPENSSL" OFF
+)
 
 message(STATUS "LIBNODE_USE_BDWGC=${LIBNODE_USE_BDWGC}")
 message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
@@ -28,7 +40,7 @@ message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_TEST=${LIBNODE_BUILD_TEST}")
 message(STATUS "LIBNODE_REMOVE_LISTENER=${LIBNODE_REMOVE_LISTENER}")
 
-# variables ----------------------------------------------------------------------------------------
+# variables --------------------------------------------------------------------
 
 set(CMAKE_CXX_FLAGS_RELEASE
     "-Wno-unused-variable"
@@ -235,13 +247,13 @@ endif(UNIX)
 
 string(REPLACE ";" " " libnode-test-cflags "${libnode-test-cflags}")
 
-# configure ----------------------------------------------------------------------------------------
+# configure --------------------------------------------------------------------
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h.in
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h )
 
-# build libraries ----------------------------------------------------------------------------------
+# build libraries --------------------------------------------------------------
 
 include_directories(
     ${libnode-include}
@@ -287,7 +299,7 @@ set_target_properties(node PROPERTIES
     COMPILE_FLAGS "${libnode-cflags}"
 )
 
-# build gtests -------------------------------------------------------------------------------------
+# build gtests -----------------------------------------------------------------
 
 if(LIBNODE_BUILD_TEST)
     add_executable(libnode-test
