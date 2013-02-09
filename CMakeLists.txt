@@ -10,7 +10,8 @@ include(CMakeDependentOption)
 
 option(LIBNODE_USE_BDWGC       "Use BDW-GC"       OFF)
 option(LIBNODE_USE_CXX11       "Use C++11"        OFF)
-option(LIBNODE_USE_OPENSSL     "Use OpenSSL"      ON)
+option(LIBNODE_USE_SSL         "Use SSL"          OFF)
+option(LIBNODE_USE_CRYPTO      "Use Crypto"       ON)
 option(LIBNODE_USE_THREAD      "Use Threads"      ON)
 option(LIBNODE_BUILD_TEST      "Build Tests"      OFF)
 option(LIBNODE_REMOVE_LISTENER "Remove Listeners" ON)
@@ -29,15 +30,24 @@ cmake_dependent_option(LIBJ_USE_THREAD
 )
 cmake_dependent_option(LIBNODE_BUILD_OPENSSL
     "Build OpenSSL" ON
-    "LIBNODE_USE_OPENSSL" OFF
+    "LIBNODE_USE_SSL;LIBNODE_USE_CRYPTO" OFF
+)
+cmake_dependent_option(OPENSSL_BUILD_LIBSSL
+    "Build libssl" ON
+    "LIBNODE_USE_SSL" OFF
+)
+cmake_dependent_option(OPENSSL_BUILD_LIBCRYPTO
+    "Build libcrypto" ON
+    "LIBNODE_USE_CRYPTO" OFF
 )
 
 message(STATUS "LIBNODE_USE_BDWGC=${LIBNODE_USE_BDWGC}")
 message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
-message(STATUS "LIBNODE_USE_OPENSSL=${LIBNODE_USE_OPENSSL}")
+message(STATUS "LIBNODE_USE_SSL=${LIBNODE_USE_SSL}")
+message(STATUS "LIBNODE_USE_CRYPTO=${LIBNODE_USE_CRYPTO}")
 message(STATUS "LIBNODE_USE_THREAD=${LIBNODE_USE_THREAD}")
-message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_BUILD_TEST=${LIBNODE_BUILD_TEST}")
+message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_REMOVE_LISTENER=${LIBNODE_REMOVE_LISTENER}")
 
 # variables --------------------------------------------------------------------
@@ -100,7 +110,7 @@ set(libnode-src
     src/uv/error.cpp
 )
 
-if(LIBNODE_USE_OPENSSL)
+if(LIBNODE_USE_CRYPTO)
     set(libnode-src
         ${libnode-src}
         src/crypto.cpp
@@ -111,7 +121,7 @@ if(LIBNODE_USE_OPENSSL)
         src/crypto/rsa/decipher.cpp
         src/crypto/rsa/key_pair.cpp
     )
-endif(LIBNODE_USE_OPENSSL)
+endif(LIBNODE_USE_CRYPTO)
 
 if(LIBNODE_USE_THREAD)
     set(libnode-src
@@ -135,32 +145,31 @@ if(UNIX)
     )
 endif(UNIX)
 
-if(LIBNODE_USE_OPENSSL)
+if(LIBNODE_USE_SSL)
     set(libnode-deps
         ${libnode-deps}
         ssl
+    )
+endif(LIBNODE_USE_SSL)
+
+if(LIBNODE_USE_CRYPTO)
+    set(libnode-deps
+        ${libnode-deps}
         crypto
     )
-
-    if(UNIX)
-        set(libnode-deps
-            ${libnode-deps}
-            dl
-        )
-    endif(UNIX)
-else(LIBNODE_USE_OPENSSL)
+else(LIBNODE_USE_CRYPTO)
     set(libnode-deps
         ${libnode-deps}
         b64
     )
-endif(LIBNODE_USE_OPENSSL)
+endif(LIBNODE_USE_CRYPTO)
 
 if(UXIX AND NOT APPLE)
     set(libnode-deps
         ${libnode-deps}
         rt
     )
-endif(UNIX AND NOT APPLE)
+endif(UXIX AND NOT APPLE)
 
 ## libnode-cflags
 if(UNIX)
@@ -203,14 +212,14 @@ set(libnode-test-src
     gtest/gtest_uv_error.cpp
 )
 
-if(LIBNODE_USE_OPENSSL)
+if(LIBNODE_USE_CRYPTO)
     set(libnode-test-src
         ${libnode-test-src}
         gtest/gtest_crypto_cipher.cpp
         gtest/gtest_crypto_hash.cpp
 #       gtest/gtest_crypto_rsa.cpp
     )
-endif(LIBNODE_USE_OPENSSL)
+endif(LIBNODE_USE_CRYPTO)
 
 if(LIBNODE_USE_CXX11)
     set(libnode-test-src
@@ -267,11 +276,11 @@ link_directories(
 add_subdirectory(deps/libj)
 
 ## b64
-if(NOT LIBNODE_USE_OPENSSL)
+if(NOT LIBNODE_USE_CRYPTO)
     add_library(b64
         deps/b64/src/b64.c
     )
-endif(NOT LIBNODE_USE_OPENSSL)
+endif(NOT LIBNODE_USE_CRYPTO)
 
 ## http-parser
 add_library(httpparser
