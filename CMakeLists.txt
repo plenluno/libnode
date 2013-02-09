@@ -30,7 +30,7 @@ cmake_dependent_option(LIBJ_USE_THREAD
 )
 cmake_dependent_option(LIBNODE_BUILD_OPENSSL
     "Build OpenSSL" ON
-    "LIBNODE_USE_SSL;LIBNODE_USE_CRYPTO" OFF
+    "LIBNODE_USE_SSL OR LIBNODE_USE_CRYPTO" OFF
 )
 cmake_dependent_option(OPENSSL_BUILD_LIBSSL
     "Build libssl" ON
