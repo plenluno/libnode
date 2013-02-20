@@ -13,6 +13,7 @@ option(LIBNODE_USE_CXX11       "Use C++11"        OFF)
 option(LIBNODE_USE_SSL         "Use SSL"          OFF)
 option(LIBNODE_USE_CRYPTO      "Use Crypto"       ON)
 option(LIBNODE_USE_THREAD      "Use Threads"      ON)
+option(LIBNODE_USE_UTF8        "Use UTF8"         ON)
 option(LIBNODE_BUILD_TEST      "Build Tests"      OFF)
 option(LIBNODE_REMOVE_LISTENER "Remove Listeners" ON)
 
@@ -27,6 +28,10 @@ cmake_dependent_option(LIBJ_USE_CXX11
 cmake_dependent_option(LIBJ_USE_THREAD
     "Use Threads" ON
     "LIBNODE_USE_THREAD" OFF
+)
+cmake_dependent_option(LIBJ_USE_UTF8
+    "Use UTF8" ON
+    "LIBNODE_USE_UTF8" OFF
 )
 cmake_dependent_option(LIBNODE_BUILD_OPENSSL
     "Build OpenSSL" ON
@@ -46,6 +51,7 @@ message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
 message(STATUS "LIBNODE_USE_SSL=${LIBNODE_USE_SSL}")
 message(STATUS "LIBNODE_USE_CRYPTO=${LIBNODE_USE_CRYPTO}")
 message(STATUS "LIBNODE_USE_THREAD=${LIBNODE_USE_THREAD}")
+message(STATUS "LIBNODE_USE_UTF8=${LIBNODE_USE_UTF8}")
 message(STATUS "LIBNODE_BUILD_TEST=${LIBNODE_BUILD_TEST}")
 message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_REMOVE_LISTENER=${LIBNODE_REMOVE_LISTENER}")
