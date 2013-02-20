@@ -8,7 +8,7 @@
 #include <libj/js_regexp.h>
 
 #include <assert.h>
-#ifdef LIBNODE_USE_OPENSSL
+#ifdef LIBNODE_USE_CRYPTO
     #include <openssl/bio.h>
     #include <openssl/buffer.h>
     #include <openssl/evp.h>
@@ -123,7 +123,7 @@ String::CPtr base64Encode(Buffer::CPtr buf) {
     }
 }
 
-#ifdef LIBNODE_USE_OPENSSL
+#ifdef LIBNODE_USE_CRYPTO
 
 String::CPtr base64Encode(const void* data, Size len) {
     if (!data) return String::null();
@@ -171,7 +171,7 @@ Buffer::Ptr base64Decode(String::CPtr str) {
     return decoded;
 }
 
-#else  // LIBNODE_USE_OPENSSL
+#else  // LIBNODE_USE_CRYPTO
 
 String::CPtr base64Encode(const void* data, Size len) {
     if (!data) return String::null();
@@ -208,7 +208,7 @@ Buffer::Ptr base64Decode(String::CPtr str) {
     return decoded;
 }
 
-#endif  // LIBNODE_USE_OPENSSL
+#endif  // LIBNODE_USE_CRYPTO
 
 // -- percentEncode & percentDecode --
 
