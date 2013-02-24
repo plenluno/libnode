@@ -8,6 +8,7 @@
 #include <libnode/detail/net/socket.h>
 #include <libnode/detail/http/outgoing_message.h>
 
+#include <libj/this.h>
 #include <libj/string_buffer.h>
 
 namespace libj {
@@ -273,25 +274,12 @@ class Agent : public events::EventEmitter<node::http::Agent> {
             self_->removeSocket(socket_, name_, host_, port_, localAddress_);
             socket_->removeListener(EVENT_FREE, onFree_);
             socket_->removeListener(EVENT_CLOSE, onClose_);
-            socket_->removeListener(EVENT_AGENT_REMOVE, getMe());
+            socket_->removeListener(
+                EVENT_AGENT_REMOVE, LIBJ_THIS_PTR(OnRemove));
             return Status::OK;
         }
 
      private:
-        JsFunction::CPtr getMe() {
-            LIBJ_STATIC_SYMBOL_DEF(EVENT_AGENT_REMOVE, "agentRemove");
-
-            JsArray::Ptr cbs = socket_->listeners(EVENT_AGENT_REMOVE);
-            Size len = cbs->length();
-            for (Size i = 0; i < len; i++) {
-                JsFunction::CPtr cb = cbs->getCPtr<JsFunction>(i);
-                if (&(*cb) == this) {
-                    return cb;
-                }
-            }
-            return JsFunction::null();
-        }
-
         Agent* self_;
         net::Socket::Ptr socket_;
         String::CPtr name_;
