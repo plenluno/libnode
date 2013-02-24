@@ -5,14 +5,13 @@
 #include <libj/symbol.h>
 #include <libj/string_buffer.h>
 
-#include <assert.h>
-
 #ifdef LIBJ_PF_WINDOWS
-    #include <direct.h>
-    #define getcwd _getcwd
+    #include <libj/platform/windows.h>
 #else
     #include <unistd.h>
 #endif
+
+#include <assert.h>
 
 namespace libj {
 namespace node {

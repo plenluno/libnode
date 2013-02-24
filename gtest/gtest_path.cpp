@@ -6,8 +6,7 @@
 #include <libj/js_object.h>
 
 #ifdef LIBJ_PF_WINDOWS
-    #include <direct.h>
-    #define getcwd _getcwd
+    #include <libj/platform/windows.h>
 #else
     #include <unistd.h>
 #endif

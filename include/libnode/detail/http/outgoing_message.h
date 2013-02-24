@@ -12,12 +12,12 @@
 
 #include <libj/typed_linked_list.h>
 
+#ifdef LIBJ_PF_WINDOWS
+    #include <libj/platform/windows.h>
+#endif
+
 #include <assert.h>
 #include <stdio.h>
-
-#ifdef LIBJ_PF_WINDOWS
-    #define snprintf _snprintf
-#endif
 
 namespace libj {
 namespace node {
