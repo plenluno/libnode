@@ -4,6 +4,7 @@
 #define LIBNODE_DETAIL_NET_SOCKET_H_
 
 #include <libnode/config.h>
+#include <libnode/dns.h>
 #include <libnode/net.h>
 #include <libnode/process.h>
 #include <libnode/string_decoder.h>
@@ -13,6 +14,7 @@
 #include <libnode/detail/events/event_emitter.h>
 
 #include <libj/json.h>
+#include <libj/this.h>
 
 #include <assert.h>
 
@@ -527,16 +529,10 @@ class Socket : public events::EventEmitter<node::net::Socket> {
             if (!host) {
                 connect(this, tcp, symLocalhost4, port, 4);
             } else {
-                // TODO(plenluno): dns lookup
-
-                Int addressType = node::net::isIP(host);
-                if (addressType) {
-                    connect(this, tcp, host, port, addressType, localAddress);
-                } else {
-                    Error::CPtr err = Error::create(Error::ILLEGAL_ARGUMENT);
-                    JsFunction::Ptr destroy(new EmitErrorAndDestroy(this, err));
-                    process::nextTick(destroy);
-                }
+                AfterLookup::Ptr afterLookup(
+                    new AfterLookup(
+                        LIBJ_THIS_PTR(Socket), tcp, port, localAddress));
+                dns::lookup(host, afterLookup);
             }
         }
     }
@@ -829,6 +825,54 @@ class Socket : public events::EventEmitter<node::net::Socket> {
      private:
         Socket* self_;
         uv::Connect* req_;
+    };
+
+    class AfterLookup : LIBJ_JS_FUNCTION(AfterLookup)
+     public:
+        AfterLookup(
+            Socket::Ptr self,
+            uv::Tcp* tcp,
+            Int port,
+            String::CPtr localAddress)
+            : self_(self)
+            , tcp_(tcp)
+            , port_(port)
+            , localAddress_(localAddress) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
+            LIBJ_STATIC_SYMBOL_DEF(symLocalhost4, "127.0.0.1");
+            LIBJ_STATIC_SYMBOL_DEF(symLocalhost6, "0:0:0:0:0:0:0:1");
+
+            if (!self_->hasFlag(CONNECTING)) return Status::OK;
+
+            Error::CPtr err = args->getCPtr<Error>(0);
+            String::CPtr ip = args->getCPtr<String>(1);
+            Int addressType = 0;
+            to<Int>(args->get(2), &addressType);
+
+            if (err) {
+                JsFunction::Ptr destroy(
+                    new EmitErrorAndDestroy(&(*self_), err));
+                process::nextTick(destroy);
+            } else {
+                self_->active();
+                if (!addressType) {
+                    addressType = 4;
+                }
+                if (!ip) {
+                    ip = addressType == 4 ? symLocalhost4 : symLocalhost6;
+                }
+                connect(
+                    &(*self_), tcp_, ip, port_, addressType, localAddress_);
+            }
+            return Status::OK;
+        }
+
+     private:
+        Socket::Ptr self_;
+        uv::Tcp* tcp_;
+        Int port_;
+        String::CPtr localAddress_;
     };
 
     class EmitError : LIBJ_JS_FUNCTION(EmitError)

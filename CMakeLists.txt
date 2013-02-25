@@ -89,6 +89,7 @@ endif(LIBJ_BUILD_GTEST)
 ## libnode-src
 set(libnode-src
     src/buffer.cpp
+    src/dns.cpp
     src/events/event_emitter.cpp
     src/fs.cpp
     src/fs/stats.cpp
@@ -201,6 +202,7 @@ set(libnode-test-src
     gtest/gtest_main.cpp
     gtest/gtest_buffer.cpp
     gtest/gtest_common.cpp
+    gtest/gtest_dns.cpp
     gtest/gtest_event_emitter.cpp
     gtest/gtest_http_common.cpp
     gtest/gtest_http_echo.cpp
