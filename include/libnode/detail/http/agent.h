@@ -34,6 +34,14 @@ class Agent : public events::EventEmitter<node::http::Agent> {
         return Ptr(agent);
     }
 
+    virtual Size maxSockets() const {
+        return maxSockets_;
+    }
+
+    virtual void setMaxSockets(Size max) {
+        maxSockets_ = max;
+    }
+
     void addRequest(
         OutgoingMessage::Ptr req,
         String::CPtr host,

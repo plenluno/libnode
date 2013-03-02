@@ -12,6 +12,10 @@ namespace http {
 class Agent : LIBNODE_EVENT_EMITTER(Agent)
  public:
     static Ptr create(JsObject::CPtr options = JsObject::null());
+
+    virtual Size maxSockets() const = 0;
+
+    virtual void setMaxSockets(Size max) = 0;
 };
 
 }  // namespace http
