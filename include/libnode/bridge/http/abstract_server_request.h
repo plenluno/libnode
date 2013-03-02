@@ -30,6 +30,10 @@ class AbstractServerRequest : public stream::AbstractReadableStream<I> {
         return request_->headers();
     }
 
+    JsObject::CPtr trailers() const {
+        return request_->trailers();
+    }
+
     String::CPtr httpVersion() const {
         return request_->httpVersion();
     }

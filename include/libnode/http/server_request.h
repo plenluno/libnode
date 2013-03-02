@@ -18,6 +18,8 @@ class ServerRequest : LIBNODE_READABLE_STREAM(ServerRequest)
 
     virtual JsObject::CPtr headers() const = 0;
 
+    virtual JsObject::CPtr trailers() const = 0;
+
     virtual String::CPtr httpVersion() const = 0;
 
     virtual net::Socket::Ptr connection() const = 0;
