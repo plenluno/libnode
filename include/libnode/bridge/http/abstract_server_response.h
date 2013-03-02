@@ -18,6 +18,10 @@ class AbstractServerResponse : public stream::AbstractWritableStream<I> {
         : stream::AbstractWritableStream<I>(response)
         , response_(response) {}
 
+    virtual void writeContinue() {
+        response_->writeContinue();
+    }
+
     virtual void writeHead(
         Int statusCode,
         String::CPtr reasonPhrase = String::null(),
@@ -39,6 +43,10 @@ class AbstractServerResponse : public stream::AbstractWritableStream<I> {
 
     virtual void removeHeader(String::CPtr name) {
         response_->removeHeader(name);
+    }
+
+    virtual void addTrailers(JsObject::CPtr headers) {
+        response_->addTrailers(headers);
     }
 
  private:

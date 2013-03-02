@@ -11,6 +11,8 @@ namespace http {
 
 class ServerResponse : LIBNODE_WRITABLE_STREAM(ServerResponse)
  public:
+    virtual void writeContinue() = 0;
+
     virtual void writeHead(
         Int statusCode,
         String::CPtr reasonPhrase = String::null(),
@@ -23,6 +25,8 @@ class ServerResponse : LIBNODE_WRITABLE_STREAM(ServerResponse)
     virtual void setHeader(String::CPtr name, String::CPtr value) = 0;
 
     virtual void removeHeader(String::CPtr name) = 0;
+
+    virtual void addTrailers(JsObject::CPtr headers) = 0;
 };
 
 }  // namespace http

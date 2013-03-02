@@ -189,6 +189,26 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         return true;
     }
 
+    Boolean addTrailers(libj::JsObject::CPtr headers) {
+        if (!headers) return false;
+
+        StringBuffer::Ptr trailer = StringBuffer::create();
+        Set::CPtr keys = headers->keySet();
+        Iterator::Ptr itr = keys->iterator();
+        while (itr->hasNext()) {
+            String::CPtr key = toCPtr<String>(itr->next());
+            String::CPtr val = headers->getCPtr<String>(key);
+            if (key && val) {
+                trailer->append(key);
+                trailer->appendCStr(": ");
+                trailer->append(val);
+                trailer->appendCStr("\r\n");
+            }
+        }
+        trailer_ = trailer->toString();
+        return true;
+    }
+
     void writeContinue() {
         static const String::CPtr header =
             String::create("HTTP/1.1 100 Continue\r\n\r\n");
