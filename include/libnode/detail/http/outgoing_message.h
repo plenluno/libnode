@@ -875,11 +875,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
     class ParserOnIncomingClient : LIBJ_JS_FUNCTION(ParserOnIncomingClient)
      public:
-        ParserOnIncomingClient(
-            Parser* parser,
-            net::Socket::Ptr socket)
-            : parser_(parser)
-            , socket_(socket) {}
+        ParserOnIncomingClient(net::Socket::Ptr socket) : socket_(socket) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             IncomingMessage::Ptr res = args->getPtr<IncomingMessage>(0);
@@ -923,7 +919,6 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         }
 
      private:
-        Parser* parser_;
         net::Socket::Ptr socket_;
     };
 
@@ -974,7 +969,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             socket_->setOnData(socketOnData);
 
             JsFunction::Ptr parserOnIncomingClient(
-                new ParserOnIncomingClient(parser, socket_));
+                new ParserOnIncomingClient(socket_));
             parser->setOnIncoming(parserOnIncomingClient);
 
             self_->emit(node::http::ClientRequest::EVENT_SOCKET, socket_);

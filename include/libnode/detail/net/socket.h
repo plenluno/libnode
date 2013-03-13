@@ -453,7 +453,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         uv::Connect* req = handle->connect(path);
 
         if (req) {
-            AfterConnect::Ptr afterConnect(new AfterConnect(self, req));
+            AfterConnect::Ptr afterConnect(new AfterConnect(self));
             req->onComplete = afterConnect;
         } else {
             self->destroy(node::uv::Error::last());
@@ -491,7 +491,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         }
 
         if (req) {
-            AfterConnect::Ptr afterConnect(new AfterConnect(self, req));
+            AfterConnect::Ptr afterConnect(new AfterConnect(self));
             req->onComplete = afterConnect;
         } else {
             self->destroy(node::uv::Error::last());
@@ -758,11 +758,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
 
     class AfterConnect : LIBJ_JS_FUNCTION(AfterConnect)
      public:
-        AfterConnect(
-            Socket* sock,
-            uv::Connect* req)
-            : self_(sock)
-            , req_(req) {}
+        AfterConnect(Socket* sock) : self_(sock) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             if (self_->hasFlag(DESTROYED)) return Status::OK;
@@ -824,7 +820,6 @@ class Socket : public events::EventEmitter<node::net::Socket> {
 
      private:
         Socket* self_;
-        uv::Connect* req_;
     };
 
     class AfterLookup : LIBJ_JS_FUNCTION(AfterLookup)
