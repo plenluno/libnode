@@ -7,6 +7,8 @@
 
 #include <libj/exception.h>
 #include <libj/executors.h>
+#include <libj/atomic_long.h>
+#include <libj/concurrent_map.h>
 #include <libj/detail/js_object.h>
 
 namespace libj {
@@ -19,8 +21,8 @@ class Async : public libj::detail::JsObject<I> {
     Async(
         Size numThreads,
         ThreadFactory::Ptr threadFactory)
-        : nextId_(0)
-        , callbacks_(libj::Map::create())
+        : nextId_(AtomicLong::create())
+        , callbacks_(ConcurrentMap::create())
         , msgQueue_(MessageQueue::create())
         , exec_(executors::createFixedThreadPool(
             numThreads,
@@ -46,11 +48,11 @@ class Async : public libj::detail::JsObject<I> {
     virtual Boolean exec(JsFunction::Ptr task, JsFunction::Ptr callback) {
         if (!exec_ || !task) return false;
 
+        Long id = nextId_->incrementAndGet();
         if (callback) {
-            callbacks_->put(nextId_, callback);
+            callbacks_->put(id, callback);
         }
-        exec_->execute(JsFunction::Ptr(new Task(nextId_, task, msgQueue_)));
-        nextId_++;
+        exec_->execute(JsFunction::Ptr(new Task(id, task, msgQueue_)));
         return true;
     }
 
@@ -87,14 +89,14 @@ class Async : public libj::detail::JsObject<I> {
         }
 
      private:
-        ULong id_;
+        Long id_;
         JsFunction::Ptr task_;
         MessageQueue* msgQueue_;
     };
 
     class OnMessage : LIBJ_JS_FUNCTION_TEMPLATE(OnMessage)
      public:
-        OnMessage(libj::Map::Ptr callbacks) : callbacks_(callbacks) {}
+        OnMessage(ConcurrentMap::Ptr callbacks) : callbacks_(callbacks) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             JsArray::Ptr msg = args->getPtr<JsArray>(0);
@@ -108,12 +110,12 @@ class Async : public libj::detail::JsObject<I> {
         }
 
      private:
-        libj::Map::Ptr callbacks_;
+        ConcurrentMap::Ptr callbacks_;
     };
 
  private:
-    ULong nextId_;
-    libj::Map::Ptr callbacks_;
+    AtomicLong::Ptr nextId_;
+    ConcurrentMap::Ptr callbacks_;
     MessageQueue::Ptr msgQueue_;
     ExecutorService::Ptr exec_;
 };
