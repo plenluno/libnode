@@ -10,6 +10,7 @@
 #include <libnode/detail/uv/req.h>
 
 #include <uv.h>
+#include <string.h>
 
 namespace libj {
 namespace node {
