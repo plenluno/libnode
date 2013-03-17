@@ -11,9 +11,16 @@ libnode is a native implementation of Node.js.
     cmake ..
     make
 
-If your C++ compiler supports C++11,
+The memory management of libnode is based on shared_ptr or bdw-gc.  
+libnode use shared_ptr by default. In order to use bdw-gc,  
+
+    cmake -DLIBNODE_USE_BDWGC=ON ..
+
+If your compiler supports C++11,
 
     cmake -DLIBNODE_USE_CXX11=ON ..
+
+It allows you to use closures like the example below.
 
 ### Example
 
