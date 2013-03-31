@@ -54,15 +54,15 @@ class Buffer : public I {
 
         switch (enc) {
         case I::UTF8:
-            return String::create(dp, String::UTF8, len);
+            return String::create(dp, String::UTF8,    len);
         case I::UTF16BE:
-            return String::create(dp, String::UTF16BE, len);
+            return String::create(dp, String::UTF16BE, len >> 1);
         case I::UTF16LE:
-            return String::create(dp, String::UTF16LE, len);
+            return String::create(dp, String::UTF16LE, len >> 1);
         case I::UTF32BE:
-            return String::create(dp, String::UTF32BE, len);
+            return String::create(dp, String::UTF32BE, len >> 2);
         case I::UTF32LE:
-            return String::create(dp, String::UTF32LE, len);
+            return String::create(dp, String::UTF32LE, len >> 2);
         case I::BASE64:
             return util::base64Encode(dp, len);
         case I::HEX:

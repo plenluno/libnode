@@ -334,7 +334,20 @@ String::CPtr percentDecode(String::CPtr str, String::Encoding enc) {
     Size len = str->length() + 1;
     char* decoded = new char[len];
     Size size = percentDecode(decoded, len, str->toStdString().c_str());
-    String::CPtr res = String::create(decoded, enc, size);
+    String::CPtr res;
+    switch (enc) {
+    case String::UTF8:
+        res = String::create(decoded, enc, size);
+        break;
+    case String::UTF16BE:
+    case String::UTF16LE:
+        res = String::create(decoded, enc, size >> 1);
+        break;
+    case String::UTF32BE:
+    case String::UTF32LE:
+        res = String::create(decoded, enc, size >> 2);
+        break;
+    }
     delete[] decoded;
     return res;
 }
