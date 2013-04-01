@@ -11,8 +11,8 @@ libnode is a native implementation of Node.js.
     cmake ..
     make
 
-The memory management of libnode is based on shared_ptr or bdw-gc.  
-libnode use shared_ptr by default. In order to use bdw-gc,  
+The memory management of libnode is automatic, based on either shared_ptr or bdw-gc.  
+libnode uses shared_ptr by default. In order to use bdw-gc,  
 
     cmake -DLIBNODE_USE_BDWGC=ON ..
 
