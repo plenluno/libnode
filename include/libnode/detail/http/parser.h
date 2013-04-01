@@ -237,8 +237,8 @@ class Parser : public Flags {
         httpVer->append(minorVer_);
         incoming_->setHttpVersion(httpVer->toString());
 
-        Size n = fields_->length();
-        assert(values_->length() == n);
+        Size n = values_->length();
+        assert(fields_->length() == n || fields_->length() == n + 1);
         if (maxHeadersCount_) {
             n = n < maxHeadersCount_ ? n : maxHeadersCount_;
         }
