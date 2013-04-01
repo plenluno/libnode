@@ -97,7 +97,12 @@ class Server : public events::EventEmitter<I> {
 
     virtual Boolean close(
         JsFunction::Ptr callback = JsFunction::null()) {
-        if (!handle_) return false;
+        if (!handle_) {
+#ifdef LIBNODE_REMOVE_LISTENER
+            this->removeAllListeners();
+#endif
+            return false;
+        }
 
         if (callback) this->once(node::net::Server::EVENT_CLOSE, callback);
 

@@ -66,6 +66,13 @@ class Server : public net::Server<node::http::Server> {
                 toPtr<IncomingMessage>(incomings->shift());
             req->emit(EVENT_ABORTED);
             req->emit(IncomingMessage::EVENT_CLOSE);
+#ifdef LIBNODE_REMOVE_LISTENER
+            // 'close' only once
+            req->removeAllListeners(IncomingMessage::EVENT_CLOSE);
+            // no 'data' and 'end' after 'close'
+            req->removeAllListeners(IncomingMessage::EVENT_DATA);
+            req->removeAllListeners(IncomingMessage::EVENT_END);
+#endif
         }
     }
 

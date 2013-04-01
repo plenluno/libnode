@@ -641,6 +641,11 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
         virtual Value operator()(JsArray::Ptr args) {
             self_->emit(OutgoingMessage::EVENT_CLOSE);
+#ifdef LIBNODE_REMOVE_LISTENER
+            // no event after 'close'
+            self_->removeAllListeners();
+#endif
+            self_ = OutgoingMessage::null();
             return Status::OK;
         }
 
