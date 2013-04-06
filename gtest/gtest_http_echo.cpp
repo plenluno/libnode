@@ -52,9 +52,9 @@ TEST(GTestHttpEcho, TestConnectionKeepAlive) {
     for (Size i = 0; i < numMsgs; i++) {
         ASSERT_TRUE(messages->get(i).equals(msg));
         ASSERT_TRUE(statusCodes->get(i).equals(200));
-        console::printf(console::INFO, ".");
+        console::printf(console::LEVEL_INFO, ".");
     }
-    console::printf(console::INFO, "\n");
+    console::printf(console::LEVEL_INFO, "\n");
 }
 
 TEST(GTestHttpEcho, TestConnectionClose) {
@@ -102,9 +102,9 @@ TEST(GTestHttpEcho, TestConnectionClose) {
     for (Size i = 0; i < numMsgs; i++) {
         ASSERT_TRUE(messages->get(i).equals(msg));
         ASSERT_TRUE(statusCodes->get(i).equals(200));
-        console::printf(console::INFO, ".");
+        console::printf(console::LEVEL_INFO, ".");
     }
-    console::printf(console::INFO, "\n");
+    console::printf(console::LEVEL_INFO, "\n");
 }
 
 }  // namespace node

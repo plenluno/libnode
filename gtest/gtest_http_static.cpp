@@ -58,7 +58,7 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
         OnRead::Ptr onRead(new OnRead(res));
         String::CPtr path =
             root_->concat(toCPtr<String>(url->get(url::PATHNAME)));
-        console::printv(console::INFO, "GET %v\n", path);
+        console::printv(console::LEVEL_INFO, "GET %v\n", path);
         fs::readFile(path, onRead);
         return Status::OK;
     }

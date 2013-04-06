@@ -15,7 +15,7 @@ class GTestAsyncTask : LIBJ_JS_FUNCTION(GTestAsyncTask)
     GTestAsyncTask(UInt i) : i_(i) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        console::printf(console::INFO, ".");
+        console::printf(console::LEVEL_INFO, ".");
         return i_;
     }
 
@@ -67,7 +67,7 @@ TEST(GTestAsync, TestExec) {
         sum += i;
     }
     node::run();
-    console::printf(console::INFO, "\n", sum);
+    console::printf(console::LEVEL_INFO, "\n", sum);
 
     ASSERT_EQ(sum, calllback->sum());
 }

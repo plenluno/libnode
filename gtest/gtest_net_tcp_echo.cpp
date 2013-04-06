@@ -40,11 +40,11 @@ TEST(GTestNetTcpEcho, TestTcpEcho) {
     Size numMsgs = messages->length();
     ASSERT_EQ(NUM_CONNS, numMsgs);
     for (Size i = 0; i < numMsgs; i++) {
-        console::printf(console::INFO, ".");
+        console::printf(console::LEVEL_INFO, ".");
         String::CPtr msg = messages->getCPtr<Buffer>(i)->toString();
         ASSERT_TRUE(msg->equals(String::create("abc")));
     }
-    console::printf(console::INFO, "\n");
+    console::printf(console::LEVEL_INFO, "\n");
 }
 
 }  // namespace node
