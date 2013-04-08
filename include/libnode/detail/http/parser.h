@@ -17,7 +17,9 @@ namespace node {
 namespace detail {
 namespace http {
 
-class Parser : public Flags {
+class Parser
+    : public libj::detail::GCBase
+    , public node::detail::Flags {
  public:
     Parser(
         enum http_parser_type type,
