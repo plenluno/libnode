@@ -10,7 +10,9 @@
 #include <libnode/detail/http/parser.h>
 #include <libnode/detail/http/client_response.h>
 
+#include <libj/js_date.h>
 #include <libj/typed_linked_list.h>
+#include <libj/typed_value_holder.h>
 
 #ifdef LIBJ_PF_WINDOWS
     #include <libj/platform/windows.h>
@@ -259,6 +261,22 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         storeHeader(statusLine->toString(), headers);
     }
 
+    Boolean headersSent() const {
+        return !!header_;
+    }
+
+    Boolean sendDate() const {
+        return hasFlag(SEND_DATE);
+    }
+
+    void setSendDate(Boolean send) {
+        if (send) {
+            setFlag(SEND_DATE);
+        } else {
+            unsetFlag(SEND_DATE);
+        }
+    }
+
     void abort() {
         if (socket_) {
             socket_->destroy();
@@ -359,6 +377,22 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
     static node::uv::Error::CPtr createHangUpError() {
         return node::uv::Error::create(node::uv::Error::_ECONNRESET);
+    }
+
+    typedef TypedValueHolder<String::CPtr> DateCache;
+
+    static String::CPtr utcDate() {
+        static DateCache::Ptr cache = DateCache::create(String::null());
+        static JsFunction::Ptr clearCache(new ClearDateCache(cache));
+
+        if (!cache->getTyped()) {
+            JsDate::CPtr date = JsDate::create();
+            cache->setTyped(date->toUTCString());
+            node::setTimeout(
+                clearCache,
+                1000 - date->getMilliseconds());
+        }
+        return cache->getTyped();
     }
 
     Boolean send(const Value& data, Buffer::Encoding enc = Buffer::NONE) {
@@ -508,10 +542,9 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         }
 
         if (hasFlag(SEND_DATE) && !hasFlag(SENT_DATE_HEADER)) {
-            // TODO(plenluno): implement utcDate
-            // messageHeader->appendCStr("Date: ");
-            // messageHeader->append(utcDate());
-            // messageHeader->appendCStr("\r\n");
+            messageHeader->appendCStr("Date: ");
+            messageHeader->append(utcDate());
+            messageHeader->appendCStr("\r\n");
         }
 
         if (!hasFlag(SENT_CONNECTION_HEADER)) {
@@ -1098,6 +1131,19 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         JsFunction::Ptr method_;
         JsFunction::Ptr callback_;
         Boolean onConnect_;
+    };
+
+    class ClearDateCache : LIBJ_JS_FUNCTION(ClearDateCache)
+     public:
+        ClearDateCache(DateCache::Ptr cache) : cache_(cache) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
+            cache_->setTyped(String::null());
+            return Status::OK;
+        }
+
+     private:
+        DateCache::Ptr cache_;
     };
 
  public:

@@ -49,6 +49,18 @@ class AbstractServerResponse : public stream::AbstractWritableStream<I> {
         response_->addTrailers(headers);
     }
 
+    virtual Boolean headersSent() const {
+        return response_->headersSent();
+    }
+
+    virtual Boolean sendDate() const {
+        return response_->sendDate();
+    }
+
+    virtual void setSendDate(Boolean send) {
+        response_->setSendDate(send);
+    }
+
  private:
     typename B::Ptr response_;
 };

@@ -76,12 +76,14 @@ class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
         http::ServerResponse::Ptr res =
             toPtr<http::ServerResponse>(args->get(1));
 
+        req->setEncoding(Buffer::UTF8);
+        res->setSendDate(false);
+
         GTestOnData::Ptr onData(new GTestOnData());
         GTestOnClose::Ptr onClose(new GTestOnClose());
         GTestHttpServerOnEnd::Ptr onEnd(
             new GTestHttpServerOnEnd(
                 srv_, req, res, onData, numReqs_, chunked_));
-        req->setEncoding(Buffer::UTF8);
         req->on(http::ServerRequest::EVENT_DATA, onData);
         req->on(http::ServerRequest::EVENT_END, onEnd);
         req->on(http::ServerRequest::EVENT_CLOSE, onClose);

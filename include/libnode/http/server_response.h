@@ -27,6 +27,12 @@ class ServerResponse : LIBNODE_WRITABLE_STREAM(ServerResponse)
     virtual void removeHeader(String::CPtr name) = 0;
 
     virtual void addTrailers(JsObject::CPtr headers) = 0;
+
+    virtual Boolean headersSent() const = 0;
+
+    virtual Boolean sendDate() const = 0;
+
+    virtual void setSendDate(Boolean send) = 0;
 };
 
 }  // namespace http
