@@ -342,11 +342,10 @@ class Server : public net::Server<node::http::Server> {
 
             OutgoingMessage::httpSocketSetup(socket);
 
-            // TODO(plenluno): investigate the cause of sudden timeout
-            // socket->setTimeout(2 * 60 * 1000);
-            // socket->once(
-            //     net::Socket::EVENT_TIMEOUT,
-            //     JsFunction::Ptr(new SocketOnTimeout(&(*socket))));
+            socket->setTimeout(2 * 60 * 1000);
+            socket->once(
+                net::Socket::EVENT_TIMEOUT,
+                JsFunction::Ptr(new SocketOnTimeout(&(*socket))));
 
             Size maxHeadersCount;
             if (self_->maxHeadersCount_) {

@@ -633,7 +633,6 @@ class Socket : public events::EventEmitter<node::net::Socket> {
     void finishTimer() {
         clearTimeout(timer_);
         timer_ = UNDEFINED;
-        timeout_ = 0;
     }
 
  private:
