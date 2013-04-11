@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/url.h>
@@ -16,14 +16,12 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
     GTestOnEnd::clear();
     GTestHttpClientOnResponse::clear();
 
-    http::Server::Ptr srv = http::Server::create();
+    auto srv = http::Server::create();
     srv->on(
         http::Server::EVENT_REQUEST,
-        JsClosure::create([srv] (JsArray::Ptr args) -> Value {
-            http::ServerRequest::Ptr req =
-                toPtr<http::ServerRequest>(args->get(0));
-            http::ServerResponse::Ptr res =
-                toPtr<http::ServerResponse>(args->get(1));
+        JsClosure::create([srv] (JsArray::Ptr args) {
+            auto req = toPtr<http::ServerRequest>(args->get(0));
+            auto res = toPtr<http::ServerResponse>(args->get(1));
 
             req->setEncoding(Buffer::UTF8);
 
@@ -34,8 +32,8 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
                 http::ServerRequest::EVENT_END,
                 JsClosure::create(
                     [srv, req, res, onData]
-                    (JsArray::Ptr args) -> Value {
-                    String::CPtr body = onData->string();
+                    (JsArray::Ptr args) {
+                    auto body = onData->string();
                     res->setHeader(
                         http::HEADER_CONTENT_TYPE,
                         String::create("text/plain"));
@@ -45,17 +43,17 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
                     res->write(body);
                     res->end();
                     srv->close();
-                    return Status::OK;
+                    return UNDEFINED;
                 }));
 
-            return Status::OK;
+            return UNDEFINED;
         }));
     srv->listen(10000);
 
-    String::CPtr msg = String::create("cxx11");
-    String::CPtr url = String::create("http://127.0.0.1:10000/abc");
-    JsObject::Ptr options = url::parse(url);
-    JsObject::Ptr headers = JsObject::create();
+    auto msg = String::create("cxx11");
+    auto url = String::create("http://127.0.0.1:10000/abc");
+    auto options = url::parse(url);
+    auto headers = JsObject::create();
     headers->put(
         http::HEADER_CONNECTION,
         String::create("close"));
@@ -64,15 +62,15 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
         String::valueOf(Buffer::byteLength(msg)));
     options->put(http::OPTION_HEADERS, headers);
 
-    GTestHttpClientOnResponse::Ptr onResponse(new GTestHttpClientOnResponse());
-    http::ClientRequest::Ptr req = http::request(options, onResponse);
+    JsFunction::Ptr onResponse(new GTestHttpClientOnResponse());
+    auto req = http::request(options, onResponse);
     req->write(msg);
     req->end();
 
     node::run();
 
-    JsArray::CPtr msgs = GTestOnEnd::messages();
-    JsArray::CPtr codes = GTestHttpClientOnResponse::statusCodes();
+    auto msgs = GTestOnEnd::messages();
+    auto codes = GTestHttpClientOnResponse::statusCodes();
     ASSERT_EQ(1, msgs->length());
     ASSERT_EQ(1, codes->length());
     ASSERT_TRUE(msgs->get(0).equals(msg));
