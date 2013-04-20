@@ -167,12 +167,12 @@ set(libnode-deps
     uv
 )
 
-if(UNIX)
+if(UNIX AND NOT ANDROID)
     set(libnode-deps
         ${libnode-deps}
         pthread
     )
-endif(UNIX)
+endif(UNIX AND NOT ANDROID)
 
 if(LIBNODE_USE_SSL)
     set(libnode-deps
@@ -270,6 +270,7 @@ endif(LIBNODE_USE_THREAD)
 if(UNIX)
     set(libnode-test-cflags
         -Wall
+        -Wno-sign-compare
     )
 
     if(LIBNODE_USE_CXX11)
