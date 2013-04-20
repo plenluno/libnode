@@ -11,7 +11,7 @@ namespace detail {
 namespace uv {
 
 template<typename T>
-class Req : public libj::detail::GCBase {
+class Req {
  public:
     Req() : onComplete(JsFunction::null()) {}
 
