@@ -6,6 +6,25 @@ project(libnode)
 
 include(CMakeDependentOption)
 
+# build type -------------------------------------------------------------------
+
+message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+
+if(CMAKE_BUILD_TYPE STREQUAL "")
+    message(STATUS "CMAKE_C_FLAGS=${CMAKE_C_FLAGS}")
+    message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
+endif(CMAKE_BUILD_TYPE STREQUAL "")
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    message(STATUS "CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}")
+    message(STATUS "CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}")
+endif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "CMAKE_C_FLAGS_DEBUG=${CMAKE_C_FLAGS_DEBUG}")
+    message(STATUS "CMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG}")
+endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+
 # options ----------------------------------------------------------------------
 
 option(LIBNODE_USE_BDWGC       "Use BDW-GC"       OFF)
