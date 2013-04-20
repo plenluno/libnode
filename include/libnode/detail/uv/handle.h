@@ -12,7 +12,7 @@ namespace node {
 namespace detail {
 namespace uv {
 
-class Handle {
+class Handle : public libj::detail::GCBase {
  protected:
     Handle(uv_handle_t* handle)
         : handle_(handle)
