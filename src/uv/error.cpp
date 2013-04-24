@@ -1,5 +1,5 @@
 
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <libnode/uv/error.h>
 
@@ -10,7 +10,7 @@ namespace node {
 namespace uv {
 
 #define LIBNODE_UV_ERR_MSG_DEF_GEN(VAL, NAME, S) \
-    static const String::CPtr MSG_UV_##NAME = String::create(S);
+    LIBJ_STATIC_CONST_STRING_DEF(MSG_UV_##NAME, S);
 
 #define LIBNODE_UV_ERR_CASE_GEN(VAL, NAME, S) \
     case _##NAME:

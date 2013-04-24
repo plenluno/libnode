@@ -51,7 +51,7 @@ namespace http {
     GEN(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported")
 
 #define LIBNODE_HTTP_STATUS_MSG_DEF_GEN(NAME, MESSAGE) \
-    static const String::CPtr MSG_##NAME = String::create(MESSAGE);
+    LIBJ_STATIC_CONST_STRING_DEF(MSG_##NAME, MESSAGE)
 
 #define LIBNODE_HTTP_STATUS_MSG_CASE_GEN(NAME, MESSAGE) \
     case NAME: \
