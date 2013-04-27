@@ -27,6 +27,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 # options ----------------------------------------------------------------------
 
+option(LIBNODE_DEBUG           "Debug Mode"       OFF)
 option(LIBNODE_USE_BDWGC       "Use BDW-GC"       OFF)
 option(LIBNODE_USE_CXX11       "Use C++11"        OFF)
 option(LIBNODE_USE_SSL         "Use SSL"          OFF)
@@ -36,6 +37,10 @@ option(LIBNODE_USE_UTF32       "Use UTF32"        OFF)
 option(LIBNODE_BUILD_TEST      "Build Tests"      OFF)
 option(LIBNODE_REMOVE_LISTENER "Remove Listeners" ON)
 
+cmake_dependent_option(LIBJ_DEBUG
+    "Debug Mode" ON
+    "LIBNODE_DEBUG" OFF
+)
 cmake_dependent_option(LIBJ_USE_BDWGC
     "Use BDW-GC" ON
     "LIBNODE_USE_BDWGC" OFF
@@ -66,6 +71,10 @@ cmake_dependent_option(OPENSSL_BUILD_LIBCRYPTO
 )
 
 ## check
+if(LIBNODE_DEBUG AND NOT LIBJ_DEBUG)
+    message(FATAL_ERROR "LIBNODE_DEBUG=ON and LIBJ_DEBUG=OFF")
+endif(LIBNODE_DEBUG AND NOT LIBJ_DEBUG)
+
 if(LIBNODE_USE_BDWGC AND NOT LIBJ_USE_BDWGC)
     message(FATAL_ERROR "LIBNODE_USE_BDWGC=ON and LIBJ_USE_BDWGC=OFF")
 endif(LIBNODE_USE_BDWGC AND NOT LIBJ_USE_BDWGC)
@@ -87,6 +96,7 @@ if(LIBNODE_USE_BDWGC AND LIBNODE_USE_THREAD)
 endif(LIBNODE_USE_BDWGC AND LIBNODE_USE_THREAD)
 
 ## status
+message(STATUS "LIBNODE_DEBUG=${LIBNODE_DEBUG}")
 message(STATUS "LIBNODE_USE_BDWGC=${LIBNODE_USE_BDWGC}")
 message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
 message(STATUS "LIBNODE_USE_SSL=${LIBNODE_USE_SSL}")
