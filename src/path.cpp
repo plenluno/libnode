@@ -154,7 +154,7 @@ String::CPtr dirname(String::CPtr path) {
 }
 
 String::CPtr basename(String::CPtr path) {
-    LIBJ_STATIC_CONST_STRING_DEF(strDoubleSep, sep()->concat(sep()));
+    LIBJ_STATIC_CONST_STRING_DEF(strDoubleSep, "//");
 
     if (!path) return String::create();
     if (path->compareTo(sep()) == 0) return String::create();
