@@ -212,8 +212,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
     }
 
     void writeContinue() {
-        static const String::CPtr header =
-            String::create("HTTP/1.1 100 Continue\r\n\r\n");
+        LIBJ_STATIC_CONST_STRING_DEF(header, "HTTP/1.1 100 Continue\r\n\r\n");
         writeRaw(header, Buffer::UTF8);
         setFlag(SENT_100);
     }
