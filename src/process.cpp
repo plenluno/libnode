@@ -1,5 +1,6 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
+#include <libnode/debug.h>
 #include <libnode/process.h>
 #include <libnode/timer.h>
 
@@ -22,11 +23,13 @@ class NextTick : LIBJ_JS_FUNCTION(NextTick)
             JsFunction::Ptr cb = queue_->shiftTyped();
             (*cb)();
         }
+        LIBNODE_DEBUG_PRINT("nextTick: %d", queue_->length());
         return Status::OK;
     }
 
     void push(JsFunction::Ptr cb) {
         queue_->pushTyped(cb);
+        LIBNODE_DEBUG_PRINT("nextTick: %d", queue_->length());
     }
 
  private:
@@ -35,7 +38,13 @@ class NextTick : LIBJ_JS_FUNCTION(NextTick)
 
 void nextTick(JsFunction::Ptr callback) {
     // TODO(plenluno): implement without setTimeout
-    static NextTick::Ptr nt(new NextTick());
+    static NextTick::Ptr nt = NextTick::null();
+    if (!nt) {
+        nt = NextTick::Ptr(new NextTick());
+        LIBJ_DEBUG_PRINT("static NextTick");
+        LIBJ_DEBUG_PRINT("static NextTick::queue_");
+    }
+
     if (callback) nt->push(callback);
     setTimeout(nt, 0);
 }

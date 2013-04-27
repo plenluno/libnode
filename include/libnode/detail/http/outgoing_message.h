@@ -3,7 +3,7 @@
 #ifndef LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 #define LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 
-#include <libnode/config.h>
+#include <libnode/debug.h>
 #include <libnode/http/agent.h>
 #include <libnode/http/status.h>
 #include <libnode/http/client_request.h>
@@ -381,10 +381,20 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
     typedef TypedValueHolder<String::CPtr> DateCache;
 
     static String::CPtr utcDate() {
-        static DateCache::Ptr cache = DateCache::create(String::null());
-        static JsFunction::Ptr clearCache(new ClearDateCache(cache));
+        static DateCache::Ptr cache = DateCache::null();
+        static JsFunction::Ptr clearCache = JsFunction::null();
+
+        if (!cache) {
+            assert(!clearCache);
+            cache = DateCache::create(String::null());
+            clearCache = JsFunction::Ptr(new ClearDateCache(cache));
+
+            LIBJ_DEBUG_PRINT("static DateCache");
+            LIBJ_DEBUG_PRINT("static ClearDateCache");
+        }
 
         if (!cache->getTyped()) {
+            LIBNODE_DEBUG_PRINT("set DateCache");
             JsDate::CPtr date = JsDate::create();
             cache->setTyped(date->toUTCString());
             node::setTimeout(
@@ -1138,6 +1148,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
         virtual Value operator()(JsArray::Ptr args) {
             cache_->setTyped(String::null());
+            LIBNODE_DEBUG_PRINT("unset DateCache");
             return Status::OK;
         }
 
