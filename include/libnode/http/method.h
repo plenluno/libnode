@@ -22,8 +22,7 @@ namespace http {
 #define LIBNODE_HTTP_METHOD_DECL_GEN(NAME, VAL) \
     extern Symbol::CPtr NAME;
 
-LIBNODE_HTTP_METHOD_MAP(
-    LIBNODE_HTTP_METHOD_DECL_GEN)
+LIBNODE_HTTP_METHOD_MAP(LIBNODE_HTTP_METHOD_DECL_GEN)
 
 }  // namespace http
 }  // namespace node
