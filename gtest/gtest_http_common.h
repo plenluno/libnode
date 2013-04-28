@@ -14,13 +14,11 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
  public:
     GTestHttpServerOnEnd(
         http::Server::Ptr srv,
-        http::ServerRequest::Ptr req,
         http::ServerResponse::Ptr res,
         GTestOnData::Ptr onData,
         UInt numReqs,
         Boolean chunked = false)
         : srv_(srv)
-        , req_(req)
         , res_(res)
         , onData_(onData)
         , numReqs_(numReqs)
@@ -53,7 +51,6 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
     static UInt count_;
 
     http::Server::Ptr srv_;
-    http::ServerRequest::Ptr req_;
     http::ServerResponse::Ptr res_;
     GTestOnData::Ptr onData_;
     UInt numReqs_;
@@ -83,7 +80,7 @@ class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
         GTestOnClose::Ptr onClose(new GTestOnClose());
         GTestHttpServerOnEnd::Ptr onEnd(
             new GTestHttpServerOnEnd(
-                srv_, req, res, onData, numReqs_, chunked_));
+                srv_, res, onData, numReqs_, chunked_));
         req->on(http::ServerRequest::EVENT_DATA, onData);
         req->on(http::ServerRequest::EVENT_END, onEnd);
         req->on(http::ServerRequest::EVENT_CLOSE, onClose);
