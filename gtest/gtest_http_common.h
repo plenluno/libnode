@@ -99,9 +99,17 @@ class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
 
 class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
  public:
-    static JsArray::CPtr statusCodes() { return statusCodes_; }
+    static JsArray::Ptr statusCodes() {
+        if (!statusCodes_) {
+            statusCodes_ = JsArray::create();
+            LIBJ_DEBUG_PRINT("static JsArray");
+        }
+        return statusCodes_;
+    }
 
-    static void clear() { statusCodes_->clear(); }
+    static void clear() {
+        statusCodes()->clear();
+    }
 
     virtual Value operator()(JsArray::Ptr args) {
         http::ClientResponse::Ptr res =
