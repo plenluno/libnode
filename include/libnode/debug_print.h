@@ -1,7 +1,7 @@
 // Copyright (c) 2013 Plenluno All rights reserved.
 
-#ifndef LIBNODE_DEBUG_H_
-#define LIBNODE_DEBUG_H_
+#ifndef LIBNODE_DEBUG_PRINT_H_
+#define LIBNODE_DEBUG_PRINT_H_
 
 #include <libnode/config.h>
 
@@ -13,4 +13,4 @@
 # define LIBNODE_DEBUG_PRINT(FMT, ...)
 #endif
 
-#endif  // LIBNODE_DEBUG_H_
+#endif  // LIBNODE_DEBUG_PRINT_H_
