@@ -3,10 +3,10 @@
 #ifndef LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 #define LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 
-#include <libnode/debug.h>
 #include <libnode/http/agent.h>
 #include <libnode/http/status.h>
 #include <libnode/http/client_request.h>
+#include <libnode/debug_print.h>
 #include <libnode/detail/http/parser.h>
 #include <libnode/detail/http/client_response.h>
 

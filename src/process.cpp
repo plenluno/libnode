@@ -1,8 +1,8 @@
 // Copyright (c) 2012-2013 Plenluno All rights reserved.
 
-#include <libnode/debug.h>
 #include <libnode/process.h>
 #include <libnode/timer.h>
+#include <libnode/debug_print.h>
 
 #include <libj/status.h>
 #include <libj/typed_linked_list.h>

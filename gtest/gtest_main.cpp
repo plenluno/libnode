@@ -1,7 +1,7 @@
 // Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
-#include <libnode/debug.h>
+#include <libnode/debug_print.h>
 #include <libnode/detail/http/agent.h>
 
 #include <libj/detail/gc_base.h>
