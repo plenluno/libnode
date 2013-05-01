@@ -11,7 +11,7 @@
 #include <libnode/detail/net/socket.h>
 #include <libnode/detail/events/event_emitter.h>
 
-#include <libj/debug.h>
+#include <libj/debug_print.h>
 #include <libj/linked_list.h>
 
 #include <assert.h>
@@ -131,7 +131,7 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
 
         static Set::Ptr commaSeparated = Set::null();
         if (!commaSeparated) {
-            LIBJ_DEBUG_PRINT("static Set");
+            LIBJ_DEBUG_PRINT("static: Set");
             commaSeparated = Set::create();
             commaSeparated->add(node::http::LHEADER_ACCEPT);
             commaSeparated->add(node::http::LHEADER_ACCEPT_CHARSET);

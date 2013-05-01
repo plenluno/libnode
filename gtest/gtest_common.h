@@ -6,7 +6,7 @@
 #include <libnode/buffer.h>
 #include <libnode/node.h>
 
-#include <libj/debug.h>
+#include <libj/debug_print.h>
 #include <libj/js_function.h>
 #include <libj/string_buffer.h>
 
@@ -81,7 +81,7 @@ class GTestOnEnd : LIBJ_JS_FUNCTION(GTestOnEnd)
     static JsArray::Ptr messages() {
         if (!msgs_) {
             msgs_ = JsArray::create();
-            LIBJ_DEBUG_PRINT("static JsArray");
+            LIBJ_DEBUG_PRINT("static: JsArray");
         }
         return msgs_;
     }

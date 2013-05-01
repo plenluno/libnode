@@ -99,7 +99,7 @@ class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
     static JsArray::Ptr statusCodes() {
         if (!statusCodes_) {
             statusCodes_ = JsArray::create();
-            LIBJ_DEBUG_PRINT("static JsArray");
+            LIBJ_DEBUG_PRINT("static: JsArray");
         }
         return statusCodes_;
     }

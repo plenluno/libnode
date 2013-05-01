@@ -389,8 +389,8 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             cache = DateCache::create(String::null());
             clearCache = JsFunction::Ptr(new ClearDateCache(cache));
 
-            LIBJ_DEBUG_PRINT("static DateCache");
-            LIBJ_DEBUG_PRINT("static ClearDateCache");
+            LIBJ_DEBUG_PRINT("static: DateCache");
+            LIBJ_DEBUG_PRINT("static: ClearDateCache");
         }
 
         if (!cache->getTyped()) {

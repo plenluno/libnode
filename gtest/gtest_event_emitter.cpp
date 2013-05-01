@@ -3,8 +3,8 @@
 #include <gtest/gtest.h>
 #include <libnode/events/event_emitter.h>
 
-#include <libj/debug.h>
 #include <libj/error.h>
+#include <libj/debug_print.h>
 
 namespace libj {
 namespace node {
@@ -14,7 +14,7 @@ static JsArray::Ptr results() {
     static JsArray::Ptr rs = JsArray::null();
     if (!rs) {
         rs = JsArray::create();
-        LIBJ_DEBUG_PRINT("static JsArray");
+        LIBJ_DEBUG_PRINT("static: JsArray");
     }
     return rs;
 }

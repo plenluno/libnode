@@ -3,7 +3,7 @@
 
 #include <libnode/uv/error.h>
 
-#include <libj/debug.h>
+#include <libj/debug_print.h>
 #include <libj/detail/status.h>
 
 namespace libj {
@@ -57,7 +57,7 @@ Error::CPtr Error::last() {
 
 void Error::setLast(uv_err_code code) {
     if (!lastErr) {
-        LIBJ_DEBUG_PRINT("static uv::Error");
+        LIBJ_DEBUG_PRINT("static: uv::Error");
     }
     lastErr = valueOf(code);
 }
