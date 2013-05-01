@@ -109,10 +109,6 @@ message(STATUS "LIBNODE_REMOVE_LISTENER=${LIBNODE_REMOVE_LISTENER}")
 
 # variables --------------------------------------------------------------------
 
-set(CMAKE_CXX_FLAGS_RELEASE
-    "-Wno-unused-variable"
-)
-
 ## libnode-include
 set(libnode-include
     include
@@ -244,6 +240,15 @@ if(UNIX)
             --std=c++0x
         )
     endif(LIBNODE_USE_CXX11)
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(libnode-cflags
+            ${libnode-cflags}
+            -Wno-unused-variable
+            -Wno-unused-parameter
+            -Wno-unused-private-field
+        )
+    endif(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif(UNIX)
 
 string(REPLACE ";" " " libnode-cflags "${libnode-cflags}")
@@ -308,6 +313,15 @@ if(UNIX)
             --std=c++0x
         )
     endif(LIBNODE_USE_CXX11)
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(libnode-test-cflags
+            ${libnode-test-cflags}
+            -Wno-unused-variable
+            -Wno-unused-parameter
+            -Wno-unused-private-field
+        )
+    endif(CMAKE_BUILD_TYPE STREQUAL "Release")
 else(UNIX)
     set(libnode-test-cflags
         /D_VARIADIC_MAX=10
