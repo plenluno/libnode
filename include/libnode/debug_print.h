@@ -7,8 +7,10 @@
 
 #ifdef LIBNODE_DEBUG
 # define LIBNODE_DEBUG_PRINT(FMT, ...) \
-    libj::console::printf(libj::console::LEVEL_DEBUG, "[NODE DEBUG] "); \
-    libj::console::debug(FMT, ##__VA_ARGS__);
+    libj::console::printf( \
+        libj::console::LEVEL_DEBUG, \
+        "[NODE DEBUG] " FMT "\n", \
+        ##__VA_ARGS__);
 #else
 # define LIBNODE_DEBUG_PRINT(FMT, ...)
 #endif
