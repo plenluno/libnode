@@ -249,6 +249,13 @@ if(UNIX)
             -Wno-unused-private-field
         )
     endif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+    if(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
+        set(libnode-cflags
+            ${libnode-cflags}
+            -finstrument-functions   
+        )
+    endif(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
 endif(UNIX)
 
 string(REPLACE ";" " " libnode-cflags "${libnode-cflags}")
@@ -322,6 +329,13 @@ if(UNIX)
             -Wno-unused-private-field
         )
     endif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+    if(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
+        set(libnode-test-cflags
+            ${libnode-test-cflags}
+            -finstrument-functions   
+        )
+    endif(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
 else(UNIX)
     set(libnode-test-cflags
         /D_VARIADIC_MAX=10
