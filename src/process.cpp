@@ -15,7 +15,11 @@ class NextTick : LIBJ_JS_FUNCTION(NextTick)
  public:
     typedef TypedLinkedList<JsFunction::Ptr> CallbackQueue;
 
-    NextTick() : queue_(CallbackQueue::create()) {}
+    NextTick() : queue_(CallbackQueue::create()) {
+        LIBJ_DEBUG_PRINT(
+            "static: NextTick::queue_ %p",
+            LIBJ_DEBUG_OBJECT_PTR(queue_));
+    }
 
     Value operator()(JsArray::Ptr args) {
         Size len = queue_->length();
@@ -41,8 +45,9 @@ void nextTick(JsFunction::Ptr callback) {
     static NextTick::Ptr nt = NextTick::null();
     if (!nt) {
         nt = NextTick::Ptr(new NextTick());
-        LIBJ_DEBUG_PRINT("static: NextTick");
-        LIBJ_DEBUG_PRINT("static: NextTick::queue_");
+        LIBJ_DEBUG_PRINT(
+            "static: NextTick %p",
+            LIBJ_DEBUG_OBJECT_PTR(nt));
     }
 
     if (callback) nt->push(callback);

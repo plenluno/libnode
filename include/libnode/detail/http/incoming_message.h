@@ -131,8 +131,11 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
 
         static Set::Ptr commaSeparated = Set::null();
         if (!commaSeparated) {
-            LIBJ_DEBUG_PRINT("static: Set");
             commaSeparated = Set::create();
+            LIBJ_DEBUG_PRINT(
+                "static: Set %p",
+                LIBJ_DEBUG_OBJECT_PTR(commaSeparated));
+
             commaSeparated->add(node::http::LHEADER_ACCEPT);
             commaSeparated->add(node::http::LHEADER_ACCEPT_CHARSET);
             commaSeparated->add(node::http::LHEADER_ACCEPT_ENCODING);

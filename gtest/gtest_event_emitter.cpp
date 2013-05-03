@@ -14,7 +14,9 @@ static JsArray::Ptr results() {
     static JsArray::Ptr rs = JsArray::null();
     if (!rs) {
         rs = JsArray::create();
-        LIBJ_DEBUG_PRINT("static: JsArray");
+        LIBJ_DEBUG_PRINT(
+            "static: JsArray %p",
+            LIBJ_DEBUG_OBJECT_PTR(rs));
     }
     return rs;
 }

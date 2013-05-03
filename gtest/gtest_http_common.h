@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_GTEST_GTEST_HTTP_COMMON_H_
 #define LIBNODE_GTEST_GTEST_HTTP_COMMON_H_
@@ -99,7 +99,9 @@ class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
     static JsArray::Ptr statusCodes() {
         if (!statusCodes_) {
             statusCodes_ = JsArray::create();
-            LIBJ_DEBUG_PRINT("static: JsArray");
+            LIBJ_DEBUG_PRINT(
+                "static: JsArray %p",
+                LIBJ_DEBUG_OBJECT_PTR(statusCodes_));
         }
         return statusCodes_;
     }
