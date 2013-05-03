@@ -312,6 +312,7 @@ if(UNIX)
     set(libnode-test-cflags
         -Wall
         -Wno-sign-compare
+        -Wno-unused-value
     )
 
     if(LIBNODE_USE_CXX11)
