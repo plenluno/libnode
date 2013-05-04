@@ -3,10 +3,10 @@
 #ifndef LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 #define LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 
-#include <libnode/config.h>
 #include <libnode/http/agent.h>
 #include <libnode/http/status.h>
 #include <libnode/http/client_request.h>
+#include <libnode/debug_print.h>
 #include <libnode/detail/http/parser.h>
 #include <libnode/detail/http/client_response.h>
 
@@ -212,8 +212,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
     }
 
     void writeContinue() {
-        static const String::CPtr header =
-            String::create("HTTP/1.1 100 Continue\r\n\r\n");
+        LIBJ_STATIC_CONST_STRING_DEF(header, "HTTP/1.1 100 Continue\r\n\r\n");
         writeRaw(header, Buffer::UTF8);
         setFlag(SENT_100);
     }
@@ -382,10 +381,24 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
     typedef TypedValueHolder<String::CPtr> DateCache;
 
     static String::CPtr utcDate() {
-        static DateCache::Ptr cache = DateCache::create(String::null());
-        static JsFunction::Ptr clearCache(new ClearDateCache(cache));
+        static DateCache::Ptr cache = DateCache::null();
+        static JsFunction::Ptr clearCache = JsFunction::null();
+
+        if (!cache) {
+            assert(!clearCache);
+            cache = DateCache::create(String::null());
+            clearCache = JsFunction::Ptr(new ClearDateCache(cache));
+
+            LIBJ_DEBUG_PRINT(
+                "static: DateCache %p",
+                LIBJ_DEBUG_OBJECT_PTR(cache));
+            LIBJ_DEBUG_PRINT(
+                "static: ClearDateCache %p",
+                LIBJ_DEBUG_OBJECT_PTR(clearCache));
+        }
 
         if (!cache->getTyped()) {
+            LIBNODE_DEBUG_PRINT("set DateCache");
             JsDate::CPtr date = JsDate::create();
             cache->setTyped(date->toUTCString());
             node::setTimeout(
@@ -1139,6 +1152,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
         virtual Value operator()(JsArray::Ptr args) {
             cache_->setTyped(String::null());
+            LIBNODE_DEBUG_PRINT("unset DateCache");
             return Status::OK;
         }
 

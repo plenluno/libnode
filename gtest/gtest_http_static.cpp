@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/fs.h>
@@ -14,6 +14,8 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
     OnRead(http::ServerResponse::Ptr res) : res_(res) {}
 
     static void setServer(http::Server::Ptr srv) { srv_ = srv; }
+
+    static void unsetServer() { srv_ = http::Server::null(); }
 
     virtual Value operator()(JsArray::Ptr args) {
         res_->setHeader(
@@ -98,6 +100,8 @@ TEST(GTestHttpStatic, TestStatic) {
     JsArray::CPtr messages = GTestOnEnd::messages();
     ASSERT_EQ(1, messages->length());
     ASSERT_TRUE(messages->getCPtr<String>(0)->length());
+
+    OnRead::unsetServer();
 }
 
 }  // namespace node

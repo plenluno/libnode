@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include "./gtest_common.h"
 
@@ -9,7 +9,7 @@ UInt GTestOnData::count_ = 0;
 
 UInt GTestOnClose::count_ = 0;
 
-JsArray::Ptr GTestOnEnd::msgs_ = JsArray::create();
+JsArray::Ptr GTestOnEnd::msgs_ = JsArray::null();
 
 }  // namespace node
 }  // namespace libj

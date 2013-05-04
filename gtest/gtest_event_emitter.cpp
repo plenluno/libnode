@@ -1,22 +1,32 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/events/event_emitter.h>
 
 #include <libj/error.h>
+#include <libj/debug_print.h>
 
 namespace libj {
 namespace node {
 namespace events {
 
-static JsArray::Ptr results = JsArray::create();
+static JsArray::Ptr results() {
+    static JsArray::Ptr rs = JsArray::null();
+    if (!rs) {
+        rs = JsArray::create();
+        LIBJ_DEBUG_PRINT(
+            "static: JsArray %p",
+            LIBJ_DEBUG_OBJECT_PTR(rs));
+    }
+    return rs;
+}
 
 class Add : LIBJ_JS_FUNCTION(Add)
  public:
     Value operator()(JsArray::Ptr args) {
         if (!args) {
             Value err = Error::create(Error::ILLEGAL_ARGUMENT);
-            results->add(err);
+            results()->add(err);
             return err;
         }
 
@@ -27,11 +37,11 @@ class Add : LIBJ_JS_FUNCTION(Add)
                 sum += x;
             } else {
                 Value err = Error::create(Error::ILLEGAL_ARGUMENT);
-                results->add(err);
+                results()->add(err);
                 return err;
             }
         }
-        results->add(sum);
+        results()->add(sum);
         return sum;
     }
 
@@ -51,11 +61,11 @@ class Sub : LIBJ_JS_FUNCTION(Sub)
             to<Int>(args->get(0), &x);
             to<Int>(args->get(1), &y);
             Value res = x - y;
-            results->add(res);
+            results()->add(res);
             return res;
         } else {
             Value res = Error::create(Error::ILLEGAL_ARGUMENT);
-            results->add(res);
+            results()->add(res);
             return res;
         }
     }
@@ -97,22 +107,22 @@ TEST(GTestEventEmitter, TestEmit) {
     ee->on(event, add);
     ee->on(event, sub);
 
-    results->clear();
+    results()->clear();
     JsArray::Ptr args = JsArray::create();
     args->add(5);
     args->add(3);
     ee->emit(event, args);
 
-    ASSERT_TRUE(results->get(0).equals(8));
-    ASSERT_TRUE(results->get(1).equals(2));
+    ASSERT_TRUE(results()->get(0).equals(8));
+    ASSERT_TRUE(results()->get(1).equals(2));
 
     ee->emit(event);
-    ASSERT_TRUE(results->get(2).instanceof(Type<Error>::id()));
-    ASSERT_TRUE(results->get(3).instanceof(Type<Error>::id()));
+    ASSERT_TRUE(results()->get(2).instanceof(Type<Error>::id()));
+    ASSERT_TRUE(results()->get(3).instanceof(Type<Error>::id()));
 
     ee->emit(event, static_cast<Value>(args));
-    ASSERT_TRUE(results->get(4).instanceof(Type<Error>::id()));
-    ASSERT_TRUE(results->get(5).instanceof(Type<Error>::id()));
+    ASSERT_TRUE(results()->get(4).instanceof(Type<Error>::id()));
+    ASSERT_TRUE(results()->get(5).instanceof(Type<Error>::id()));
 }
 
 TEST(GTestEventEmitter, TestEmit2) {
@@ -121,7 +131,7 @@ TEST(GTestEventEmitter, TestEmit2) {
     JsFunction::Ptr add = Add::create();
     ee->on(event, add);
 
-    results->clear();
+    results()->clear();
     ee->emit(event, 1);
     ee->emit(event, 1, 2);
     ee->emit(event, 1, 2, 3);
@@ -132,15 +142,15 @@ TEST(GTestEventEmitter, TestEmit2) {
     ee->emit(event, 1, 2, 3, 4, 5, 6, 7, 8);
     ee->emit(event, 1, 2, 3, 4, 5, 6, 7, 8, 9);
 
-    ASSERT_TRUE(results->get(0).equals(1));
-    ASSERT_TRUE(results->get(1).equals(3));
-    ASSERT_TRUE(results->get(2).equals(6));
-    ASSERT_TRUE(results->get(3).equals(10));
-    ASSERT_TRUE(results->get(4).equals(15));
-    ASSERT_TRUE(results->get(5).equals(21));
-    ASSERT_TRUE(results->get(6).equals(28));
-    ASSERT_TRUE(results->get(7).equals(36));
-    ASSERT_TRUE(results->get(8).equals(45));
+    ASSERT_TRUE(results()->get(0).equals(1));
+    ASSERT_TRUE(results()->get(1).equals(3));
+    ASSERT_TRUE(results()->get(2).equals(6));
+    ASSERT_TRUE(results()->get(3).equals(10));
+    ASSERT_TRUE(results()->get(4).equals(15));
+    ASSERT_TRUE(results()->get(5).equals(21));
+    ASSERT_TRUE(results()->get(6).equals(28));
+    ASSERT_TRUE(results()->get(7).equals(36));
+    ASSERT_TRUE(results()->get(8).equals(45));
 }
 
 TEST(GTestEventEmitter, TestRemoveListener) {
@@ -185,7 +195,7 @@ TEST(GTestEventEmitter, TestOnce) {
     ee->on(event, sub);
     ASSERT_EQ(2, ee->listeners(event)->length());
 
-    results->clear();
+    results()->clear();
     JsArray::Ptr args = JsArray::create();
     args->add(6);
     args->add(3);
@@ -196,8 +206,8 @@ TEST(GTestEventEmitter, TestOnce) {
     JsFunction::Ptr f = toPtr<JsFunction>(v);
     ASSERT_EQ(sub, f);
 
-    Value v0 = results->get(0);
-    Value v1 = results->get(1);
+    Value v0 = results()->get(0);
+    Value v1 = results()->get(1);
     Int i0, i1;
     to<Int>(v0, &i0);
     to<Int>(v1, &i1);

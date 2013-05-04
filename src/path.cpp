@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <libnode/path.h>
 
@@ -154,11 +154,11 @@ String::CPtr dirname(String::CPtr path) {
 }
 
 String::CPtr basename(String::CPtr path) {
-    static const String::CPtr doubleSep = sep()->concat(sep());
+    LIBJ_STATIC_CONST_STRING_DEF(strDoubleSep, "//");
 
     if (!path) return String::create();
     if (path->compareTo(sep()) == 0) return String::create();
-    if (path->compareTo(doubleSep) == 0) return String::create();
+    if (path->compareTo(strDoubleSep) == 0) return String::create();
 
     Size lastIndex;
     Size len = path->length();

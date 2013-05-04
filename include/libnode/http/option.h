@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_HTTP_OPTION_H_
 #define LIBNODE_HTTP_OPTION_H_
@@ -24,8 +24,7 @@ namespace http {
 #define LIBNODE_HTTP_OPTION_DECL_GEN(NAME, VAL) \
     extern Symbol::CPtr NAME;
 
-LIBNODE_HTTP_OPTION_MAP(
-    LIBNODE_HTTP_OPTION_DECL_GEN)
+LIBNODE_HTTP_OPTION_MAP(LIBNODE_HTTP_OPTION_DECL_GEN)
 
 }  // namespace http
 }  // namespace node

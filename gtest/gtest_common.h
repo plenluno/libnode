@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_GTEST_GTEST_COMMON_H_
 #define LIBNODE_GTEST_GTEST_COMMON_H_
@@ -6,7 +6,7 @@
 #include <libnode/buffer.h>
 #include <libnode/node.h>
 
-#include <libj/console.h>
+#include <libj/debug_print.h>
 #include <libj/js_function.h>
 #include <libj/string_buffer.h>
 
@@ -78,12 +78,22 @@ class GTestOnEnd : LIBJ_JS_FUNCTION(GTestOnEnd)
     GTestOnEnd(GTestOnData::Ptr onData)
         : onData_(onData) {}
 
-    static JsArray::CPtr messages() { return msgs_; }
+    static JsArray::Ptr messages() {
+        if (!msgs_) {
+            msgs_ = JsArray::create();
+            LIBJ_DEBUG_PRINT(
+                "static: JsArray %p",
+                LIBJ_DEBUG_OBJECT_PTR(msgs_));
+        }
+        return msgs_;
+    }
 
-    static void clear() { msgs_ = JsArray::create(); }
+    static void clear() {
+        messages()->clear();
+    }
 
     virtual Value operator()(JsArray::Ptr args) {
-        msgs_->add(onData_->data());
+        messages()->add(onData_->data());
         return Status::OK;
     }
 

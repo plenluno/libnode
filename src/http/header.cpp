@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <libnode/http/header.h>
 
@@ -10,13 +10,11 @@ namespace http {
     LIBJ_SYMBOL_DEF(NAME, VAL)
 
 #define LIBNODE_HTTP_LHEADER_DEF_GEN(NAME, VAL) \
-    Symbol::CPtr L##NAME = Symbol::create(VAL)->toLowerCase();
+    LIBJ_SYMBOL_DEF(L##NAME, String::create(VAL)->toLowerCase())
 
-LIBNODE_HTTP_HEADER_MAP(
-    LIBNODE_HTTP_HEADER_DEF_GEN)
+LIBNODE_HTTP_HEADER_MAP(LIBNODE_HTTP_HEADER_DEF_GEN)
 
-LIBNODE_HTTP_HEADER_MAP(
-    LIBNODE_HTTP_LHEADER_DEF_GEN)
+LIBNODE_HTTP_HEADER_MAP(LIBNODE_HTTP_LHEADER_DEF_GEN)
 
 }  // namespace http
 }  // namespace node

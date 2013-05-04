@@ -243,6 +243,9 @@ class Server : public net::Server<node::http::Server> {
 
             res_->detachSocket(socket_);
 
+            // no event after 'finish'
+            res_->removeAllListeners();
+
             if (res_->hasFlag(OutgoingMessage::LAST)) {
                 socket_->destroySoon();
             } else {

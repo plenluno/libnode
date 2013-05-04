@@ -7,7 +7,7 @@ namespace node {
 
 UInt GTestHttpServerOnEnd::count_ = 0;
 
-JsArray::Ptr GTestHttpClientOnResponse::statusCodes_ = JsArray::create();
+JsArray::Ptr GTestHttpClientOnResponse::statusCodes_ = JsArray::null();
 
 }  // namespace node
 }  // namespace libj

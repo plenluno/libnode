@@ -9,8 +9,7 @@ namespace node {
 namespace http {
 
 Agent::Ptr globalAgent() {
-    static Agent::Ptr agent = Agent::create();
-    return agent;
+    return detail::http::globalAgent();
 }
 
 Server::Ptr createServer(JsFunction::Ptr requestListener) {

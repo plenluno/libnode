@@ -333,6 +333,29 @@ class Agent : public events::EventEmitter<node::http::Agent> {
         , options_(libj::JsObject::create()) {}
 };
 
+#ifdef LIBNODE_DEBUG
+
+inline Agent::Ptr globalAgent(Boolean free = false) {
+    static Agent::Ptr global = Agent::create(JsObject::null());
+    if (free) {
+        global = Agent::null();
+    }
+    return global;
+}
+
+inline void freeGlobalAgent() {
+    globalAgent(true);
+}
+
+#else
+
+inline Agent::Ptr globalAgent() {
+    static Agent::Ptr global = Agent::create(JsObject::null());
+    return global;
+}
+
+#endif
+
 }  // namespace http
 }  // namespace detail
 }  // namespace node

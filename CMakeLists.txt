@@ -6,8 +6,28 @@ project(libnode)
 
 include(CMakeDependentOption)
 
+# build type -------------------------------------------------------------------
+
+message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+
+if(CMAKE_BUILD_TYPE STREQUAL "")
+    message(STATUS "CMAKE_C_FLAGS=${CMAKE_C_FLAGS}")
+    message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
+endif(CMAKE_BUILD_TYPE STREQUAL "")
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    message(STATUS "CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}")
+    message(STATUS "CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}")
+endif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "CMAKE_C_FLAGS_DEBUG=${CMAKE_C_FLAGS_DEBUG}")
+    message(STATUS "CMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG}")
+endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+
 # options ----------------------------------------------------------------------
 
+option(LIBNODE_DEBUG           "Debug Mode"       OFF)
 option(LIBNODE_USE_BDWGC       "Use BDW-GC"       OFF)
 option(LIBNODE_USE_CXX11       "Use C++11"        OFF)
 option(LIBNODE_USE_SSL         "Use SSL"          OFF)
@@ -17,6 +37,10 @@ option(LIBNODE_USE_UTF32       "Use UTF32"        OFF)
 option(LIBNODE_BUILD_TEST      "Build Tests"      OFF)
 option(LIBNODE_REMOVE_LISTENER "Remove Listeners" ON)
 
+cmake_dependent_option(LIBJ_DEBUG
+    "Debug Mode" ON
+    "LIBNODE_DEBUG" OFF
+)
 cmake_dependent_option(LIBJ_USE_BDWGC
     "Use BDW-GC" ON
     "LIBNODE_USE_BDWGC" OFF
@@ -47,6 +71,10 @@ cmake_dependent_option(OPENSSL_BUILD_LIBCRYPTO
 )
 
 ## check
+if(LIBNODE_DEBUG AND NOT LIBJ_DEBUG)
+    message(FATAL_ERROR "LIBNODE_DEBUG=ON and LIBJ_DEBUG=OFF")
+endif(LIBNODE_DEBUG AND NOT LIBJ_DEBUG)
+
 if(LIBNODE_USE_BDWGC AND NOT LIBJ_USE_BDWGC)
     message(FATAL_ERROR "LIBNODE_USE_BDWGC=ON and LIBJ_USE_BDWGC=OFF")
 endif(LIBNODE_USE_BDWGC AND NOT LIBJ_USE_BDWGC)
@@ -68,6 +96,7 @@ if(LIBNODE_USE_BDWGC AND LIBNODE_USE_THREAD)
 endif(LIBNODE_USE_BDWGC AND LIBNODE_USE_THREAD)
 
 ## status
+message(STATUS "LIBNODE_DEBUG=${LIBNODE_DEBUG}")
 message(STATUS "LIBNODE_USE_BDWGC=${LIBNODE_USE_BDWGC}")
 message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
 message(STATUS "LIBNODE_USE_SSL=${LIBNODE_USE_SSL}")
@@ -79,10 +108,6 @@ message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_REMOVE_LISTENER=${LIBNODE_REMOVE_LISTENER}")
 
 # variables --------------------------------------------------------------------
-
-set(CMAKE_CXX_FLAGS_RELEASE
-    "-Wno-unused-variable"
-)
 
 ## libnode-include
 set(libnode-include
@@ -167,12 +192,12 @@ set(libnode-deps
     uv
 )
 
-if(UNIX)
+if(UNIX AND NOT ANDROID)
     set(libnode-deps
         ${libnode-deps}
         pthread
     )
-endif(UNIX)
+endif(UNIX AND NOT ANDROID)
 
 if(LIBNODE_USE_SSL)
     set(libnode-deps
@@ -215,6 +240,22 @@ if(UNIX)
             --std=c++0x
         )
     endif(LIBNODE_USE_CXX11)
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(libnode-cflags
+            ${libnode-cflags}
+            -Wno-unused-variable
+            -Wno-unused-parameter
+            -Wno-unused-private-field
+        )
+    endif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+    if(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
+        set(libnode-cflags
+            ${libnode-cflags}
+            -finstrument-functions   
+        )
+    endif(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
 endif(UNIX)
 
 string(REPLACE ";" " " libnode-cflags "${libnode-cflags}")
@@ -270,6 +311,8 @@ endif(LIBNODE_USE_THREAD)
 if(UNIX)
     set(libnode-test-cflags
         -Wall
+        -Wno-sign-compare
+        -Wno-unused-value
     )
 
     if(LIBNODE_USE_CXX11)
@@ -278,6 +321,22 @@ if(UNIX)
             --std=c++0x
         )
     endif(LIBNODE_USE_CXX11)
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(libnode-test-cflags
+            ${libnode-test-cflags}
+            -Wno-unused-variable
+            -Wno-unused-parameter
+            -Wno-unused-private-field
+        )
+    endif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+    if(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
+        set(libnode-test-cflags
+            ${libnode-test-cflags}
+            -finstrument-functions   
+        )
+    endif(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
 else(UNIX)
     set(libnode-test-cflags
         /D_VARIADIC_MAX=10
