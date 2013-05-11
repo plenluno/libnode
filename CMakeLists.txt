@@ -461,8 +461,7 @@ if(LIBNODE_USE_CXX11)
     )
 
     target_link_libraries(libnode-hello-server
-        ${libnode-deps}
-        node
+        ${libnode-test-deps}
     )
 
     if(APPLE)
