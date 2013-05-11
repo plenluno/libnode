@@ -40,7 +40,7 @@ TEST(GTestDns, TestHttpGet) {
     JsArray::CPtr codes = GTestHttpClientOnResponse::statusCodes();
     ASSERT_EQ(1, msgs->length());
     ASSERT_EQ(1, codes->length());
-    ASSERT_TRUE(msgs->getCPtr<String>(0));
+    ASSERT_TRUE(!!msgs->getCPtr<String>(0));
     ASSERT_TRUE(codes->get(0).equals(200));
     // console::log(msgs->get(0));
 }
