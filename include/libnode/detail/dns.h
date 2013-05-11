@@ -172,8 +172,10 @@ Boolean lookup(String::CPtr domain, Int family, JsFunction::Ptr callback) {
         break;
     case 4:
         fam = AF_INET;
+        break;
     case 6:
         fam = AF_INET6;
+        break;
     default:
         return false;
     }
