@@ -28,6 +28,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 # options ----------------------------------------------------------------------
 
 option(LIBNODE_DEBUG           "Debug Mode"       OFF)
+option(LIBNODE_TRACE           "Trace Mode"       OFF)
 option(LIBNODE_USE_BDWGC       "Use BDW-GC"       OFF)
 option(LIBNODE_USE_CXX11       "Use C++11"        OFF)
 option(LIBNODE_USE_SSL         "Use SSL"          OFF)
@@ -40,6 +41,10 @@ option(LIBNODE_REMOVE_LISTENER "Remove Listeners" ON)
 cmake_dependent_option(LIBJ_DEBUG
     "Debug Mode" ON
     "LIBNODE_DEBUG" OFF
+)
+cmake_dependent_option(LIBJ_TRACE
+    "Trace Mode" ON
+    "LIBNODE_TRACE" OFF
 )
 cmake_dependent_option(LIBJ_USE_BDWGC
     "Use BDW-GC" ON
@@ -75,6 +80,10 @@ if(LIBNODE_DEBUG AND NOT LIBJ_DEBUG)
     message(FATAL_ERROR "LIBNODE_DEBUG=ON and LIBJ_DEBUG=OFF")
 endif(LIBNODE_DEBUG AND NOT LIBJ_DEBUG)
 
+if(LIBNODE_TRACE AND NOT LIBJ_TRACE)
+    message(FATAL_ERROR "LIBNODE_TRACE=ON and LIBJ_TRACE=OFF")
+endif(LIBNODE_TRACE AND NOT LIBJ_TRACE)
+
 if(LIBNODE_USE_BDWGC AND NOT LIBJ_USE_BDWGC)
     message(FATAL_ERROR "LIBNODE_USE_BDWGC=ON and LIBJ_USE_BDWGC=OFF")
 endif(LIBNODE_USE_BDWGC AND NOT LIBJ_USE_BDWGC)
@@ -91,12 +100,21 @@ if(LIBNODE_USE_UTF32 AND NOT LIBJ_USE_UTF32)
     message(FATAL_ERROR "LIBNODE_USE_UTF32=ON and LIBJ_USE_UTF32=OFF")
 endif(LIBNODE_USE_UTF32 AND NOT LIBJ_USE_UTF32)
 
+if(LIBNODE_TRACE AND NOT LIBNODE_DEBUG)
+    message(FATAL_ERROR "LIBNODE_TRACE=ON and LIBNODE_DEBUG=OFF")
+endif(LIBNODE_TRACE AND NOT LIBNODE_DEBUG)
+
+if(LIBNODE_TRACE AND LIBNODE_USE_THREAD)
+    message(FATAL_ERROR "LIBNODE_TRACE=ON and LIBNODE_USE_THREAD=ON")
+endif(LIBNODE_TRACE AND LIBNODE_USE_THREAD)
+
 if(LIBNODE_USE_BDWGC AND LIBNODE_USE_THREAD)
     message(FATAL_ERROR "LIBNODE_USE_BDWGC=ON and LIBNODE_USE_THREAD=ON")
 endif(LIBNODE_USE_BDWGC AND LIBNODE_USE_THREAD)
 
 ## status
 message(STATUS "LIBNODE_DEBUG=${LIBNODE_DEBUG}")
+message(STATUS "LIBNODE_TRACE=${LIBNODE_TRACE}")
 message(STATUS "LIBNODE_USE_BDWGC=${LIBNODE_USE_BDWGC}")
 message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
 message(STATUS "LIBNODE_USE_SSL=${LIBNODE_USE_SSL}")
@@ -185,81 +203,6 @@ if(LIBNODE_USE_THREAD)
     )
 endif(LIBNODE_USE_THREAD)
 
-## libnode-deps
-set(libnode-deps
-    httpparser
-    j
-    uv
-)
-
-if(UNIX AND NOT ANDROID)
-    set(libnode-deps
-        ${libnode-deps}
-        pthread
-    )
-endif(UNIX AND NOT ANDROID)
-
-if(LIBNODE_USE_SSL)
-    set(libnode-deps
-        ${libnode-deps}
-        ssl
-    )
-endif(LIBNODE_USE_SSL)
-
-if(LIBNODE_USE_CRYPTO)
-    set(libnode-deps
-        ${libnode-deps}
-        crypto
-    )
-else(LIBNODE_USE_CRYPTO)
-    set(libnode-deps
-        ${libnode-deps}
-        b64
-    )
-endif(LIBNODE_USE_CRYPTO)
-
-if(UXIX AND NOT APPLE)
-    set(libnode-deps
-        ${libnode-deps}
-        rt
-    )
-endif(UXIX AND NOT APPLE)
-
-## libnode-cflags
-if(UNIX)
-    set(libnode-cflags
-        -Wall
-        -fno-rtti
-        -fno-exceptions
-        -D_FILE_OFFSET_BITS=64
-    )
-
-    if(LIBNODE_USE_CXX11)
-        set(libnode-cflags
-            ${libnode-cflags}
-            --std=c++0x
-        )
-    endif(LIBNODE_USE_CXX11)
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(libnode-cflags
-            ${libnode-cflags}
-            -Wno-unused-variable
-            -Wno-unused-parameter
-            -Wno-unused-private-field
-        )
-    endif(CMAKE_BUILD_TYPE STREQUAL "Release")
-
-    if(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
-        set(libnode-cflags
-            ${libnode-cflags}
-            -finstrument-functions   
-        )
-    endif(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
-endif(UNIX)
-
-string(REPLACE ";" " " libnode-cflags "${libnode-cflags}")
-
 ## libnode-test-src
 set(libnode-test-src
     gtest/gtest_main.cpp
@@ -307,36 +250,126 @@ if(LIBNODE_USE_THREAD)
     )
 endif(LIBNODE_USE_THREAD)
 
-## libnode-test-cflags
+## libnode-deps
+set(libnode-deps
+    httpparser
+    j
+    uv
+)
+
+if(UNIX AND NOT ANDROID)
+    set(libnode-deps
+        ${libnode-deps}
+        pthread
+    )
+endif(UNIX AND NOT ANDROID)
+
+if(LIBNODE_USE_SSL)
+    set(libnode-deps
+        ${libnode-deps}
+        ssl
+    )
+endif(LIBNODE_USE_SSL)
+
+if(LIBNODE_USE_CRYPTO)
+    set(libnode-deps
+        ${libnode-deps}
+        crypto
+    )
+else(LIBNODE_USE_CRYPTO)
+    set(libnode-deps
+        ${libnode-deps}
+        b64
+    )
+endif(LIBNODE_USE_CRYPTO)
+
+if(UXIX AND NOT APPLE)
+    set(libnode-deps
+        ${libnode-deps}
+        rt
+    )
+endif(UXIX AND NOT APPLE)
+
+## libnode-test-deps
+set(libnode-test-deps
+    gtest
+    node
+)
+
+if(LIBNODE_USE_CXX11 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(libnode-test-deps
+        ${libnode-test-deps}
+        c++
+        c++abi
+    )
+endif(LIBNODE_USE_CXX11 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
+## libnode-cxx11-cflags
+set(libnode-cxx11-cflags
+    --std=c++0x
+)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(libnode-cxx11-cflags
+        ${libnode-cxx11-cflags}
+        -stdlib=libc++
+    )
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
+## libnode-cflags
 if(UNIX)
-    set(libnode-test-cflags
+    set(libnode-cflags
         -Wall
-        -Wno-sign-compare
-        -Wno-unused-value
+        -fno-rtti
+        -fno-exceptions
+        -D_FILE_OFFSET_BITS=64
     )
 
     if(LIBNODE_USE_CXX11)
-        set(libnode-test-cflags
-            ${libnode-test-cflags}
-            --std=c++0x
+        set(libnode-cflags
+            ${libnode-cflags}
+            ${libnode-cxx11-cflags}
         )
     endif(LIBNODE_USE_CXX11)
 
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(libnode-test-cflags
-            ${libnode-test-cflags}
+        set(libnode-cflags
+            ${libnode-cflags}
             -Wno-unused-variable
             -Wno-unused-parameter
             -Wno-unused-private-field
         )
     endif(CMAKE_BUILD_TYPE STREQUAL "Release")
 
-    if(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
+    if(LIBNODE_TRACE)
+        set(libnode-cflags
+            ${libnode-cflags}
+            -finstrument-functions   
+        )
+    endif(LIBNODE_TRACE)
+endif(UNIX)
+
+string(REPLACE ";" " " libnode-cflags "${libnode-cflags}")
+
+## libnode-test-cflags
+if(UNIX)
+    set(libnode-test-cflags
+        -Wno-unused-value
+    )
+
+    if(LIBNODE_USE_CXX11)
+        set(libnode-test-cflags
+            ${libnode-test-cflags}
+            ${libnode-cxx11-cflags}
+        )
+    endif(LIBNODE_USE_CXX11)
+
+    if(LIBNODE_TRACE)
         set(libnode-test-cflags
             ${libnode-test-cflags}
             -finstrument-functions   
         )
-    endif(LIBNODE_DEBUG AND NOT LIBNODE_USE_THREAD)
+    endif(LIBNODE_TRACE)
 else(UNIX)
     set(libnode-test-cflags
         /D_VARIADIC_MAX=10
@@ -405,9 +438,7 @@ if(LIBNODE_BUILD_TEST)
     )
 
     target_link_libraries(libnode-test
-        ${libnode-deps}
-        gtest
-        node
+        ${libnode-test-deps}
     )
 
     if(APPLE)
