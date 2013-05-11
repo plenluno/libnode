@@ -9,11 +9,12 @@ namespace example {
 void helloServer() {
     auto srv = http::Server::create(
         JsClosure::create([] (JsArray::Ptr args) {
+            LIBJ_STATIC_CONST_STRING_DEF(TEXT_PLAIN,  "text/plain");
+            LIBJ_STATIC_CONST_STRING_DEF(HELLO_WORLD, "Hello World\n");
+
             auto res = args->getPtr<http::ServerResponse>(1);
-            res->setHeader(
-                http::HEADER_CONTENT_TYPE,
-                String::create("text/plain"));
-            res->end(String::create("Hello World\n"));
+            res->setHeader(http::HEADER_CONTENT_TYPE, TEXT_PLAIN);
+            res->end(HELLO_WORLD);
             return UNDEFINED;
         }));
     srv->listen(1337, String::create("127.0.0.1"));
