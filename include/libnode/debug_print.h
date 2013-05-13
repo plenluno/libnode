@@ -6,6 +6,7 @@
 #include <libnode/config.h>
 
 #ifdef LIBNODE_DEBUG
+# include <libj/console.h>
 # define LIBNODE_DEBUG_PRINT(FMT, ...) \
     libj::console::printf( \
         libj::console::LEVEL_DEBUG, \
