@@ -6,7 +6,12 @@
 #include <libj/config.h>
 
 #cmakedefine LIBNODE_DEBUG
+#cmakedefine LIBNODE_USE_BDWGC
 #cmakedefine LIBNODE_USE_CRYPTO
 #cmakedefine LIBNODE_REMOVE_LISTENER
+
+#ifndef LIBNODE_USE_BDWGC
+    #define LIBNODE_USE_SP
+#endif
 
 #endif  // LIBNODE_CONFIG_H_
