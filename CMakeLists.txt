@@ -144,6 +144,13 @@ if(LIBNODE_BUILD_OPENSSL)
     )
 endif(LIBNODE_BUILD_OPENSSL)
 
+if(LIBJ_BUILD_BDWGC)
+    set(libnode-include
+        ${libnode-include}
+        deps/libj/deps/bdwgc/include
+    )
+endif(LIBJ_BUILD_BDWGC)
+
 if(LIBJ_BUILD_GTEST)
     set(libnode-include
         ${libnode-include}
