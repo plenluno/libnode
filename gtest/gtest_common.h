@@ -6,6 +6,7 @@
 #include <libnode/buffer.h>
 #include <libnode/node.h>
 
+#include <libj/console.h>
 #include <libj/debug_print.h>
 #include <libj/js_function.h>
 #include <libj/string_buffer.h>
