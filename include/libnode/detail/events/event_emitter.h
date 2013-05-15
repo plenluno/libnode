@@ -74,15 +74,7 @@ class EventEmitter
         String::CPtr event, JsFunction::Ptr listener) {
         if (!listener) return;
 
-        JsArray::Ptr a;
-        Value v = events_->get(event);
-        if (v.isUndefined()) {
-            a = JsArray::create();
-            events_->put(String::intern(event), a);
-        } else {
-            a = toPtr<JsArray>(v);
-        }
-        a->add(listener);
+        listeners(event)->add(listener);
         emit(I::EVENT_NEW_LISTENER);
     }
 
@@ -117,19 +109,21 @@ class EventEmitter
     }
 
     virtual JsArray::Ptr listeners(String::CPtr event) {
-        Value v = events_->get(event);
-        if (v.isUndefined()) {
-            JsArray::Ptr a = JsArray::create();
-            events_->put(event, a);
+        JsArray::Ptr a = events_->getPtr<JsArray>(event);
+        if (a) {
             return a;
         } else {
-            return toPtr<JsArray>(v);
+            a = JsArray::create();
+            events_->put(String::intern(event), a);
+            return a;
         }
     }
 
-    virtual void emit(
+    virtual Boolean emit(
         String::CPtr event, JsArray::Ptr args = JsArray::null()) {
         JsArray::Ptr a = listeners(event);
+        if (a->isEmpty()) return false;
+
         Size i = 0;
         while (i < a->size()) {
             Value v = a->get(i);
@@ -137,40 +131,44 @@ class EventEmitter
             JsFunction::Ptr f = toPtr<JsFunction>(v);
             (*f)(args);
         }
+        return true;
     }
 
  public:
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1) {
         LIBNODE_ARGS_CREATE(args);
         args->add(v1);
-        emit(event, args);
+        Boolean r = emit(event, args);
         LIBNODE_ARGS_CLEAR(args);
+        return r;
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2) {
         LIBNODE_ARGS_CREATE(args);
         args->add(v1);
         args->add(v2);
-        emit(event, args);
+        Boolean r = emit(event, args);
         LIBNODE_ARGS_CLEAR(args);
+        return r;
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3) {
         LIBNODE_ARGS_CREATE(args);
         args->add(v1);
         args->add(v2);
         args->add(v3);
-        emit(event, args);
+        Boolean r = emit(event, args);
         LIBNODE_ARGS_CLEAR(args);
+        return r;
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4) {
@@ -179,11 +177,12 @@ class EventEmitter
         args->add(v2);
         args->add(v3);
         args->add(v4);
-        emit(event, args);
+        Boolean r = emit(event, args);
         LIBNODE_ARGS_CLEAR(args);
+        return r;
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5) {
@@ -193,11 +192,12 @@ class EventEmitter
         args->add(v3);
         args->add(v4);
         args->add(v5);
-        emit(event, args);
+        Boolean r = emit(event, args);
         LIBNODE_ARGS_CLEAR(args);
+        return r;
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6) {
@@ -208,11 +208,12 @@ class EventEmitter
         args->add(v4);
         args->add(v5);
         args->add(v6);
-        emit(event, args);
+        Boolean r = emit(event, args);
         LIBNODE_ARGS_CLEAR(args);
+        return r;
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
@@ -225,11 +226,12 @@ class EventEmitter
         args->add(v5);
         args->add(v6);
         args->add(v7);
-        emit(event, args);
+        Boolean r = emit(event, args);
         LIBNODE_ARGS_CLEAR(args);
+        return r;
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
@@ -243,11 +245,12 @@ class EventEmitter
         args->add(v6);
         args->add(v7);
         args->add(v8);
-        emit(event, args);
+        Boolean r = emit(event, args);
         LIBNODE_ARGS_CLEAR(args);
+        return r;
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
@@ -262,8 +265,9 @@ class EventEmitter
         args->add(v7);
         args->add(v8);
         args->add(v9);
-        emit(event, args);
+        Boolean r = emit(event, args);
         LIBNODE_ARGS_CLEAR(args);
+        return r;
     }
 
  private:

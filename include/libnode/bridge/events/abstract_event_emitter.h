@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_BRIDGE_EVENTS_ABSTRACT_EVENT_EMITTER_H_
 #define LIBNODE_BRIDGE_EVENTS_ABSTRACT_EVENT_EMITTER_H_
@@ -51,73 +51,73 @@ class AbstractEventEmitter : public libj::bridge::AbstractJsObject<I> {
         return ee_->listeners(event);
     }
 
-    virtual void emit(
+    virtual Boolean emit(
         String::CPtr event, JsArray::Ptr args = JsArray::null()) {
-        ee_->emit(event, args);
+        return ee_->emit(event, args);
     }
 
  public:
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1) {
-        ee_->emit(event, v1);
+        return ee_->emit(event, v1);
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2) {
-        ee_->emit(event, v1, v2);
+        return ee_->emit(event, v1, v2);
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3) {
-        ee_->emit(event, v1, v2, v3);
+        return ee_->emit(event, v1, v2, v3);
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4) {
-        ee_->emit(event, v1, v2, v3, v4);
+        return ee_->emit(event, v1, v2, v3, v4);
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5) {
-        ee_->emit(event, v1, v2, v3, v4, v5);
+        return ee_->emit(event, v1, v2, v3, v4, v5);
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6) {
-        ee_->emit(event, v1, v2, v3, v4, v5, v6);
+        return ee_->emit(event, v1, v2, v3, v4, v5, v6);
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
         const Value& v7) {
-        ee_->emit(event, v1, v2, v3, v4, v5, v6, v7);
+        return ee_->emit(event, v1, v2, v3, v4, v5, v6, v7);
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
         const Value& v7, const Value& v8) {
-        ee_->emit(event, v1, v2, v3, v4, v5, v6, v7, v8);
+        return ee_->emit(event, v1, v2, v3, v4, v5, v6, v7, v8);
     }
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
         const Value& v7, const Value& v8, const Value& v9) {
-        ee_->emit(event, v1, v2, v3, v4, v5, v6, v7, v8, v9);
+        return ee_->emit(event, v1, v2, v3, v4, v5, v6, v7, v8, v9);
     }
 
  private:
