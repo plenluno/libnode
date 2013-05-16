@@ -404,23 +404,4 @@ endif(LIBNODE_BUILD_TEST)
 
 # build example ----------------------------------------------------------------
 
-if(LIBNODE_USE_CXX11)
-    add_executable(libnode-hello-server
-        example/hello-server.cpp
-    )
-
-    target_link_libraries(libnode-hello-server
-        ${libnode-test-deps}
-    )
-
-    if(APPLE)
-        set_target_properties(libnode-hello-server PROPERTIES
-            COMPILE_FLAGS "${libnode-test-cflags}"
-            LINK_FLAGS "-framework CoreServices"
-        )
-    else(APPLE)
-        set_target_properties(libnode-hello-server PROPERTIES
-            COMPILE_FLAGS "${libnode-test-cflags}"
-        )
-    endif(APPLE)
-endif(LIBNODE_USE_CXX11)
+add_subdirectory(example)
