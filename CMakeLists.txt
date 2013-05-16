@@ -210,53 +210,6 @@ if(LIBNODE_USE_THREAD)
     )
 endif(LIBNODE_USE_THREAD)
 
-## libnode-test-src
-set(libnode-test-src
-    gtest/gtest_main.cpp
-    gtest/gtest_buffer.cpp
-    gtest/gtest_common.cpp
-#   gtest/gtest_dns.cpp
-    gtest/gtest_event_emitter.cpp
-    gtest/gtest_http_common.cpp
-    gtest/gtest_http_echo.cpp
-    gtest/gtest_http_echo_old.cpp
-    gtest/gtest_http_static.cpp
-    gtest/gtest_http_status.cpp
-#   gtest/gtest_net_pipe_echo.cpp
-    gtest/gtest_net_tcp_echo.cpp
-    gtest/gtest_path.cpp
-    gtest/gtest_process.cpp
-    gtest/gtest_querystring.cpp
-    gtest/gtest_timer.cpp
-    gtest/gtest_url.cpp
-    gtest/gtest_util.cpp
-    gtest/gtest_uv_error.cpp
-)
-
-if(LIBNODE_USE_CRYPTO)
-    set(libnode-test-src
-        ${libnode-test-src}
-        gtest/gtest_crypto_cipher.cpp
-        gtest/gtest_crypto_hash.cpp
-#       gtest/gtest_crypto_rsa.cpp
-    )
-endif(LIBNODE_USE_CRYPTO)
-
-if(LIBNODE_USE_CXX11)
-    set(libnode-test-src
-        ${libnode-test-src}
-        gtest/gtest_http_echo_cxx11.cpp
-    )
-endif(LIBNODE_USE_CXX11)
-
-if(LIBNODE_USE_THREAD)
-    set(libnode-test-src
-        ${libnode-test-src}
-        gtest/gtest_async.cpp
-        gtest/gtest_message_queue.cpp
-    )
-endif(LIBNODE_USE_THREAD)
-
 ## libnode-deps
 set(libnode-deps
     httpparser
@@ -297,15 +250,21 @@ if(UXIX AND NOT APPLE)
     )
 endif(UXIX AND NOT APPLE)
 
-## libnode-test-deps
-set(libnode-test-deps
-    gtest
+## libnode-linklibs
+set(libnode-linklibs
     node
 )
 
+if(LIBNODE_BUILD_TEST)
+    set(libnode-linklibs
+        ${libnode-linklibs}
+        gtest
+    )
+endif(LIBNODE_BUILD_TEST)
+
 if(LIBNODE_USE_CXX11 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(libnode-test-deps
-        ${libnode-test-deps}
+    set(libnode-linklibs
+        ${libnode-linklibs}
         c++
         c++abi
     )
@@ -437,27 +396,10 @@ set_target_properties(node PROPERTIES
     COMPILE_FLAGS "${libnode-cflags}"
 )
 
-# build gtests -----------------------------------------------------------------
+# build tests ------------------------------------------------------------------
 
 if(LIBNODE_BUILD_TEST)
-    add_executable(libnode-test
-        ${libnode-test-src}
-    )
-
-    target_link_libraries(libnode-test
-        ${libnode-test-deps}
-    )
-
-    if(APPLE)
-        set_target_properties(libnode-test PROPERTIES
-            COMPILE_FLAGS "${libnode-test-cflags}"
-            LINK_FLAGS "-framework CoreServices"
-        )
-    else(APPLE)
-        set_target_properties(libnode-test PROPERTIES
-            COMPILE_FLAGS "${libnode-test-cflags}"
-        )
-    endif(APPLE)
+    add_subdirectory(gtest)
 endif(LIBNODE_BUILD_TEST)
 
 # build example ----------------------------------------------------------------

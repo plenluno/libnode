@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_SERVER_H_
 #define LIBNODE_DETAIL_HTTP_SERVER_H_
@@ -51,6 +51,19 @@ class Server : public net::Server<node::http::Server> {
         maxHeadersCount_ = max;
     }
 
+    virtual UInt timeout() const {
+        return timeout_;
+    }
+
+    virtual void setTimeout(UInt msecs, JsFunction::Ptr callback) {
+        LIBJ_STATIC_SYMBOL_DEF(EVENT_TIMEOUT, "timeout");
+
+        timeout_ = msecs;
+        if (callback) {
+            on(EVENT_TIMEOUT, callback);
+        }
+    }
+
  private:
     static void freeParser(Parser* parser) {
         assert(parser);
@@ -97,14 +110,56 @@ class Server : public net::Server<node::http::Server> {
 
     class SocketOnTimeout : LIBJ_JS_FUNCTION(SocketOnTimeout)
      public:
-        SocketOnTimeout(net::Socket* sock) : socket_(sock) {}
+        SocketOnTimeout(
+            Server* srv,
+            net::Socket* sock)
+            : server_(srv)
+            , socket_(sock) {}
 
         virtual Value operator()(JsArray::Ptr args) {
-            socket_->destroy();
+            LIBJ_STATIC_SYMBOL_DEF(EVENT_TIMEOUT, "timeout");
+
+            Parser* parser = socket_->parser();
+
+            IncomingMessage::Ptr req;
+            if (parser) {
+                req = parser->incoming();
+            } else {
+                req = IncomingMessage::null();
+            }
+
+            Boolean reqTimeout;
+            if (req && !req->hasFlag(IncomingMessage::COMPLETE)) {
+                reqTimeout = req->emit(
+                    EVENT_TIMEOUT,
+                    LIBJ_STATIC_PTR_CAST(net::Socket)(socket_->self()));
+            } else {
+                reqTimeout = false;
+            }
+
+            OutgoingMessage* res = socket_->httpMessage();
+
+            Boolean resTimeout;
+            if (res) {
+                resTimeout = res->emit(
+                    EVENT_TIMEOUT,
+                    LIBJ_STATIC_PTR_CAST(net::Socket)(socket_->self()));
+            } else {
+                resTimeout = false;
+            }
+
+            Boolean serverTimeout = server_->emit(
+                EVENT_TIMEOUT,
+                LIBJ_STATIC_PTR_CAST(net::Socket)(socket_->self()));
+
+            if (!reqTimeout && !resTimeout && !serverTimeout) {
+                socket_->destroy();
+            }
             return Status::OK;
         }
 
      private:
+        Server* server_;
         net::Socket* socket_;
     };
 
@@ -345,10 +400,12 @@ class Server : public net::Server<node::http::Server> {
 
             OutgoingMessage::httpSocketSetup(socket);
 
-            socket->setTimeout(2 * 60 * 1000);
-            socket->once(
-                net::Socket::EVENT_TIMEOUT,
-                JsFunction::Ptr(new SocketOnTimeout(&(*socket))));
+            if (self_->timeout_) {
+                socket->setTimeout(self_->timeout_);
+                socket->on(
+                    net::Socket::EVENT_TIMEOUT,
+                    JsFunction::Ptr(new SocketOnTimeout(self_, &(*socket))));
+            }
 
             Size maxHeadersCount;
             if (self_->maxHeadersCount_) {
@@ -398,8 +455,11 @@ class Server : public net::Server<node::http::Server> {
 
  private:
     Size maxHeadersCount_;
+    UInt timeout_;
 
-    Server() : maxHeadersCount_(0) {
+    Server()
+        : maxHeadersCount_(0)
+        , timeout_(2 * 60 * 1000) {
         setFlag(ALLOW_HALF_OPEN);
     }
 };

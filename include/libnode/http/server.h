@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_HTTP_SERVER_H_
 #define LIBNODE_HTTP_SERVER_H_
@@ -22,6 +22,12 @@ class Server : LIBNODE_NET_SERVER(Server)
     virtual Size maxHeadersCount() const = 0;
 
     virtual void setMaxHeadersCount(Size max) = 0;
+
+    virtual UInt timeout() const = 0;
+
+    virtual void setTimeout(
+        UInt msecs,
+        JsFunction::Ptr callback = JsFunction::null()) = 0;
 };
 
 }  // namespace http

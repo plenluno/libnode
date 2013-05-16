@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_EVENTS_EVENT_EMITTER_H_
 #define LIBNODE_EVENTS_EVENT_EMITTER_H_
@@ -40,62 +40,60 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
 
     virtual JsArray::Ptr listeners(String::CPtr event) = 0;
 
-    virtual void emit(
+    virtual Boolean emit(
         String::CPtr event,
         JsArray::Ptr args = JsArray::null()) = 0;
 
  public:
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
-        const Value& v1);
+        const Value& v1) = 0;
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
-        const Value& v1, const Value& v2);
+        const Value& v1, const Value& v2) = 0;
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
-        const Value& v1, const Value& v2, const Value& v3);
+        const Value& v1, const Value& v2, const Value& v3) = 0;
 
-    void emit(
-        String::CPtr event,
-        const Value& v1, const Value& v2, const Value& v3,
-        const Value& v4);
-
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
-        const Value& v4, const Value& v5);
+        const Value& v4) = 0;
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
-        const Value& v4, const Value& v5, const Value& v6);
+        const Value& v4, const Value& v5) = 0;
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
-        const Value& v4, const Value& v5, const Value& v6,
-        const Value& v7);
+        const Value& v4, const Value& v5, const Value& v6) = 0;
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
-        const Value& v7, const Value& v8);
+        const Value& v7) = 0;
 
-    void emit(
+    virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
-        const Value& v7, const Value& v8, const Value& v9);
+        const Value& v7, const Value& v8) = 0;
+
+    virtual Boolean emit(
+        String::CPtr event,
+        const Value& v1, const Value& v2, const Value& v3,
+        const Value& v4, const Value& v5, const Value& v6,
+        const Value& v7, const Value& v8, const Value& v9) = 0;
 };
 
 }  // namespace events
 }  // namespace node
 }  // namespace libj
-
-#include <libnode/impl/events/event_emitter.h>
 
 #define LIBNODE_EVENT_EMITTER(T) \
     public libj::node::events::EventEmitter { \
