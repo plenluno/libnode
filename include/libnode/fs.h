@@ -30,12 +30,21 @@ enum Flag {
 void open(
     String::CPtr path,
     Flag flag,
-    UInt mode = 438,
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr callback);
+
+void open(
+    String::CPtr path,
+    Flag flag,
+    UInt mode,
+    JsFunction::Ptr callback);
 
 void close(
     const Value& fd,
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr callback);
+
+void stat(
+    String::CPtr path,
+    JsFunction::Ptr callback);
 
 void read(
     const Value &fd,
@@ -43,15 +52,24 @@ void read(
     Size offset,
     Size length,
     Size position,
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr callback);
 
-void stat(
-    String::CPtr path,
-    JsFunction::Ptr callback = JsFunction::null());
+void write(
+    const Value &fd,
+    Buffer::Ptr buffer,
+    Size offset,
+    Size length,
+    Size position,
+    JsFunction::Ptr callback);
 
 void readFile(
     String::CPtr path,
-    JsFunction::Ptr callback = JsFunction::null());
+    JsFunction::Ptr callback);
+
+void writeFile(
+    String::CPtr path,
+    Buffer::Ptr data,
+    JsFunction::Ptr callback);
 
 }  // namespace fs
 }  // namespace node

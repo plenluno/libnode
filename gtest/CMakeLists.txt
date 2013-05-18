@@ -10,6 +10,7 @@ set(libnode-test-src
     gtest_common.cpp
 #   gtest_dns.cpp
     gtest_event_emitter.cpp
+    gtest_fs.cpp
     gtest_http_common.cpp
     gtest_http_echo.cpp
     gtest_http_echo_old.cpp

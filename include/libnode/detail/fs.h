@@ -5,11 +5,12 @@
 
 #include <libnode/fs.h>
 #include <libnode/uv/error.h>
-#include <libnode/detail/uv/fs_read.h>
+#include <libnode/detail/uv/fs_req.h>
 
 #include <libj/js_array.h>
 #include <libj/detail/js_object.h>
 
+#include <assert.h>
 #include <fcntl.h>
 
 #ifdef LIBJ_PF_WINDOWS
@@ -48,13 +49,15 @@ static Int convertFlag(node::fs::Flag flag) {
     case node::fs::AXP:
         return O_APPEND | O_CREAT | O_RDWR | O_EXCL;
     default:
+        assert(false);
         return -1;
     }
 }
 
 static void onError(uv_fs_t* req) {
+    assert(req);
     uv::FsReq* fsReq = static_cast<uv::FsReq*>(req->data);
-    if (fsReq->onComplete) {
+    if (fsReq && fsReq->onComplete) {
         fsReq->onComplete->call(node::uv::Error::valueOf(req->errorno));
     }
     delete fsReq;
@@ -82,15 +85,8 @@ static node::fs::Stats::Ptr getStats(uv_fs_t* req) {
 }
 
 static Buffer::Ptr getBuffer(uv_fs_t* req) {
-    uv::FsRead* fsRead = static_cast<uv::FsRead*>(req->data);
-    Size offset = fsRead->offset;
-    Size bytesRead = req->result;
-    char* buf = fsRead->buffer;
-    Buffer::Ptr res = fsRead->res;
-    for (Size i = 0; i < bytesRead; i++) {
-        res->writeUInt8(buf[i], offset + i);
-    }
-    return res;
+    uv::FsReq* fsReq = static_cast<uv::FsReq*>(req->data);
+    return fsReq->buffer;
 }
 
 static void after(uv_fs_t* req) {
@@ -104,6 +100,9 @@ static void after(uv_fs_t* req) {
         JsArray::Ptr args = JsArray::create();
         args->add(Error::null());
         switch (req->fs_type) {
+        case UV_FS_STAT:
+            args->add(getStats(req));
+            break;
         case UV_FS_OPEN:
             args->add(static_cast<uv_file>(req->result));
             break;
@@ -111,8 +110,8 @@ static void after(uv_fs_t* req) {
             args->add(static_cast<Size>(req->result));
             args->add(getBuffer(req));
             break;
-        case UV_FS_STAT:
-            args->add(getStats(req));
+        case UV_FS_WRITE:
+            args->add(static_cast<Size>(req->result));
             break;
         case UV_FS_CLOSE:
         default:
@@ -123,46 +122,52 @@ static void after(uv_fs_t* req) {
     delete fsReq;
 }
 
+void stat(String::CPtr path, JsFunction::Ptr callback) {
+    uv::FsReq* fsReq = new uv::FsReq(callback);
+    if (path) {
+        fsReq->path = path->toStdString();
+    }
+
+    int r = uv_fs_stat(
+        uv_default_loop(),
+        &(fsReq->req),
+        fsReq->path.c_str(),
+        after);
+    assert(!r);
+}
+
 void open(
     String::CPtr path,
     node::fs::Flag flag,
     UInt mode,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->path = path->toStdString();
-    uv_fs_t* req = &(fsReq->req);
+    if (path) {
+        fsReq->path = path->toStdString();
+    }
+
     int r = uv_fs_open(
         uv_default_loop(),
-        req,
+        &(fsReq->req),
         fsReq->path.c_str(),
         convertFlag(flag),
         static_cast<int>(mode),
         after);
-    if (r < 0) {
-        req->errorno = uv_last_error(uv_default_loop()).code;
-        onError(req);
-    }
+    assert(!r);
 }
 
 void close(
     const Value& fd,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    uv_fs_t* req = &(fsReq->req);
-    if (!to<uv_file>(fd, &(fsReq->file))) {
-        req->errorno = UV_EINVAL;
-        onError(req);
-        return;
-    }
+    to<uv_file>(fd, &(fsReq->file));
+
     int r = uv_fs_close(
         uv_default_loop(),
-        req,
+        &(fsReq->req),
         fsReq->file,
         after);
-    if (r < 0) {
-        req->errorno = uv_last_error(uv_default_loop()).code;
-        onError(req);
-    }
+    assert(!r);
 }
 
 void read(
@@ -172,56 +177,29 @@ void read(
     Size length,
     Size position,
     JsFunction::Ptr callback) {
-    Size len = 0;
     Size bufLen = buffer ? buffer->length() : 0;
-    if (length > 0 && offset < bufLen) {
+    Size len;
+    if (bufLen > offset) {
         len = bufLen - offset;
         len = len < length ? len : length;
-    }
-    uv::FsRead* fsRead = new uv::FsRead(len, callback);
-    uv_fs_t* req = &(fsRead->req);
-    if (!len) {
-        req->errorno = UV_EINVAL;
-        onError(req);
-        return;
+    } else {
+        len = 0;
     }
 
-    if (!to<uv_file>(fd, &(fsRead->file))) {
-        req->errorno = UV_EINVAL;
-        onError(req);
-        return;
-    }
-    fsRead->res = buffer;
-    fsRead->offset = offset;
+    uv::FsReq* fsReq = new uv::FsReq(callback);
+    to<uv_file>(fd, &(fsReq->file));
+    fsReq->buffer = buffer;
 
+    void* buf = buffer ? const_cast<void*>(buffer->data()) : NULL;
     int r = uv_fs_read(
         uv_default_loop(),
-        req,
-        fsRead->file,
-        fsRead->buffer,
+        &(fsReq->req),
+        fsReq->file,
+        buf,
         len,
         position,
         after);
-    if (r < 0) {
-        req->errorno = uv_last_error(uv_default_loop()).code;
-        onError(req);
-    }
-}
-
-void stat(String::CPtr path, JsFunction::Ptr callback) {
-    uv::FsReq* fsReq = new uv::FsReq(callback);
-    if (path)
-        fsReq->path = path->toStdString();
-    uv_fs_t* req = &(fsReq->req);
-    int r = uv_fs_stat(
-        uv_default_loop(),
-        req,
-        fsReq->path.c_str(),
-        after);
-    if (r < 0) {
-        req->errorno = uv_last_error(uv_default_loop()).code;
-        onError(req);
-    }
+    assert(!r);
 }
 
 class AfterReadInReadFile : LIBJ_JS_FUNCTION(AfterReadInReadFile)
@@ -234,12 +212,13 @@ class AfterReadInReadFile : LIBJ_JS_FUNCTION(AfterReadInReadFile)
 
     virtual Value operator()(JsArray::Ptr args) {
         Error::CPtr err = args->getCPtr<Error>(0);
-        JsArray::Ptr a = JsArray::create();
-        a->add(err);
-        if (!err) {
-            a->add(args->get(2));
+        if (err) {
+            assert(args->length() == 1);
+        } else {
+            args->remove(1);
+            assert(args->length() == 2);
         }
-        (*callback_)(a);
+        if (callback_) (*callback_)(args);
         close(fd_, JsFunction::null());
         return 0;
     }
@@ -262,9 +241,8 @@ class AfterOpenInReadFile : LIBJ_JS_FUNCTION(AfterOpenInReadFile)
     virtual Value operator()(JsArray::Ptr args) {
         Error::CPtr err = args->getCPtr<Error>(0);
         if (err) {
-            JsArray::Ptr a = JsArray::create();
-            a->add(err);
-            (*callback_)(a);
+            assert(args->length() == 1);
+            if (callback_) (*callback_)(args);
         } else {
             Value fd = args->get(1);
             AfterReadInReadFile::Ptr cb(
@@ -291,9 +269,8 @@ class AfterStatInReadFile : LIBJ_JS_FUNCTION(AfterStatInReadFile)
     virtual Value operator()(JsArray::Ptr args) {
         Error::CPtr err = args->getCPtr<Error>(0);
         if (err) {
-            JsArray::Ptr a = JsArray::create();
-            a->add(err);
-            (*callback_)(a);
+            assert(args->length() == 1);
+            if (callback_) (*callback_)(args);
         } else {
             node::fs::Stats::CPtr stats =
                 toCPtr<node::fs::Stats>(args->get(1));
@@ -315,6 +292,156 @@ class AfterStatInReadFile : LIBJ_JS_FUNCTION(AfterStatInReadFile)
 void readFile(String::CPtr path, JsFunction::Ptr callback) {
     AfterStatInReadFile::Ptr cb(new AfterStatInReadFile(path, callback));
     stat(path, cb);
+}
+
+void write(
+    const Value& fd,
+    Buffer::Ptr buffer,
+    Size offset,
+    Size length,
+    Size position,
+    JsFunction::Ptr callback) {
+    Size bufLen = buffer ? buffer->length() : 0;
+    Size len;
+    if (bufLen > offset) {
+        len = bufLen - offset;
+        len = len < length ? len : length;
+    } else {
+        len = 0;
+    }
+
+    uv::FsReq* fsReq = new uv::FsReq(callback);
+    to<uv_file>(fd, &(fsReq->file));
+    fsReq->buffer = buffer;
+
+    void* buf = buffer ? const_cast<void*>(buffer->data()) : NULL;
+    int r = uv_fs_write(
+        uv_default_loop(),
+        &(fsReq->req),
+        fsReq->file,
+        buf,
+        len,
+        position,
+        after);
+    assert(!r);
+}
+
+void writeAll(
+    const Value& fd,
+    Buffer::Ptr buffer,
+    Size offset,
+    Size length,
+    Size position,
+    JsFunction::Ptr callback);
+
+class AfterCloseInWriteAll : LIBJ_JS_FUNCTION(AfterCloseInWriteAll)
+ public:
+    AfterCloseInWriteAll(
+        JsFunction::Ptr callback,
+        Error::CPtr err)
+        : callback_(callback)
+        , err_(err) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        args->clear();
+        args->add(err_);
+        if (callback_) (*callback_)(args);
+        return 0;
+    }
+
+ private:
+    JsFunction::Ptr callback_;
+    Error::CPtr err_;
+};
+
+class AfterWriteInWriteAll : LIBJ_JS_FUNCTION(AfterWriteInWriteAll)
+ public:
+    AfterWriteInWriteAll(
+        const Value& fd,
+        Buffer::Ptr buffer,
+        Size offset,
+        Size length,
+        Size position,
+        JsFunction::Ptr callback)
+        : fd_(fd)
+        , buffer_(buffer)
+        , offset_(offset)
+        , length_(length)
+        , position_(position)
+        , callback_(callback) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        Error::CPtr err = args->getCPtr<Error>(0);
+        if (err) {
+            AfterCloseInWriteAll::Ptr cb(
+                new AfterCloseInWriteAll(callback_, err));
+            close(fd_, cb);
+        } else {
+            Size written = 0;
+            to<Size>(args->get(1), &written);
+            if (written == length_) {
+                close(fd_, callback_);
+            } else {
+                offset_ += written;
+                length_ -= written;
+                position_ += written;
+                writeAll(fd_, buffer_, offset_, length_, position_, callback_);
+            }
+        }
+        return 0;
+    }
+
+ private:
+    Value fd_;
+    Buffer::Ptr buffer_;
+    Size offset_;
+    Size length_;
+    Size position_;
+    JsFunction::Ptr callback_;
+};
+
+void writeAll(
+    const Value& fd,
+    Buffer::Ptr buffer,
+    Size offset,
+    Size length,
+    Size position,
+    JsFunction::Ptr callback) {
+    AfterWriteInWriteAll::Ptr cb(
+        new AfterWriteInWriteAll(
+            fd, buffer, offset, length, position, callback));
+    write(fd, buffer, offset, length, position, cb);
+}
+
+class AfterOpenInWriteFile : LIBJ_JS_FUNCTION(AfterOpenInWriteFile)
+ public:
+    AfterOpenInWriteFile(
+        Buffer::Ptr data,
+        JsFunction::Ptr callback)
+        : data_(data)
+        , callback_(callback) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        Error::CPtr err = args->getCPtr<Error>(0);
+        if (err) {
+            assert(args->length() == 1);
+            if (callback_) (*callback_)(args);
+        } else {
+            Value fd = args->get(1);
+            Size len = data_ ? data_->length() : 0;
+            writeAll(fd, data_, 0, len, 0, callback_);
+        }
+        return 0;
+    }
+
+ private:
+    Buffer::Ptr data_;
+    JsFunction::Ptr callback_;
+};
+
+void writeFile(String::CPtr path, Buffer::Ptr data, JsFunction::Ptr callback) {
+    AfterOpenInWriteFile::Ptr cb(new AfterOpenInWriteFile(data, callback));
+    fs::open(path, node::fs::W, 438, cb);
 }
 
 }  // namespace fs
