@@ -861,7 +861,7 @@ class AfterCloseInTruncate : LIBJ_JS_FUNCTION(AfterCloseInTruncate)
         , callback_(cb) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        assert(args->length() = 1);
+        assert(args->length() == 1);
         if (err_) args->set(1, err_);
         (*callback_)(args);
         return Status::OK;
