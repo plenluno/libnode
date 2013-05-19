@@ -23,6 +23,20 @@ class FsCallback : LIBJ_JS_FUNCTION(FsCallback)
     JsArray::Ptr args_;
 };
 
+TEST(GTestFs, TestWriteFile) {
+    fs::writeFile(
+        String::null(), Buffer::null(), JsFunction::null());  // no crash
+    node::run();
+
+    FsCallback::Ptr cb(new FsCallback());
+    fs::writeFile(
+        String::create("hello.txt"),
+        Buffer::create(String::create("hello")),
+        cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+}
+
 TEST(GTestFs, TestStat) {
     fs::stat(String::null(), JsFunction::null());  // no crash
     node::run();
@@ -32,7 +46,7 @@ TEST(GTestFs, TestStat) {
     node::run();
     ASSERT_TRUE(!!cb->getArgs()->getCPtr<Error>(0));
 
-    fs::stat(String::create("CMakeCache.txt"), cb);
+    fs::stat(String::create("hello.txt"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
     ASSERT_TRUE(!!cb->getArgs()->getCPtr<fs::Stats>(1));
@@ -80,22 +94,83 @@ TEST(GTestFs, TestReadFile) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::readFile(String::create("CMakeCache.txt"), cb);
+    fs::readFile(String::create("hello.txt"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
-    ASSERT_TRUE(!!cb->getArgs()->getCPtr<Buffer>(1));
+    Buffer::CPtr buf = cb->getArgs()->getCPtr<Buffer>(1);
+    ASSERT_TRUE(!!buf);
+    ASSERT_TRUE(buf->toString()->equals(String::create("hello")));
 }
 
-TEST(GTestFs, TestWriteFile) {
-    fs::writeFile(
+TEST(GTestFs, TestAppendFile) {
+    fs::appendFile(
         String::null(), Buffer::null(), JsFunction::null());  // no crash
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::writeFile(
+    fs::appendFile(
         String::create("hello.txt"),
-        Buffer::create(String::create("hello")),
+        Buffer::create(String::create(" world")),
         cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+
+    fs::readFile(String::create("hello.txt"), cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+    Buffer::CPtr buf = cb->getArgs()->getCPtr<Buffer>(1);
+    ASSERT_TRUE(!!buf);
+    ASSERT_TRUE(buf->toString()->equals(String::create("hello world")));
+}
+
+TEST(GTestFs, TestReaddir) {
+    fs::readdir(String::null(), JsFunction::null());  // no crash
+    node::run();
+
+    FsCallback::Ptr cb(new FsCallback());
+    fs::readdir(String::create("."), cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+    JsArray::CPtr a = cb->getArgs()->getCPtr<JsArray>(1);
+    ASSERT_TRUE(a->contains(String::create("hello.txt")));
+}
+
+TEST(GTestFs, TestRename) {
+    fs::rename(
+        String::null(), String::null(), JsFunction::null());  // no crash
+    node::run();
+
+    FsCallback::Ptr cb(new FsCallback());
+    fs::rename(
+        String::create("hello.txt"),
+        String::create("hell.txt"),
+        cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+}
+
+TEST(GTestFs, TestTruncate) {
+    fs::truncate(String::null(), 0, JsFunction::null());  // no crash
+    node::run();
+
+    FsCallback::Ptr cb(new FsCallback());
+    fs::truncate(String::create("hell.txt"), 4, cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+
+    fs::readFile(String::create("hell.txt"), cb);
+    node::run();
+    Buffer::CPtr buf = cb->getArgs()->getCPtr<Buffer>(1);
+    ASSERT_TRUE(!!buf);
+    ASSERT_EQ(4, buf->length());
+}
+
+TEST(GTestFs, TestUnlink) {
+    fs::unlink(String::null(), JsFunction::null());  // no crash
+    node::run();
+
+    FsCallback::Ptr cb(new FsCallback());
+    fs::unlink(String::create("hell.txt"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 }
