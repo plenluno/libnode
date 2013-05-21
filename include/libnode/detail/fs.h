@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <fcntl.h>
+#include <string.h>
 
 #ifdef LIBJ_PF_WINDOWS
     #define O_SYNC 0
