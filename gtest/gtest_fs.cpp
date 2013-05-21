@@ -49,7 +49,11 @@ TEST(GTestFs, TestStat) {
     fs::stat(String::create("hello.txt"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
-    ASSERT_TRUE(!!cb->getArgs()->getCPtr<fs::Stats>(1));
+
+    fs::Stats::Ptr stats = cb->getArgs()->getPtr<fs::Stats>(1);
+    ASSERT_TRUE(!!stats);
+    ASSERT_TRUE(stats->isFile());
+    ASSERT_FALSE(stats->isDirectory());
 }
 
 TEST(GTestFs, TestOpen) {
@@ -165,12 +169,71 @@ TEST(GTestFs, TestTruncate) {
     ASSERT_EQ(4, buf->length());
 }
 
+TEST(GTestFs, TestMkdir) {
+    fs::mkdir(String::null(), JsFunction::null());  // no crash
+    node::run();
+
+    FsCallback::Ptr cb(new FsCallback());
+    fs::mkdir(String::create("mydir"), cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+}
+
+TEST(GTestFs, TestSymlink) {
+    fs::symlink(
+        String::null(), String::null(), JsFunction::null());  // no crash
+    node::run();
+
+    FsCallback::Ptr cb(new FsCallback());
+    fs::symlink(
+        String::create("mydir"),
+        String::create("mylink"),
+        cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+}
+
+TEST(GTestFs, TestLstat) {
+    FsCallback::Ptr cb(new FsCallback());
+    fs::lstat(String::create("mydir"), cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+
+    fs::Stats::Ptr stats = cb->getArgs()->getPtr<fs::Stats>(1);
+    ASSERT_TRUE(!!stats);
+    ASSERT_TRUE(stats->isDirectory());
+    ASSERT_FALSE(stats->isSocket());
+
+    fs::lstat(String::create("mylink"), cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+
+    stats = cb->getArgs()->getPtr<fs::Stats>(1);
+    ASSERT_TRUE(!!stats);
+    ASSERT_TRUE(stats->isSymbolicLink());
+    ASSERT_FALSE(stats->isBlockDevice());
+}
+
+TEST(GTestFs, TestRmdir) {
+    fs::rmdir(String::null(), JsFunction::null());  // no crash
+    node::run();
+
+    FsCallback::Ptr cb(new FsCallback());
+    fs::rmdir(String::create("mydir"), cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+}
+
 TEST(GTestFs, TestUnlink) {
     fs::unlink(String::null(), JsFunction::null());  // no crash
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
     fs::unlink(String::create("hell.txt"), cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+
+    fs::unlink(String::create("mylink"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 }

@@ -5,10 +5,9 @@
 
 #include <libnode/fs.h>
 #include <libnode/uv/error.h>
+#include <libnode/detail/arguments.h>
+#include <libnode/detail/fs/stats.h>
 #include <libnode/detail/uv/fs_req.h>
-
-#include <libj/js_array.h>
-#include <libj/detail/js_object.h>
 
 #include <assert.h>
 #include <fcntl.h>
@@ -76,30 +75,17 @@ static void onError(uv_fs_t* req) {
     assert(req);
     uv::FsReq* fsReq = static_cast<uv::FsReq*>(req->data);
     if (fsReq && fsReq->onComplete) {
-        fsReq->onComplete->call(node::uv::Error::valueOf(req->errorno));
+        LIBNODE_ARGUMENTS_CREATE(args);
+        args->add(node::uv::Error::valueOf(req->errorno));
+        (*fsReq->onComplete)(args);
+        LIBNODE_ARGUMENTS_CLEAR(args);
     }
     delete fsReq;
 }
 
 static node::fs::Stats::Ptr getStats(uv_fs_t* req) {
-    node::fs::Stats::Ptr stats(new libj::detail::JsObject<node::fs::Stats>());
-    const struct stat* s = static_cast<const struct stat*>(req->ptr);
-    stats->put(node::fs::STAT_DEV,     static_cast<Int>(s->st_dev));
-    stats->put(node::fs::STAT_INO,     static_cast<Long>(s->st_ino));
-    stats->put(node::fs::STAT_MODE,    static_cast<Int>(s->st_mode));
-    stats->put(node::fs::STAT_NLINK,   static_cast<Int>(s->st_nlink));
-    stats->put(node::fs::STAT_UID,     static_cast<Int>(s->st_uid));
-    stats->put(node::fs::STAT_GID,     static_cast<Int>(s->st_gid));
-    stats->put(node::fs::STAT_RDEV,    static_cast<Int>(s->st_rdev));
-    stats->put(node::fs::STAT_SIZE,    static_cast<Size>(s->st_size));
-    stats->put(node::fs::STAT_ATIME,   JsDate::create(s->st_atime));
-    stats->put(node::fs::STAT_MTIME,   JsDate::create(s->st_mtime));
-    stats->put(node::fs::STAT_CTIME,   JsDate::create(s->st_ctime));
-#ifdef LIBJ_PF_UNIX
-    stats->put(node::fs::STAT_BLKSIZE, static_cast<Size>(s->st_blksize));
-    stats->put(node::fs::STAT_BLOCKS,  static_cast<Long>(s->st_blocks));
-#endif
-    return stats;
+    return node::fs::Stats::Ptr(
+        new Stats(static_cast<const struct stat*>(req->ptr)));
 }
 
 static Buffer::Ptr getBuffer(uv_fs_t* req) {
@@ -115,7 +101,7 @@ static void after(uv_fs_t* req) {
 
     uv::FsReq* fsReq = static_cast<uv::FsReq*>(req->data);
     if (fsReq->onComplete) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_CREATE(args);
         args->add(Error::null());
         switch (req->fs_type) {
         case UV_FS_STAT:
@@ -153,7 +139,8 @@ static void after(uv_fs_t* req) {
         default:
             break;
         }
-        (*(fsReq->onComplete))(args);
+        (*fsReq->onComplete)(args);
+        LIBNODE_ARGUMENTS_CLEAR(args);
     }
     delete fsReq;
 }
@@ -652,7 +639,7 @@ class AfterStatInReadFile : LIBJ_JS_FUNCTION(AfterStatInReadFile)
             to<Size>(stats->get(node::fs::STAT_SIZE), &size);
             Buffer::Ptr res = Buffer::create(size);
             JsFunction::Ptr cb(new AfterOpenInReadFile(res, size, callback_));
-            fs::open(path_, node::fs::R, 438, cb);
+            fs::open(path_, node::fs::R, 0666, cb);
         }
         return Status::OK;
     }
@@ -816,7 +803,7 @@ void writeFile(
     Buffer::Ptr data,
     JsFunction::Ptr callback) {
     JsFunction::Ptr cb(new AfterOpenInWriteFile(data, callback));
-    fs::open(path, node::fs::W, 438, cb);
+    fs::open(path, node::fs::W, 0666, cb);
 }
 
 class AfterOpenInAppendFile : LIBJ_JS_FUNCTION(AfterOpenInAppendFile)
@@ -850,7 +837,7 @@ void appendFile(
     Buffer::Ptr data,
     JsFunction::Ptr callback) {
     JsFunction::Ptr cb(new AfterOpenInAppendFile(data, callback));
-    fs::open(path, node::fs::A, 438, cb);
+    fs::open(path, node::fs::A, 0666, cb);
 }
 
 class AfterCloseInTruncate : LIBJ_JS_FUNCTION(AfterCloseInTruncate)
@@ -924,7 +911,7 @@ void truncate(
     Size len,
     JsFunction::Ptr callback) {
     AfterOpenInTruncate::Ptr cb(new AfterOpenInTruncate(len, callback));
-    fs::open(path, node::fs::W, 438, cb);
+    fs::open(path, node::fs::W, 0666, cb);
 }
 
 }  // namespace fs

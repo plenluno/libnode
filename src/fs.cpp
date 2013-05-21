@@ -113,7 +113,7 @@ void fsync(
 void mkdir(
     String::CPtr path,
     JsFunction::Ptr callback) {
-    node::detail::fs::mkdir(path, 511, callback);
+    node::detail::fs::mkdir(path, 0777, callback);
 }
 
 void mkdir(
@@ -180,7 +180,7 @@ void open(
     String::CPtr path,
     Flag flag,
     JsFunction::Ptr callback) {
-    node::detail::fs::open(path, flag, 438, callback);
+    node::detail::fs::open(path, flag, 0666, callback);
 }
 
 void open(
