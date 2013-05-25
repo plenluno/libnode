@@ -195,11 +195,13 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (!headers) return false;
 
         StringBuffer::Ptr trailer = StringBuffer::create();
-        Set::CPtr keys = headers->keySet();
-        Iterator::Ptr itr = keys->iterator();
+        typedef libj::JsObject::Entry Entry;
+        TypedSet<Entry::CPtr>::CPtr entrys = headers->entrySet();
+        TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
         while (itr->hasNext()) {
-            String::CPtr key = toCPtr<String>(itr->next());
-            String::CPtr val = headers->getCPtr<String>(key);
+            Entry::CPtr entry = itr->next();
+            String::CPtr key = toCPtr<String>(entry->getKey());
+            String::CPtr val = toCPtr<String>(entry->getValue());
             if (key && val) {
                 trailer->append(key);
                 trailer->appendCStr(": ");
@@ -228,11 +230,12 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         libj::JsObject::CPtr headers;
         if (obj && headers_) {
             libj::JsObject::Ptr hs = renderHeaders();
-            Set::CPtr keys = obj->keySet();
-            Iterator::Ptr itr = keys->iterator();
+            typedef libj::JsObject::Entry Entry;
+            TypedSet<Entry::CPtr>::CPtr entrys = obj->entrySet();
+            TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
             while (itr->hasNext()) {
-                Value key = itr->next();
-                hs->put(key, obj->get(key));
+                Entry::CPtr entry = itr->next();
+                hs->put(entry->getKey(), entry->getValue());
             }
             headers = hs;
         } else if (headers_) {
@@ -536,11 +539,13 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         messageHeader->append(firstLine);
 
         if (headers) {
-            Set::CPtr keys = headers->keySet();
-            Iterator::Ptr itr = keys->iterator();
+            typedef libj::JsObject::Entry Entry;
+            TypedSet<Entry::CPtr>::CPtr entrys = headers->entrySet();
+            TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
             while (itr->hasNext()) {
-                String::CPtr field = toCPtr<String>(itr->next());
-                Value value = headers->get(field);
+                Entry::CPtr entry = itr->next();
+                String::CPtr field = toCPtr<String>(entry->getKey());
+                Value value = entry->getValue();
 
                 JsArray::CPtr ary = toCPtr<JsArray>(value);
                 if (ary) {
@@ -605,11 +610,14 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (!headers_) return libj::JsObject::create();
 
         libj::JsObject::Ptr headers = libj::JsObject::create();
-        Set::CPtr keys = headers_->keySet();
-        Iterator::Ptr itr = keys->iterator();
+        typedef libj::JsObject::Entry Entry;
+        TypedSet<Entry::CPtr>::CPtr entrys = headers_->entrySet();
+        TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
         while (itr->hasNext()) {
-            String::CPtr key = toCPtr<String>(itr->next());
-            headers->put(headerNames_->get(key), headers_->get(key));
+            Entry::CPtr entry = itr->next();
+            headers->put(
+                headerNames_->get(entry->getKey()),
+                entry->getValue());
         }
         return headers;
     }

@@ -35,11 +35,12 @@ Boolean isRegExp(const Value& val) {
 Boolean extend(JsObject::Ptr extended, JsObject::CPtr original) {
     if (!extended) return false;
 
-    Set::CPtr keys = original->keySet();
-    Iterator::Ptr itr = keys->iterator();
+    typedef JsObject::Entry Entry;
+    TypedSet<Entry::CPtr>::CPtr entrys = original->entrySet();
+    TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
     while (itr->hasNext()) {
-        String::CPtr key = toCPtr<String>(itr->next());
-        extended->put(key, original->get(key));
+        Entry::CPtr entry = itr->next();
+        extended->put(entry->getKey(), entry->getValue());
     }
     return true;
 }

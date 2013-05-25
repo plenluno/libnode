@@ -89,17 +89,19 @@ String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
     if (!obj) return String::create();
 
     StringBuffer::Ptr res = StringBuffer::create();
-    Set::CPtr keys = obj->keySet();
-    Iterator::Ptr i = keys->iterator();
+    typedef JsObject::Entry Entry;
+    TypedSet<Entry::CPtr>::CPtr entrys = obj->entrySet();
+    TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
     Boolean first = true;
-    while (i->hasNext()) {
+    while (itr->hasNext()) {
         if (first) {
             first = false;
         } else {
             res->appendChar(sep);
         }
-        Value key = i->next();
-        Value val = obj->get(key);
+        Entry::CPtr entry = itr->next();
+        Value key = entry->getKey();
+        Value val = entry->getValue();
         if (val.instanceof(Type<JsArray>::id())) {
             JsArray::CPtr ary = toCPtr<JsArray>(val);
             for (Size i = 0; i < ary->length(); i++) {

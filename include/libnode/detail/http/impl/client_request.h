@@ -66,11 +66,14 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
     libj::JsObject::CPtr headers =
         options->getCPtr<libj::JsObject>(node::http::OPTION_HEADERS);
     if (headers) {
-        Set::CPtr keys = headers->keySet();
-        Iterator::Ptr itr = keys->iterator();
+        typedef libj::JsObject::Entry Entry;
+        TypedSet<Entry::CPtr>::CPtr entrys = headers->entrySet();
+        TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
         while (itr->hasNext()) {
-            String::CPtr key = toCPtr<String>(itr->next());
-            self->setHeader(key, headers->getCPtr<String>(key));
+            Entry::CPtr entry = itr->next();
+            String::CPtr key = toCPtr<String>(entry->getKey());
+            String::CPtr val = toCPtr<String>(entry->getValue());
+            self->setHeader(key, val);
         }
     }
 
