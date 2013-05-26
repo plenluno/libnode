@@ -25,6 +25,20 @@ extern Symbol::CPtr STAT_MTIME;
 extern Symbol::CPtr STAT_CTIME;
 
 class Stats : LIBJ_JS_OBJECT(Stats)
+ public:
+    virtual Boolean isFile() const = 0;
+
+    virtual Boolean isDirectory() const = 0;
+
+    virtual Boolean isBlockDevice() const = 0;
+
+    virtual Boolean isCharacterDevice() const = 0;
+
+    virtual Boolean isSymbolicLink() const = 0;
+
+    virtual Boolean isFIFO() const = 0;
+
+    virtual Boolean isSocket() const = 0;
 };
 
 }  // namespace fs

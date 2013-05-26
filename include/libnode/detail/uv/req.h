@@ -15,6 +15,8 @@ class Req {
  public:
     Req() : onComplete(JsFunction::null()) {}
 
+    Req(JsFunction::Ptr cb) : onComplete(cb) {}
+
     virtual ~Req() {}
 
     void dispatched() {
