@@ -365,9 +365,7 @@ add_subdirectory(deps/libj)
 
 ## b64
 if(NOT LIBNODE_USE_CRYPTO)
-    add_library(b64
-        deps/b64/src/b64.c
-    )
+    add_subdirectory(deps/b64)
 endif(NOT LIBNODE_USE_CRYPTO)
 
 ## http-parser
