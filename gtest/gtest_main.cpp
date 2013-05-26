@@ -32,12 +32,6 @@ int main(int argc, char** argv) {
     } while (before > after);
 #endif
 
-    if (libj::node::uv::Error::last()) {
-        LIBJ_DEBUG_PRINT(
-            "static: uv::Error::last %p",
-            LIBJ_DEBUG_OBJECT_PTR(libj::node::uv::Error::last()));
-    }
-
     LIBJ_DEBUG_PRINT(
         "remaining objects: %d",
         LIBJ_DEBUG_OBJECT_COUNT);
