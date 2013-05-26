@@ -369,9 +369,7 @@ if(NOT LIBNODE_USE_CRYPTO)
 endif(NOT LIBNODE_USE_CRYPTO)
 
 ## http-parser
-add_library(httpparser
-    deps/http-parser/http_parser.c
-)
+add_subdirectory(deps/http-parser)
 
 ## libuv
 add_subdirectory(deps/libuv)
