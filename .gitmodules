@@ -13,3 +13,6 @@
 [submodule "deps/libuv"]
 	path = deps/libuv
 	url = https://github.com/plenluno/libuv.git
+[submodule "deps/http-parser"]
+	path = deps/http-parser
+	url = https://github.com/plenluno/http-parser.git
