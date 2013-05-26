@@ -15,16 +15,19 @@
     if (!A) { \
         A = libj::JsArray::create(); \
         LIBJ_DEBUG_PRINT( \
-            "static: args@EventEmitter::emit %p", \
+            "static: new arguments %p", \
             LIBJ_DEBUG_OBJECT_PTR(A)); \
     }
 #  define LIBNODE_ARGUMENTS_CLEAR(A) \
     if (A.use_count() == 1) { \
         A->clear(); \
+        LIBJ_DEBUG_PRINT( \
+            "clear: arguments %p", \
+            LIBJ_DEBUG_OBJECT_PTR(A)); \
     } else { \
         A = libj::JsArray::create(); \
         LIBJ_DEBUG_PRINT( \
-            "static: args@EventEmitter::emit %p", \
+            "static: renew arguments %p", \
             LIBJ_DEBUG_OBJECT_PTR(A)); \
     }
 # else
