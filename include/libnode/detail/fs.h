@@ -4,10 +4,14 @@
 #define LIBNODE_DETAIL_FS_H_
 
 #include <libnode/fs.h>
+#include <libnode/path.h>
+#include <libnode/process.h>
 #include <libnode/uv/error.h>
-#include <libnode/detail/arguments.h>
 #include <libnode/detail/fs/stats.h>
 #include <libnode/detail/uv/fs_req.h>
+
+#include <libj/js_regexp.h>
+#include <libj/bridge/abstract_js_object.h>
 
 #include <assert.h>
 #include <fcntl.h>
@@ -75,10 +79,7 @@ static void onError(uv_fs_t* req) {
     assert(req);
     uv::FsReq* fsReq = static_cast<uv::FsReq*>(req->data);
     if (fsReq && fsReq->onComplete) {
-        LIBNODE_ARGUMENTS_CREATE(args);
-        args->add(node::uv::Error::valueOf(req->errorno));
-        (*fsReq->onComplete)(args);
-        LIBNODE_ARGUMENTS_CLEAR(args);
+        fsReq->onComplete->call(node::uv::Error::valueOf(req->errorno));
     }
     delete fsReq;
 }
@@ -101,7 +102,7 @@ static void after(uv_fs_t* req) {
 
     uv::FsReq* fsReq = static_cast<uv::FsReq*>(req->data);
     if (fsReq->onComplete) {
-        LIBNODE_ARGUMENTS_CREATE(args);
+        JsArray::Ptr args = JsArray::create();
         args->add(Error::null());
         switch (req->fs_type) {
         case UV_FS_STAT:
@@ -140,7 +141,6 @@ static void after(uv_fs_t* req) {
             break;
         }
         (*fsReq->onComplete)(args);
-        LIBNODE_ARGUMENTS_CLEAR(args);
     }
     delete fsReq;
 }
@@ -912,6 +912,299 @@ void truncate(
     JsFunction::Ptr callback) {
     AfterOpenInTruncate::Ptr cb(new AfterOpenInTruncate(len, callback));
     fs::open(path, node::fs::W, 0666, cb);
+}
+
+class RealpathContext : LIBJ_JS_OBJECT(RealpathContext)
+ public:
+    String::CPtr original;
+    String::CPtr path;
+    JsObject::Ptr cache;
+    JsFunction::Ptr callback;
+    JsObject::Ptr seenLinks;
+    JsObject::Ptr knownHard;
+    Size pos;
+    String::CPtr current;
+    String::CPtr base;
+    String::CPtr previous;
+    String::CPtr id;
+};
+
+class RealpathContextImpl
+    : public bridge::AbstractJsObject<RealpathContext> {
+};
+
+class UseCacheInRealpath : LIBJ_JS_FUNCTION(UseCacheInRealpath)
+ public:
+    UseCacheInRealpath(
+        String::CPtr cached,
+        JsFunction::Ptr cb)
+        : cached_(cached)
+        , callback_(cb) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        if (callback_) callback_->call(Error::null(), cached_);
+        return Status::OK;
+    }
+
+ private:
+    String::CPtr cached_;
+    JsFunction::Ptr callback_;
+};
+
+static JsFunction::Ptr createLoopInRealpath(RealpathContext::Ptr context);
+
+class StartInRealpath : LIBJ_JS_FUNCTION(StartInRealpath)
+ public:
+    StartInRealpath(RealpathContext::Ptr context) : context_(context) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        static const JsRegExp::Ptr splitRootRe =
+            JsRegExp::create(String::create("^[\\/]*"));
+
+        JsArray::Ptr m = splitRootRe->exec(context_->path);
+        String::CPtr m0 = m->getCPtr<String>(0);
+        context_->pos = m0->length();
+        context_->current = m0;
+        context_->base = m0;
+        context_->previous = String::create();
+
+        JsFunction::Ptr loop = createLoopInRealpath(context_);
+        process::nextTick(loop);
+        return Status::OK;
+    }
+
+ private:
+    RealpathContext::Ptr context_;
+};
+
+class GotResolvedLinkInRealpath : LIBJ_JS_FUNCTION(GotResolvedLinkInRealpath)
+ public:
+    GotResolvedLinkInRealpath(RealpathContext::Ptr context)
+        : context_(context) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        assert(args->length() == 1);
+        args->add(context_->path->substring(context_->pos));
+        context_->path = path::resolve(args);
+        JsFunction::Ptr start(new StartInRealpath(context_));
+        (*start)();
+        return Status::OK;
+    }
+
+ private:
+    RealpathContext::Ptr context_;
+};
+
+class GotTargetInRealpath : LIBJ_JS_FUNCTION(GotTargetInRealpath)
+ public:
+    GotTargetInRealpath(RealpathContext::Ptr context) : context_(context) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        Error::CPtr err = args->getCPtr<Error>(0);
+        if (err) {
+            args->clear();
+            args->add(err);
+            return (*context_->callback)(args);
+        }
+
+        String::CPtr target = args->getCPtr<String>(1);
+        String::CPtr base = args->getCPtr<String>(2);
+        args->clear();
+        args->add(context_->previous);
+        args->add(target);
+        String::CPtr resolvedLink = path::resolve(args);
+
+        JsObject::Ptr cache = context_->cache;
+        if (cache) cache->put(base, resolvedLink);
+        JsFunction::Ptr gotResolvedLink(
+            new GotResolvedLinkInRealpath(context_));
+        args->clear();
+        args->add(resolvedLink);
+        (*gotResolvedLink)(args);
+        return Status::OK;
+    }
+
+ private:
+    RealpathContext::Ptr context_;
+};
+
+class AfterReadlinkInRealpath : LIBJ_JS_FUNCTION(AfterReadlinkInRealpath)
+ public:
+    AfterReadlinkInRealpath(RealpathContext::Ptr context) : context_(context) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        String::CPtr target = args->getCPtr<String>(1);
+        context_->seenLinks->put(context_->id, target);
+        JsFunction::Ptr gotTarget(new GotTargetInRealpath(context_));
+        (*gotTarget)(args);
+        return Status::OK;
+    }
+
+ private:
+    RealpathContext::Ptr context_;
+};
+
+class AfterStatInRealpath : LIBJ_JS_FUNCTION(AfterStatInRealpath)
+ public:
+    AfterStatInRealpath(RealpathContext::Ptr context) : context_(context) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        Error::CPtr err = args->getCPtr<Error>(0);
+        if (err && context_->callback) return (*context_->callback)(args);
+
+        JsFunction::Ptr cb(new AfterReadlinkInRealpath(context_));
+        readlink(context_->base, cb);
+        return Status::OK;
+    }
+
+ private:
+    RealpathContext::Ptr context_;
+};
+
+class GotStatInRealpath : LIBJ_JS_FUNCTION(GotStatInRealpath)
+ public:
+    GotStatInRealpath(RealpathContext::Ptr context) : context_(context) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        Error::CPtr err = args->getCPtr<Error>(0);
+        if (err) {
+            JsFunction::Ptr callback = context_->callback;
+            if (callback) (*callback)(args);
+            return Status::OK;
+        }
+
+        String::CPtr base = context_->base;
+        node::fs::Stats::CPtr stat = args->getCPtr<node::fs::Stats>(1);
+        if (!stat->isSymbolicLink()) {
+            JsObject::Ptr cache = context_->cache;
+            context_->knownHard->put(base, true);
+            if (cache) cache->put(base, base);
+            process::nextTick(createLoopInRealpath(context_));
+            return Status::OK;
+        }
+
+        StringBuffer::Ptr id = StringBuffer::create();
+        id->append(stat->get(node::fs::STAT_DEV));
+        id->appendChar(':');
+        id->append(stat->get(node::fs::STAT_INO));
+        context_->id = id->toString();
+        String::CPtr target =
+            context_->seenLinks->getCPtr<String>(context_->id);
+        if (target) {
+            args->clear();
+            args->add(Error::null());
+            args->add(target);
+            args->add(base);
+            JsFunction::Ptr gotTarget(new GotTargetInRealpath(context_));
+            (*gotTarget)(args);
+            return Status::OK;
+        }
+
+        JsFunction::Ptr cb(new AfterStatInRealpath(context_));
+        fs::stat(base, cb);
+        return Status::OK;
+    }
+
+ private:
+    RealpathContext::Ptr context_;
+};
+
+class LoopInRealpath : LIBJ_JS_FUNCTION(LoopInRealpath)
+ public:
+    LoopInRealpath(RealpathContext::Ptr context) : context_(context) {}
+
+    virtual Value operator()(JsArray::Ptr args) {
+        LIBJ_STATIC_SYMBOL_DEF(symLastIndex, "lastIndex");
+
+        static const JsRegExp::Ptr nextPartRe =
+            JsRegExp::create(
+                String::create("(.*?)(?:[\\/]+|$"),
+                JsRegExp::GLOBAL);
+
+        String::CPtr p = context_->path;
+        JsObject::Ptr cache = context_->cache;
+        if (context_->pos >= p->length()) {
+            JsFunction::Ptr callback = context_->callback;
+            if (cache) cache->put(context_->original, p);
+            if (callback) callback->call(Error::null(), p);
+            return Status::OK;
+        }
+
+        nextPartRe->put(symLastIndex, context_->pos);
+        JsArray::Ptr result = nextPartRe->exec(p);
+        String::CPtr result0 = result->getCPtr<String>(0);
+        String::CPtr result1 = result->getCPtr<String>(1);
+        context_->previous = context_->current;
+        context_->current = result0;
+        context_->base = context_->previous->concat(result1);
+        context_->pos = nextPartRe->lastIndex();
+
+        JsObject::Ptr knownHard = context_->knownHard;
+        String::CPtr base = context_->base;
+        String::CPtr cached;
+        if (cache) {
+            cached = cache->getCPtr<String>(base);
+        } else {
+            cached = String::null();
+        }
+
+        if (knownHard->get(base).equals(true) ||
+            (cached && cached->equals(base))) {
+            process::nextTick(createLoopInRealpath(context_));
+            return Status::OK;
+        }
+
+        if (cached) {
+            JsFunction::Ptr gotResolvedLink(
+                new GotResolvedLinkInRealpath(context_));
+            gotResolvedLink->call(cached);
+            return Status::OK;
+        }
+
+        lstat(base, JsFunction::Ptr(new GotStatInRealpath(context_)));
+        return Status::OK;
+    }
+
+ private:
+    RealpathContext::Ptr context_;
+};
+
+static JsFunction::Ptr createLoopInRealpath(RealpathContext::Ptr context) {
+    return JsFunction::Ptr(new LoopInRealpath(context));
+}
+
+void realpath(
+    String::CPtr path,
+    JsObject::Ptr cache,
+    JsFunction::Ptr callback) {
+    JsArray::Ptr paths = JsArray::create();
+    paths->add(path);
+    String::CPtr original = path::resolve(paths);
+    String::CPtr cached;
+    if (cache) {
+        cached = cache->getCPtr<String>(original);
+    } else {
+        cached = String::null();
+    }
+    if (cached) {
+        JsFunction::Ptr useCache(new UseCacheInRealpath(cached, callback));
+        process::nextTick(useCache);
+        return;
+    }
+
+    RealpathContext::Ptr context(new RealpathContextImpl());
+    context->original  = original;
+    context->path      = original;
+    context->seenLinks = JsObject::create();
+    context->knownHard = JsObject::create();
+    context->pos       = 0;
+    context->current   = String::null();
+    context->base      = String::null();
+    context->previous  = String::null();
+    context->id        = String::null();
+
+    JsFunction::Ptr start(new StartInRealpath(context));
+    (*start)();
 }
 
 }  // namespace fs
