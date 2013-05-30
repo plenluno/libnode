@@ -118,7 +118,7 @@ String::CPtr resolve(JsArray::CPtr paths) {
         if (path) {
             if (path->startsWith(sep())) {
                 resolved = StringBuffer::create();
-            } else {
+            } else if (!path->isEmpty()) {
                 resolved->append(sep());
             }
             resolved->append(path);
