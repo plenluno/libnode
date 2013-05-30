@@ -152,6 +152,15 @@ void readlink(
     String::CPtr path,
     JsFunction::Ptr callback);
 
+void realpath(
+    String::CPtr path,
+    JsFunction::Ptr callback);
+
+void realpath(
+    String::CPtr path,
+    JsObject::Ptr cache,
+    JsFunction::Ptr callback);
+
 void open(
     String::CPtr path,
     Flag flag,

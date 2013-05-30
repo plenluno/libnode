@@ -1118,7 +1118,7 @@ class LoopInRealpath : LIBJ_JS_FUNCTION(LoopInRealpath)
 
         static const JsRegExp::Ptr nextPartRe =
             JsRegExp::create(
-                String::create("(.*?)(?:[\\/]+|$"),
+                String::create("(.*?)(?:[\\/]+|$)"),
                 JsRegExp::GLOBAL);
 
         String::CPtr p = context_->path;
@@ -1135,7 +1135,7 @@ class LoopInRealpath : LIBJ_JS_FUNCTION(LoopInRealpath)
         String::CPtr result0 = result->getCPtr<String>(0);
         String::CPtr result1 = result->getCPtr<String>(1);
         context_->previous = context_->current;
-        context_->current = result0;
+        context_->current = context_->current->concat(result0);
         context_->base = context_->previous->concat(result1);
         context_->pos = nextPartRe->lastIndex();
 
@@ -1195,6 +1195,8 @@ void realpath(
     RealpathContext::Ptr context(new RealpathContextImpl());
     context->original  = original;
     context->path      = original;
+    context->cache     = cache;
+    context->callback  = callback;
     context->seenLinks = JsObject::create();
     context->knownHard = JsObject::create();
     context->pos       = 0;
