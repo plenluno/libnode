@@ -112,10 +112,6 @@ if(LIBNODE_USE_BDWGC AND LIBNODE_USE_THREAD)
     message(FATAL_ERROR "LIBNODE_USE_BDWGC=ON but LIBNODE_USE_THREAD=ON")
 endif(LIBNODE_USE_BDWGC AND LIBNODE_USE_THREAD)
 
-if(LIBNODE_BUILD_TEST AND NOT LIBJ_BUILD_GTEST)
-    message(WARNING "LIBNODE_BUILD_TEST=ON but LIBJ_BUILD_GTEST=OFF")
-endif(LIBNODE_BUILD_TEST AND NOT LIBJ_BUILD_GTEST)
-
 ## status
 message(STATUS "LIBNODE_DEBUG=${LIBNODE_DEBUG}")
 message(STATUS "LIBNODE_TRACE=${LIBNODE_TRACE}")
@@ -141,6 +137,13 @@ set(libnode-include
     deps/libj/deps/boost-svn
 )
 
+if(LIBNODE_USE_BDWGC)
+    set(libnode-include
+        ${libnode-include}
+        deps/libj/deps/bdwgc/include
+    )
+endif(LIBNODE_USE_BDWGC)
+
 if(LIBNODE_BUILD_OPENSSL)
     set(libnode-include
         ${libnode-include}
@@ -148,19 +151,13 @@ if(LIBNODE_BUILD_OPENSSL)
     )
 endif(LIBNODE_BUILD_OPENSSL)
 
-if(LIBJ_BUILD_BDWGC)
+if(LIBNODE_BUILD_TEST)
     set(libnode-include
         ${libnode-include}
-        deps/libj/deps/bdwgc/include
-    )
-endif(LIBJ_BUILD_BDWGC)
-
-if(LIBJ_BUILD_GTEST)
-    set(libnode-include
-        ${libnode-include}
+        deps/libj/deps/googletest
         deps/libj/deps/googletest/include
     )
-endif(LIBJ_BUILD_GTEST)
+endif(LIBNODE_BUILD_TEST)
 
 ## libnode-src
 set(libnode-src
@@ -367,6 +364,9 @@ link_directories(
 ## libj
 add_subdirectory(deps/libj)
 
+## libuv
+add_subdirectory(deps/libuv)
+
 ## b64
 if(NOT LIBNODE_USE_CRYPTO)
     add_subdirectory(deps/b64)
@@ -374,9 +374,6 @@ endif(NOT LIBNODE_USE_CRYPTO)
 
 ## http-parser
 add_subdirectory(deps/http-parser)
-
-## libuv
-add_subdirectory(deps/libuv)
 
 ## openssl
 if(LIBNODE_BUILD_OPENSSL)
@@ -399,5 +396,6 @@ set_target_properties(node PROPERTIES
 # build tests ------------------------------------------------------------------
 
 if(LIBNODE_BUILD_TEST)
+    add_subdirectory(deps/libj/deps/googletest)
     add_subdirectory(gtest)
 endif(LIBNODE_BUILD_TEST)
