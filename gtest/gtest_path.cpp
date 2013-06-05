@@ -119,6 +119,16 @@ TEST(GTestPath, TestResolve) {
     ASSERT_TRUE(resolved->equals(current));
 
     JsArray::Ptr paths = JsArray::create();
+    paths->add(String::null());
+    resolved = path::resolve(paths);
+    ASSERT_TRUE(resolved->equals(current));
+
+    paths->clear();
+    paths->add(String::create());
+    resolved = path::resolve(paths);
+    ASSERT_TRUE(resolved->equals(current));
+
+    paths->clear();
     paths->add(String::create("/foo/bar"));
     paths->add(String::create("./baz"));
     resolved = path::resolve(paths);

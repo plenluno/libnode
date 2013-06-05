@@ -176,6 +176,19 @@ void readlink(
     node::detail::fs::readlink(path, callback);
 }
 
+void realpath(
+    String::CPtr path,
+    JsFunction::Ptr callback) {
+    node::detail::fs::realpath(path, JsObject::null(), callback);
+}
+
+void realpath(
+    String::CPtr path,
+    JsObject::Ptr cache,
+    JsFunction::Ptr callback) {
+    node::detail::fs::realpath(path, cache, callback);
+}
+
 void open(
     String::CPtr path,
     Flag flag,

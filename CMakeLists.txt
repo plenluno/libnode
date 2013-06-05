@@ -27,16 +27,20 @@ endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 # options ----------------------------------------------------------------------
 
-option(LIBNODE_DEBUG           "Debug Mode"       OFF)
-option(LIBNODE_TRACE           "Trace Mode"       OFF)
-option(LIBNODE_USE_BDWGC       "Use BDW-GC"       OFF)
-option(LIBNODE_USE_CXX11       "Use C++11"        OFF)
-option(LIBNODE_USE_SSL         "Use SSL"          OFF)
-option(LIBNODE_USE_CRYPTO      "Use Crypto"       ON)
-option(LIBNODE_USE_THREAD      "Use Threads"      OFF)
-option(LIBNODE_USE_UTF32       "Use UTF32"        OFF)
-option(LIBNODE_BUILD_TEST      "Build Tests"      OFF)
-option(LIBNODE_REMOVE_LISTENER "Remove Listeners" ON)
+option(LIBNODE_DEBUG           "Debug Mode"        OFF)
+option(LIBNODE_TRACE           "Trace Mode"        OFF)
+option(LIBNODE_USE_BDWGC       "Use BDW-GC"        OFF)
+option(LIBNODE_USE_CXX11       "Use C++11"         OFF)
+option(LIBNODE_USE_THREAD      "Use Threads"       OFF)
+option(LIBNODE_USE_UTF32       "Use UTF32"         OFF)
+option(LIBNODE_USE_SSL         "Use SSL"           OFF)
+option(LIBNODE_USE_CRYPTO      "Use Crypto"        ON)
+option(LIBNODE_BUILD_TEST      "Build Tests"       OFF)
+option(LIBNODE_REMOVE_LISTENER "Remove Listeners"  ON)
+
+## internal use
+option(SUBMODULE_LIBJ          "Submodule libj"    ON)
+option(SUBMODULE_OPENSSL       "Submodule OpenSSL" ON)
 
 cmake_dependent_option(LIBJ_DEBUG
     "Debug Mode" ON
@@ -58,13 +62,13 @@ cmake_dependent_option(LIBJ_USE_THREAD
     "Use Threads" ON
     "LIBNODE_USE_THREAD" OFF
 )
+cmake_dependent_option(LIBJ_BUILD_GTEST
+    "Build Google Test" ON
+    "LIBNODE_BUILD_TEST" OFF
+)
 cmake_dependent_option(LIBJ_USE_UTF32
     "Use UTF32" ON
     "LIBNODE_USE_UTF32" OFF
-)
-cmake_dependent_option(LIBNODE_BUILD_OPENSSL
-    "Build OpenSSL" ON
-    "LIBNODE_USE_SSL OR LIBNODE_USE_CRYPTO" OFF
 )
 cmake_dependent_option(OPENSSL_BUILD_LIBSSL
     "Build libssl" ON
@@ -76,6 +80,14 @@ cmake_dependent_option(OPENSSL_BUILD_LIBCRYPTO
 )
 
 ## check
+if(NOT SUBMODULE_LIBJ)
+    message(FATAL_ERROR "SUBMODULE_LIBJ=OFF")
+endif(NOT SUBMODULE_LIBJ)
+
+if(NOT SUBMODULE_OPENSSL)
+    message(FATAL_ERROR "SUBMODULE_OPENSSL=OFF")
+endif(NOT SUBMODULE_OPENSSL)
+
 if(NOT LIBNODE_DEBUG STREQUAL LIBJ_DEBUG)
     message(FATAL_ERROR "LIBNODE_DEBUG != LIBJ_DEBUG")
 endif(NOT LIBNODE_DEBUG STREQUAL LIBJ_DEBUG)
@@ -117,12 +129,11 @@ message(STATUS "LIBNODE_DEBUG=${LIBNODE_DEBUG}")
 message(STATUS "LIBNODE_TRACE=${LIBNODE_TRACE}")
 message(STATUS "LIBNODE_USE_BDWGC=${LIBNODE_USE_BDWGC}")
 message(STATUS "LIBNODE_USE_CXX11=${LIBNODE_USE_CXX11}")
-message(STATUS "LIBNODE_USE_SSL=${LIBNODE_USE_SSL}")
-message(STATUS "LIBNODE_USE_CRYPTO=${LIBNODE_USE_CRYPTO}")
 message(STATUS "LIBNODE_USE_THREAD=${LIBNODE_USE_THREAD}")
 message(STATUS "LIBNODE_USE_UTF32=${LIBNODE_USE_UTF32}")
+message(STATUS "LIBNODE_USE_SSL=${LIBNODE_USE_SSL}")
+message(STATUS "LIBNODE_USE_CRYPTO=${LIBNODE_USE_CRYPTO}")
 message(STATUS "LIBNODE_BUILD_TEST=${LIBNODE_BUILD_TEST}")
-message(STATUS "LIBNODE_BUILD_OPENSSL=${LIBNODE_BUILD_OPENSSL}")
 message(STATUS "LIBNODE_REMOVE_LISTENER=${LIBNODE_REMOVE_LISTENER}")
 
 # variables --------------------------------------------------------------------
@@ -137,26 +148,27 @@ set(libnode-include
     deps/libj/deps/boost-svn
 )
 
-if(LIBNODE_BUILD_OPENSSL)
-    set(libnode-include
-        ${libnode-include}
-        deps/openssl/openssl/include
-    )
-endif(LIBNODE_BUILD_OPENSSL)
-
-if(LIBJ_BUILD_BDWGC)
+if(LIBNODE_USE_BDWGC)
     set(libnode-include
         ${libnode-include}
         deps/libj/deps/bdwgc/include
     )
-endif(LIBJ_BUILD_BDWGC)
+endif(LIBNODE_USE_BDWGC)
 
-if(LIBJ_BUILD_GTEST)
+if(LIBNODE_USE_SSL OR LIBNODE_USE_CRYPTO)
     set(libnode-include
         ${libnode-include}
+        deps/openssl/openssl/include
+    )
+endif(LIBNODE_USE_SSL OR LIBNODE_USE_CRYPTO)
+
+if(LIBNODE_BUILD_TEST)
+    set(libnode-include
+        ${libnode-include}
+        deps/libj/deps/googletest
         deps/libj/deps/googletest/include
     )
-endif(LIBJ_BUILD_GTEST)
+endif(LIBNODE_BUILD_TEST)
 
 ## libnode-src
 set(libnode-src
@@ -363,6 +375,9 @@ link_directories(
 ## libj
 add_subdirectory(deps/libj)
 
+## libuv
+add_subdirectory(deps/libuv)
+
 ## b64
 if(NOT LIBNODE_USE_CRYPTO)
     add_subdirectory(deps/b64)
@@ -371,13 +386,10 @@ endif(NOT LIBNODE_USE_CRYPTO)
 ## http-parser
 add_subdirectory(deps/http-parser)
 
-## libuv
-add_subdirectory(deps/libuv)
-
 ## openssl
-if(LIBNODE_BUILD_OPENSSL)
+if(LIBNODE_USE_SSL OR LIBNODE_USE_CRYPTO)
     add_subdirectory(deps/openssl)
-endif(LIBNODE_BUILD_OPENSSL)
+endif(LIBNODE_USE_SSL OR LIBNODE_USE_CRYPTO)
 
 ## libnode
 add_library(node STATIC

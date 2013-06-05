@@ -5,7 +5,7 @@
 #include <libnode/detail/http/agent.h>
 
 #include <libj/trace.h>
-#include <libj/detail/gc_base.h>
+#include <libj/detail/debug_gc.h>
 
 #include "./gtest_common.h"
 
@@ -22,21 +22,7 @@ int main(int argc, char** argv) {
     libj::node::detail::http::freeGlobalAgent();
 #endif
 
-#ifdef LIBJ_USE_BDWGC
-    libj::Long before;
-    libj::Long after;
-    do {
-        before = LIBJ_DEBUG_OBJECT_COUNT;
-        GC_gcollect();
-        after = LIBJ_DEBUG_OBJECT_COUNT;
-    } while (before > after);
-#endif
-
-    if (libj::node::uv::Error::last()) {
-        LIBJ_DEBUG_PRINT(
-            "static: uv::Error::last %p",
-            LIBJ_DEBUG_OBJECT_PTR(libj::node::uv::Error::last()));
-    }
+    LIBJ_DEBUG_GC;
 
     LIBJ_DEBUG_PRINT(
         "remaining objects: %d",

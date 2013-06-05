@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <libnode/fs.h>
+#include <libnode/path.h>
 
 #include "./gtest_common.h"
 
@@ -212,6 +213,25 @@ TEST(GTestFs, TestLstat) {
     ASSERT_TRUE(!!stats);
     ASSERT_TRUE(stats->isSymbolicLink());
     ASSERT_FALSE(stats->isBlockDevice());
+}
+
+TEST(GTestFs, TestRealpath) {
+    fs::realpath(String::null(), JsFunction::null());  // no crash
+    node::run();
+
+    String::CPtr current = path::resolve(JsArray::null());
+
+    FsCallback::Ptr cb(new FsCallback());
+    fs::realpath(String::null(), cb);
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+    ASSERT_TRUE(cb->getArgs()->getCPtr<String>(1)->equals(current));
+
+    fs::realpath(String::create("./mylink"), cb);
+    String::CPtr real = current->concat(String::create("/mydir"));
+    node::run();
+    ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
+    ASSERT_TRUE(cb->getArgs()->getCPtr<String>(1)->equals(real));
 }
 
 TEST(GTestFs, TestRmdir) {
