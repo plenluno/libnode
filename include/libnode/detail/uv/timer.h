@@ -6,6 +6,8 @@
 #include <libnode/detail/uv/handle.h>
 #include <libnode/detail/uv/write.h>
 
+#include <libj/detail/gc_delete.h>
+
 namespace libj {
 namespace node {
 namespace detail {
@@ -19,6 +21,10 @@ class Timer : public Handle {
         Int r = uv_timer_init(uv_default_loop(), &timer_);
         assert(r == 0);
         timer_.data = this;
+    }
+
+    virtual ~Timer() {
+        LIBJ_GC_DELETE(onTimeout_);
     }
 
     Int start(Long timeout, Long repeat) {
