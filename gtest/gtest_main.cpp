@@ -15,8 +15,10 @@ int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     int r = RUN_ALL_TESTS();
 
+#ifdef LIBNODE_DEBUG
     libj::node::GTestOnEnd::clear();
     libj::node::detail::http::freeGlobalAgent();
+#endif
 
     LIBJ_GC_COLLECT;
 
