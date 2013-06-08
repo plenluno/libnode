@@ -2,6 +2,7 @@
 
 #include <libnode/http.h>
 #include <libnode/node.h>
+#include <libnode/trace.h>
 #include <libj/js_closure.h>
 
 namespace libj {
@@ -28,7 +29,9 @@ void helloServer() {
 }  // namespace libj
 
 int main() {
+    LIBNODE_DEBUG_TRACE_ON;
     namespace node = libj::node;
     node::example::helloServer();
+    LIBNODE_DEBUG_TRACE_OFF;
     return 0;
 }
