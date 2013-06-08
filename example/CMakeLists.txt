@@ -6,21 +6,25 @@ project(example)
 
 if(LIBNODE_USE_CXX11)
     add_executable(libnode-hello-server
-        hello-server.cpp
+        hello_server_cxx11.cpp
     )
-
-    target_link_libraries(libnode-hello-server
-        ${libnode-linklibs}
+else(LIBNODE_USE_CXX11)
+    add_executable(libnode-hello-server
+        hello_server.cpp
     )
-
-    if(APPLE)
-        set_target_properties(libnode-hello-server PROPERTIES
-            COMPILE_FLAGS "${libnode-test-cflags}"
-            LINK_FLAGS "-framework CoreServices"
-        )
-    else(APPLE)
-        set_target_properties(libnode-hello-server PROPERTIES
-            COMPILE_FLAGS "${libnode-test-cflags}"
-        )
-    endif(APPLE)
 endif(LIBNODE_USE_CXX11)
+
+target_link_libraries(libnode-hello-server
+    ${libnode-linklibs}
+)
+
+if(APPLE)
+    set_target_properties(libnode-hello-server PROPERTIES
+        COMPILE_FLAGS "${libnode-test-cflags}"
+        LINK_FLAGS "-framework CoreServices"
+    )
+else(APPLE)
+    set_target_properties(libnode-hello-server PROPERTIES
+        COMPILE_FLAGS "${libnode-test-cflags}"
+    )
+endif(APPLE)

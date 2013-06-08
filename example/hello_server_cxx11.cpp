@@ -1,3 +1,5 @@
+// Copyright (c) 2013 Plenluno All rights reserved.
+
 #include <libnode/http.h>
 #include <libnode/node.h>
 #include <libj/js_closure.h>
