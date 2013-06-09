@@ -958,8 +958,15 @@ class StartInRealpath : LIBJ_JS_FUNCTION(StartInRealpath)
     StartInRealpath(RealpathContext::Ptr context) : context_(context) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        static const JsRegExp::Ptr splitRootRe =
-            JsRegExp::create(String::create("^[\\/]*"));
+        LIBJ_STATIC_CONST_STRING_DEF(strRe, "^[\\/]*");
+
+        static JsRegExp::Ptr splitRootRe = JsRegExp::null();
+        if (!splitRootRe) {
+            splitRootRe = JsRegExp::create(strRe);
+            LIBJ_DEBUG_PRINT(
+                "static: JsRegExp %p",
+                LIBJ_DEBUG_OBJECT_PTR(splitRootRe));
+        }
 
         JsArray::Ptr m = splitRootRe->exec(context_->path);
         String::CPtr m0 = m->getCPtr<String>(0);
@@ -1115,11 +1122,15 @@ class LoopInRealpath : LIBJ_JS_FUNCTION(LoopInRealpath)
 
     virtual Value operator()(JsArray::Ptr args) {
         LIBJ_STATIC_SYMBOL_DEF(symLastIndex, "lastIndex");
+        LIBJ_STATIC_CONST_STRING_DEF(strRe,  "(.*?)(?:[\\/]+|$)");
 
-        static const JsRegExp::Ptr nextPartRe =
-            JsRegExp::create(
-                String::create("(.*?)(?:[\\/]+|$)"),
-                JsRegExp::GLOBAL);
+        static JsRegExp::Ptr nextPartRe = JsRegExp::null();
+        if (!nextPartRe) {
+            nextPartRe = JsRegExp::create(strRe, JsRegExp::GLOBAL);
+            LIBJ_DEBUG_PRINT(
+                "static: JsRegExp %p",
+                LIBJ_DEBUG_OBJECT_PTR(nextPartRe));
+        }
 
         String::CPtr p = context_->path;
         JsObject::Ptr cache = context_->cache;
