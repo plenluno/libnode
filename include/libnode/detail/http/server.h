@@ -11,6 +11,8 @@
 #include <libnode/detail/http/server_request.h>
 #include <libnode/detail/http/server_response.h>
 
+#include <libj/detail/gc_collect.h>
+
 #include <assert.h>
 
 namespace libj {
@@ -310,6 +312,9 @@ class Server : public net::Server<node::http::Server> {
                     msg->assignSocket(msg, socket_);
                 }
             }
+
+            LIBJ_GC_COLLECT_PER(100);
+
             return Status::OK;
         }
 
