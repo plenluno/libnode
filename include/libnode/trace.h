@@ -8,7 +8,7 @@
 #define LIBNODE_DEBUG_TRACE_ON \
     LIBJ_DEBUG_TRACE_ON; \
     LIBJ_DEBUG_TRACE_INCLUDE("^libj::node"); \
-    LIBJ_DEBUG_TRACE_INCLUDE("^libj::(.*)::create");
+    LIBJ_DEBUG_TRACE_INCLUDE("^libj::.*::create");
 
 #define LIBNODE_DEBUG_TRACE_OFF \
     LIBJ_DEBUG_TRACE_OFF;
