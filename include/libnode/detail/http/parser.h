@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_PARSER_H_
 #define LIBNODE_DETAIL_HTTP_PARSER_H_
@@ -73,8 +73,8 @@ class Parser : public Flags {
     }
 
     JsArray::Ptr free() {
-        fields_ = JsArray::create();
-        values_ = JsArray::create();
+        fields_->clear();
+        values_->clear();
 
         JsArray::Ptr keeper = JsArray::create();
         if (socket_) {
@@ -249,8 +249,8 @@ class Parser : public Flags {
         }
 
         url_ = String::null();
-        fields_ = JsArray::create();
-        values_ = JsArray::create();
+        fields_->clear();
+        values_->clear();
 
         if (method_) {
             incoming_->setMethod(method_);
