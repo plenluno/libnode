@@ -3,6 +3,7 @@
 #ifndef LIBNODE_DETAIL_EVENTS_EVENT_EMITTER_H_
 #define LIBNODE_DETAIL_EVENTS_EVENT_EMITTER_H_
 
+#include <libnode/debug_print.h>
 #include <libnode/detail/flags.h>
 
 #include <libj/status.h>
@@ -20,7 +21,9 @@ class EventEmitter
     : public libj::detail::JsObject<I>
     , public node::detail::Flags {
  public:
-    EventEmitter() : events_(libj::JsObject::create()) {}
+    EventEmitter()
+        : maxListeners_(10)
+        , events_(libj::JsObject::create()) {}
 
     virtual void on(String::CPtr event, JsFunction::Ptr listener) {
         addListener(event, listener);
@@ -37,7 +40,11 @@ class EventEmitter
         String::CPtr event, JsFunction::Ptr listener) {
         if (!listener) return;
 
-        listeners(event)->add(listener);
+        JsArray::Ptr ls = listeners(event);
+        ls->add(listener);
+        if (maxListeners_ && ls->length() > maxListeners_) {
+            LIBNODE_DEBUG_PRINT("%d listeners added", ls->length());
+        }
         emit(I::EVENT_NEW_LISTENER);
     }
 
@@ -69,6 +76,10 @@ class EventEmitter
 
     virtual void removeAllListeners(String::CPtr event) {
         events_->remove(event);
+    }
+
+    virtual void setMaxListeners(Size max) {
+        maxListeners_ = max;
     }
 
     virtual JsArray::Ptr listeners(String::CPtr event) {
@@ -243,6 +254,7 @@ class EventEmitter
     };
 
  private:
+    Size maxListeners_;
     libj::JsObject::Ptr events_;
 };
 

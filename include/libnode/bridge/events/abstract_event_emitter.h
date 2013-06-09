@@ -47,6 +47,10 @@ class AbstractEventEmitter : public libj::bridge::AbstractJsObject<I> {
         ee_->removeAllListeners(event);
     }
 
+    virtual void setMaxListeners(Size max) {
+        ee_->setMaxListeners(max);
+    }
+
     virtual JsArray::Ptr listeners(String::CPtr event) {
         return ee_->listeners(event);
     }

@@ -38,6 +38,8 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
 
     virtual void removeAllListeners(String::CPtr event) = 0;
 
+    virtual void setMaxListeners(Size max) = 0;
+
     virtual JsArray::Ptr listeners(String::CPtr event) = 0;
 
     virtual Boolean emit(
