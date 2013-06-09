@@ -35,13 +35,15 @@ option(LIBNODE_USE_THREAD      "Use Threads"       OFF)
 option(LIBNODE_USE_UTF32       "Use UTF32"         OFF)
 option(LIBNODE_USE_SSL         "Use SSL"           OFF)
 option(LIBNODE_USE_CRYPTO      "Use Crypto"        ON)
-option(LIBNODE_BUILD_TEST      "Build Tests"       OFF)
 option(LIBNODE_REMOVE_LISTENER "Remove Listeners"  ON)
+option(LIBNODE_BUILD_TEST      "Build Tests"       OFF)
+option(LIBNODE_BUILD_EXAMPLE   "Build Examples"    OFF)
 
-## internal use
+## internal
 option(SUBMODULE_LIBJ          "Submodule libj"    ON)
 option(SUBMODULE_OPENSSL       "Submodule OpenSSL" ON)
 
+## dependent
 cmake_dependent_option(LIBJ_DEBUG
     "Debug Mode" ON
     "LIBNODE_DEBUG" OFF
@@ -360,7 +362,8 @@ string(REPLACE ";" " " libnode-test-cflags "${libnode-test-cflags}")
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h )
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/libnode/config.h
+)
 
 # build libraries --------------------------------------------------------------
 
@@ -410,6 +413,8 @@ if(LIBNODE_BUILD_TEST)
     add_subdirectory(gtest)
 endif(LIBNODE_BUILD_TEST)
 
-# build example ----------------------------------------------------------------
+# build examples ---------------------------------------------------------------
 
-add_subdirectory(example)
+if(LIBNODE_BUILD_EXAMPLE)
+    add_subdirectory(example)
+endif(LIBNODE_BUILD_EXAMPLE)
