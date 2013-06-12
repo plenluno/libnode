@@ -4,27 +4,49 @@ cmake_minimum_required(VERSION 2.8)
 
 project(example)
 
+# hello-server
 if(LIBNODE_USE_CXX11)
-    add_executable(libnode-hello-server
+    add_executable(hello-server
         hello_server_cxx11.cpp
     )
 else(LIBNODE_USE_CXX11)
-    add_executable(libnode-hello-server
+    add_executable(hello-server
         hello_server.cpp
     )
 endif(LIBNODE_USE_CXX11)
 
-target_link_libraries(libnode-hello-server
+target_link_libraries(hello-server
     ${libnode-linklibs}
 )
 
 if(APPLE)
-    set_target_properties(libnode-hello-server PROPERTIES
+    set_target_properties(hello-server PROPERTIES
         COMPILE_FLAGS "${libnode-test-cflags}"
         LINK_FLAGS "-framework CoreServices"
     )
 else(APPLE)
-    set_target_properties(libnode-hello-server PROPERTIES
+    set_target_properties(hello-server PROPERTIES
+        COMPILE_FLAGS "${libnode-test-cflags}"
+    )
+endif(APPLE)
+
+# http-client
+add_executable(http-client
+    http_client.cpp
+)
+
+target_link_libraries(http-client
+    ${libnode-linklibs}
+    gflags
+)
+
+if(APPLE)
+    set_target_properties(http-client PROPERTIES
+        COMPILE_FLAGS "${libnode-test-cflags}"
+        LINK_FLAGS "-framework CoreServices"
+    )
+else(APPLE)
+    set_target_properties(http-client PROPERTIES
         COMPILE_FLAGS "${libnode-test-cflags}"
     )
 endif(APPLE)
