@@ -5,15 +5,9 @@ cmake_minimum_required(VERSION 2.8)
 project(example)
 
 # hello-server
-if(LIBNODE_USE_CXX11)
-    add_executable(hello-server
-        hello_server_cxx11.cpp
-    )
-else(LIBNODE_USE_CXX11)
-    add_executable(hello-server
-        hello_server.cpp
-    )
-endif(LIBNODE_USE_CXX11)
+add_executable(hello-server
+    hello_server.cpp
+)
 
 target_link_libraries(hello-server
     ${libnode-linklibs}

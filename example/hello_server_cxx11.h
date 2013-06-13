@@ -1,5 +1,8 @@
 // Copyright (c) 2013 Plenluno All rights reserved.
 
+#ifndef LIBNODE_EXAMPLE_HELLO_SERVER_CXX11_H_
+#define LIBNODE_EXAMPLE_HELLO_SERVER_CXX11_H_
+
 #include <libnode/http.h>
 #include <libnode/node.h>
 #include <libnode/trace.h>
@@ -28,10 +31,4 @@ void helloServer() {
 }  // namespace node
 }  // namespace libj
 
-int main() {
-    LIBNODE_DEBUG_TRACE_ON;
-    namespace node = libj::node;
-    node::example::helloServer();
-    LIBNODE_DEBUG_TRACE_OFF;
-    return 0;
-}
+#endif  // LIBNODE_EXAMPLE_HELLO_SERVER_CXX11_H_
