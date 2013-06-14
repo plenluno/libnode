@@ -10,6 +10,7 @@
 
 #include <libj/this.h>
 #include <libj/string_buffer.h>
+#include <libj/detail/gc_collect.h>
 
 namespace libj {
 namespace node {
@@ -188,6 +189,9 @@ class Agent : public events::EventEmitter<node::http::Agent> {
                 socket->destroy();
                 socket->remove(symRequest);
             }
+
+            LIBJ_GC_COLLECT_PER(100);
+
             return Status::OK;
         }
 
