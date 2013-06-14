@@ -112,6 +112,7 @@ int main(int argc, char** argv) {
     google::ParseCommandLineFlags(&argc, &argv, true);
     if (argc < 2) {
         libj::console::log(usage.data());
+        return 0;
     }
 
     LIBNODE_DEBUG_TRACE_ON;
