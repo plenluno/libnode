@@ -68,10 +68,11 @@ class OnResponse : LIBJ_JS_FUNCTION(OnResponse)
 class OnError : LIBJ_JS_FUNCTION(OnError)
  public:
     OnError(
-        Int id_,
+        Int id,
         String::CPtr method,
         String::CPtr url)
-        : method_(method)
+        : id_(id)
+        , method_(method)
         , url_(url) {}
 
     virtual Value operator()(JsArray::Ptr args) {
