@@ -45,7 +45,11 @@ class Stats : public libj::detail::JsObject<node::fs::Stats> {
     }
 
     virtual Boolean isBlockDevice() const {
+#ifdef LIBJ_PF_UNIX
         return (mode_ & S_IFMT) == S_IFBLK;
+#else
+        return false;
+#endif
     }
 
     virtual Boolean isCharacterDevice() const {
@@ -57,11 +61,19 @@ class Stats : public libj::detail::JsObject<node::fs::Stats> {
     }
 
     virtual Boolean isFIFO() const {
+#ifdef LIBJ_PF_UNIX
         return (mode_ & S_IFMT) == S_IFIFO;
-    }
+#else
+        return false;
+#endif
+	}
 
     virtual Boolean isSocket() const {
+#ifdef LIBJ_PF_UNIX
         return (mode_ & S_IFMT) == S_IFSOCK;
+#else
+        return false;
+#endif
     }
 
  private:
