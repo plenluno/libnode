@@ -8,6 +8,8 @@
 #include <libj/js_date.h>
 #include <libj/detail/js_object.h>
 
+#include <uv.h>
+
 namespace libj {
 namespace node {
 namespace detail {
