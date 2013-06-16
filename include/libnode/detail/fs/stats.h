@@ -66,7 +66,7 @@ class Stats : public libj::detail::JsObject<node::fs::Stats> {
 #else
         return false;
 #endif
-	}
+    }
 
     virtual Boolean isSocket() const {
 #ifdef LIBJ_PF_UNIX
