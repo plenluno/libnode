@@ -12,7 +12,7 @@ namespace libj {
 namespace node {
 namespace example {
 
-void helloServer() {
+inline void helloServer() {
     auto srv = http::Server::create(
         JsClosure::create([] (JsArray::Ptr args) {
             LIBJ_STATIC_CONST_STRING_DEF(TEXT_PLAIN,  "text/plain");

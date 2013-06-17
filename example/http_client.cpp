@@ -14,7 +14,7 @@ namespace libj {
 namespace node {
 namespace example {
 
-void printRequest(Int id, String::CPtr method, String::CPtr url) {
+inline void printRequest(Int id, String::CPtr method, String::CPtr url) {
     console::printf(console::LEVEL_NORMAL, "[%d] ", id);
     console::printv(console::LEVEL_NORMAL, "%v %v\n", method, url);
 }
@@ -87,7 +87,7 @@ class OnError : LIBJ_JS_FUNCTION(OnError)
     String::CPtr url_;
 };
 
-void httpClient(String::CPtr url) {
+inline void httpClient(String::CPtr url) {
     LIBJ_STATIC_SYMBOL_DEF(symGet, "GET");
 
     http::ClientRequest::Ptr req;
