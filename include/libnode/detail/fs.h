@@ -18,7 +18,7 @@
 #include <string.h>
 
 #ifdef LIBJ_PF_WINDOWS
-    #define O_SYNC 0
+#define O_SYNC 0
 #endif
 
 namespace libj {

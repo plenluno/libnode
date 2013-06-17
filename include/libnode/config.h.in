@@ -11,7 +11,7 @@
 #cmakedefine LIBNODE_REMOVE_LISTENER
 
 #ifndef LIBNODE_USE_BDWGC
-    #define LIBNODE_USE_SP
+#define LIBNODE_USE_SP
 #endif
 
 #endif  // LIBNODE_CONFIG_H_

@@ -15,7 +15,7 @@
 #include <libj/typed_value_holder.h>
 
 #ifdef LIBJ_PF_WINDOWS
-    #include <libj/platform/windows.h>
+#include <libj/platform/windows.h>
 #endif
 
 #include <assert.h>

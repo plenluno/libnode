@@ -3,9 +3,9 @@
 #include <libnode/config.h>
 
 #ifdef LIBNODE_USE_CXX11
-    #include "./hello_server_cxx11.h"
+# include "./hello_server_cxx11.h"
 #else
-    #include "./hello_server.h"
+# include "./hello_server.h"
 #endif
 
 int main() {

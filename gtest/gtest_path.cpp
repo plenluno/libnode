@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/path.h>
@@ -6,9 +6,9 @@
 #include <libj/js_object.h>
 
 #ifdef LIBJ_PF_WINDOWS
-    #include <libj/platform/windows.h>
+# include <libj/platform/windows.h>
 #else
-    #include <unistd.h>
+# include <unistd.h>
 #endif
 
 namespace libj {

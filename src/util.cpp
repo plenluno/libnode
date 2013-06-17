@@ -8,12 +8,13 @@
 #include <libj/js_regexp.h>
 
 #include <assert.h>
+
 #ifdef LIBNODE_USE_CRYPTO
-    #include <openssl/bio.h>
-    #include <openssl/buffer.h>
-    #include <openssl/evp.h>
+# include <openssl/bio.h>
+# include <openssl/buffer.h>
+# include <openssl/evp.h>
 #else
-    #include <b64/b64.h>
+# include <b64/b64.h>
 #endif
 
 namespace libj {

@@ -98,12 +98,13 @@ class Parser : public Flags {
     }
 
  private:
-    #define LIBNODE_STR_UPDATE(STR, AT, LEN) \
-        if (!STR) { \
-            STR = String::create(AT, String::UTF8, LEN); \
-        } else { \
-            STR = STR->concat(String::create(AT, String::UTF8, LEN)); \
+    static String::CPtr concat(String::CPtr s, const char* at, size_t len) {
+        if (s) {
+            return s->concat(String::create(at, String::UTF8, len));
+        } else {
+            return String::create(at, String::UTF8, len);
         }
+    }
 
     static int onMessageBegin(http_parser* parser) {
         Parser* self = static_cast<Parser*>(parser->data);
@@ -115,7 +116,7 @@ class Parser : public Flags {
 
     static int onUrl(http_parser* parser, const char* at, size_t len) {
         Parser* self = static_cast<Parser*>(parser->data);
-        LIBNODE_STR_UPDATE(self->url_, at, len);
+        self->url_ = concat(self->url_, at, len);
         return 0;
     }
 
@@ -132,7 +133,7 @@ class Parser : public Flags {
 
         assert(fields->size() == numValues + 1);
         String::CPtr field = fields->getCPtr<String>(numValues);
-        LIBNODE_STR_UPDATE(field, at, len);
+        field = concat(field, at, len);
         fields->set(numValues, field);
         return 0;
     }
@@ -150,7 +151,7 @@ class Parser : public Flags {
 
         assert(values->size() == numFields);
         String::CPtr value = values->getCPtr<String>(numFields - 1);
-        LIBNODE_STR_UPDATE(value, at, len);
+        value = concat(value, at, len);
         values->set(numFields - 1, value);
         return 0;
     }
@@ -221,8 +222,6 @@ class Parser : public Flags {
         self->onMessageComplete();
         return 0;
     }
-
-    #undef LIBNODE_STR_UPDATE
 
  private:
     int onHeadersComplete() {

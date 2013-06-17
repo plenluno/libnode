@@ -6,9 +6,9 @@
 #include <libj/string_buffer.h>
 
 #ifdef LIBJ_PF_WINDOWS
-    #include <libj/platform/windows.h>
+# include <libj/platform/windows.h>
 #else
-    #include <unistd.h>
+# include <unistd.h>
 #endif
 
 #include <assert.h>
