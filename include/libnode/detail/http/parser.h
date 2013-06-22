@@ -185,6 +185,30 @@ class Parser : public Flags {
             case HTTP_TRACE:
                 method = node::http::METHOD_TRACE;
                 break;
+            case HTTP_COPY:
+                method = node::http::METHOD_COPY;
+                break;
+            case HTTP_LOCK:
+                method = node::http::METHOD_LOCK;
+                break;
+            case HTTP_MKCOL:
+                method = node::http::METHOD_MKCOL;
+                break;
+            case HTTP_MOVE:
+                method = node::http::METHOD_MOVE;
+                break;
+            case HTTP_PROPFIND:
+                method = node::http::METHOD_PROPFIND;
+                break;
+            case HTTP_PROPPATCH:
+                method = node::http::METHOD_PROPPATCH;
+                break;
+            case HTTP_SEARCH:
+                method = node::http::METHOD_SEARCH;
+                break;
+            case HTTP_UNLOCK:
+                method = node::http::METHOD_UNLOCK;
+                break;
             default:
                 method = String::create();
             }
