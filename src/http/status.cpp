@@ -11,6 +11,7 @@ namespace http {
 #define LIBNODE_HTTP_STATUS_MSG_MAP(GEN) \
     GEN(CONTINUE, "Continue") \
     GEN(SWITCHING_PROTOCOLS, "Switching Protocols") \
+    GEN(PROCESSING, "Processing") \
     GEN(OK, "OK") \
     GEN(CREATED, "Created") \
     GEN(ACCEPTED, "Accepted") \
@@ -18,6 +19,7 @@ namespace http {
     GEN(NO_CONTENT, "No Content") \
     GEN(RESET_CONTENT, "Reset Content") \
     GEN(PARTIAL_CONTENT, "Partial Content") \
+    GEN(MULTI_STATUS, "Multi-Status") \
     GEN(MULTIPLE_CHOICES, "Multiple Choices") \
     GEN(MOVED_PERMANENTLY, "Moved Permanently") \
     GEN(FOUND, "Found") \
@@ -43,12 +45,16 @@ namespace http {
     GEN(UNSUPPORTED_MEDIA_TYPE, "Unsupported Media Type") \
     GEN(REQUESTED_RANGE_NOT_SATISFIABLE, "Requested Range Not Satisfiable") \
     GEN(EXPECTATION_FAILED, "Expectation Failed") \
+    GEN(UNPROCESSABLE_ENTITY, "Unprocessable Entity") \
+    GEN(LOCKED, "Locked") \
+    GEN(FAILED_DEPENDENCY, "Failed Dependency") \
     GEN(INTERNAL_SERVER_ERROR, "Internal Server Error") \
     GEN(NOT_IMPLEMENTED, "Not Implemented") \
     GEN(BAD_GATEWAY, "Bad Gateway") \
     GEN(SERVICE_UNAVAILABLE, "Service Unavailable") \
     GEN(GATEWAY_TIMEOUT, "Gateway Timeout") \
-    GEN(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported")
+    GEN(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported") \
+    GEN(INSUFFICIENT_STORAGE, "Insufficient Storage")
 
 #define LIBNODE_HTTP_STATUS_MSG_DEF_GEN(NAME, MESSAGE) \
     LIBJ_STATIC_CONST_STRING_DEF(MSG_##NAME, MESSAGE)
