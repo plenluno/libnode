@@ -81,7 +81,15 @@ namespace http {
     GEN(HEADER_SEC_WEBSOCKET_EXTENSIONS, "Sec-WebSocket-Extensions") \
     GEN(HEADER_SEC_WEBSOCKET_ACCEPT, "Sec-WebSocket-Accept") \
     GEN(HEADER_SEC_WEBSOCKET_PROTOCOL, "Sec-WebSocket-Protocol") \
-    GEN(HEADER_SEC_WEBSOCKET_VERSION, "Sec-WebSocket-Version")
+    GEN(HEADER_SEC_WEBSOCKET_VERSION, "Sec-WebSocket-Version") \
+    GEN(HEADER_DAV, "DAV") \
+    GEN(HEADER_DEPTH, "Depth") \
+    GEN(HEADER_DESTINATION, "Destination") \
+    GEN(HEADER_IF, "If") \
+    GEN(HEADER_LOCK_TOKEN, "Lock-Token") \
+    GEN(HEADER_OVERWRITE, "Overwrite") \
+    GEN(HEADER_STATUS_URI, "Status-URI") \
+    GEN(HEADER_TIMEOUT, "Timeout")
 
 #define LIBNODE_HTTP_HEADER_DECL_GEN(NAME, VAL) \
     extern Symbol::CPtr NAME;
