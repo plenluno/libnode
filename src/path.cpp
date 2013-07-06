@@ -3,7 +3,7 @@
 #include <libnode/path.h>
 
 #include <libj/symbol.h>
-#include <libj/string_buffer.h>
+#include <libj/string_builder.h>
 
 #ifdef LIBJ_PF_WINDOWS
 # include <libj/platform/windows.h>
@@ -60,7 +60,7 @@ String::CPtr normalize(String::CPtr path) {
         }
     }
 
-    StringBuffer::Ptr normal = StringBuffer::create();
+    StringBuilder::Ptr normal = StringBuilder::create();
     if (absolute)
         normal->append(sep());
     Size numDirs = dirs->size();
@@ -82,7 +82,7 @@ String::CPtr join(JsArray::CPtr paths) {
 
     if (!paths) return symCurrent;
 
-    StringBuffer::Ptr joined = StringBuffer::create();
+    StringBuilder::Ptr joined = StringBuilder::create();
     Size len = paths->length();
     Boolean first = true;
     for (Size i = 0; i < len; i++) {
@@ -110,14 +110,14 @@ static String::CPtr getCwd() {
 String::CPtr resolve(JsArray::CPtr paths) {
     if (!paths) return getCwd();
 
-    StringBuffer::Ptr resolved = StringBuffer::create();
+    StringBuilder::Ptr resolved = StringBuilder::create();
     resolved->append(getCwd());
     Size len = paths->length();
     for (Size i = 0; i < len; i++) {
         String::CPtr path = toCPtr<String>(paths->get(i));
         if (path) {
             if (path->startsWith(sep())) {
-                resolved = StringBuffer::create();
+                resolved = StringBuilder::create();
             } else if (!path->isEmpty()) {
                 resolved->append(sep());
             }

@@ -254,7 +254,7 @@ class Parser : public Flags {
         incoming_->setHttpVersionMajor(majorVer_);
         incoming_->setHttpVersionMinor(minorVer_);
 
-        StringBuffer::Ptr httpVer = StringBuffer::create();
+        StringBuilder::Ptr httpVer = StringBuilder::create();
         httpVer->append(majorVer_);
         httpVer->appendChar('.');
         httpVer->append(minorVer_);

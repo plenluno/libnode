@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_IMPL_CLIENT_REQUEST_H_
 #define LIBNODE_DETAIL_HTTP_IMPL_CLIENT_REQUEST_H_
@@ -82,7 +82,7 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
         if (port->equals(defaultPort)) {
             self->setHeader(node::http::HEADER_HOST, host);
         } else {
-            StringBuffer::Ptr hostHeader = StringBuffer::create();
+            StringBuilder::Ptr hostHeader = StringBuilder::create();
             hostHeader->append(host);
             hostHeader->appendChar(':');
             hostHeader->append(port);
@@ -93,7 +93,7 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
     String::CPtr auth = options->getCPtr<String>(node::http::OPTION_AUTH);
     if (auth && !self->getHeader(node::http::HEADER_AUTHORIZATION)) {
         Buffer::Ptr authBuf = Buffer::create(auth);
-        StringBuffer::Ptr basicAuth = StringBuffer::create();
+        StringBuilder::Ptr basicAuth = StringBuilder::create();
         basicAuth->appendCStr("Basic ");
         basicAuth->append(authBuf->toString(Buffer::BASE64));
         self->setHeader(
@@ -110,7 +110,7 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
     }
 
     if (self->getHeader(node::http::HEADER_EXPECT)) {
-        StringBuffer::Ptr firstLine = StringBuffer::create();
+        StringBuilder::Ptr firstLine = StringBuilder::create();
         firstLine->append(method);
         firstLine->appendChar(' ');
         firstLine->append(self->path_);

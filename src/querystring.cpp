@@ -1,10 +1,10 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <libnode/querystring.h>
 #include <libnode/util.h>
 
 #include <libj/js_array.h>
-#include <libj/string_buffer.h>
+#include <libj/string_builder.h>
 
 #include <assert.h>
 
@@ -88,7 +88,7 @@ static String::CPtr toString(Value val) {
 String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
     if (!obj) return String::create();
 
-    StringBuffer::Ptr res = StringBuffer::create();
+    StringBuilder::Ptr res = StringBuilder::create();
     typedef JsObject::Entry Entry;
     TypedSet<Entry::CPtr>::CPtr entrys = obj->entrySet();
     TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();

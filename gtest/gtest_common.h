@@ -9,7 +9,7 @@
 #include <libj/console.h>
 #include <libj/debug_print.h>
 #include <libj/js_function.h>
-#include <libj/string_buffer.h>
+#include <libj/string_builder.h>
 
 #include <assert.h>
 
@@ -20,7 +20,7 @@ class GTestOnData : LIBJ_JS_FUNCTION(GTestOnData)
  public:
     GTestOnData()
         : bufs_(JsArray::create())
-        , strBuf_(StringBuffer::create()) {}
+        , strBuf_(StringBuilder::create()) {}
 
     static UInt count() { return count_; }
 
@@ -56,7 +56,7 @@ class GTestOnData : LIBJ_JS_FUNCTION(GTestOnData)
     static UInt count_;
 
     JsArray::Ptr bufs_;
-    StringBuffer::Ptr strBuf_;
+    StringBuilder::Ptr strBuf_;
 };
 
 class GTestOnClose :  LIBJ_JS_FUNCTION(GTestOnClose)

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <libnode/url.h>
 
@@ -65,7 +65,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
 
     if (scheme) {
         scheme = scheme->toLowerCase();
-        StringBuffer::Ptr sb = StringBuffer::create();
+        StringBuilder::Ptr sb = StringBuilder::create();
         sb->append(scheme);
         sb->appendChar(':');
         urlObj->put(PROTOCOL, sb->toString());
@@ -76,7 +76,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
         urlObj->put(HOSTNAME, host);
 
         if (port) {
-            StringBuffer::Ptr sb = StringBuffer::create();
+            StringBuilder::Ptr sb = StringBuilder::create();
             sb->append(host);
             sb->appendChar(':');
             sb->append(port);
@@ -94,7 +94,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
         urlObj->put(PATHNAME, path);
 
         if (query) {
-            StringBuffer::Ptr sb = StringBuffer::create();
+            StringBuilder::Ptr sb = StringBuilder::create();
             sb->append(path);
             sb->appendChar('?');
             sb->append(query);
@@ -107,14 +107,14 @@ JsObject::Ptr parse(String::CPtr urlStr) {
     if (query) {
         urlObj->put(QUERY, query);
 
-        StringBuffer::Ptr sb = StringBuffer::create();
+        StringBuilder::Ptr sb = StringBuilder::create();
         sb->appendChar('?');
         sb->append(query);
         urlObj->put(SEARCH, sb->toString());
     }
 
     if (fragment) {
-        StringBuffer::Ptr sb = StringBuffer::create();
+        StringBuilder::Ptr sb = StringBuilder::create();
         sb->appendChar('#');
         sb->append(fragment);
         urlObj->put(HASH, sb->toString());

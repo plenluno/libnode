@@ -167,7 +167,7 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
                    field->startsWith(symExtPrefix)) {
             String::CPtr vals = headers_->getCPtr<String>(field);
             if (vals) {
-                StringBuffer::Ptr sb = StringBuffer::create();
+                StringBuilder::Ptr sb = StringBuilder::create();
                 sb->append(vals);
                 sb->appendCStr(", ");
                 sb->append(value);

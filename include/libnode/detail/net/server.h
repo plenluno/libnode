@@ -6,7 +6,7 @@
 #include <libnode/config.h>
 #include <libnode/detail/net/socket.h>
 
-#include <libj/string_buffer.h>
+#include <libj/string_builder.h>
 
 namespace libj {
 namespace node {
@@ -194,7 +194,7 @@ class Server : public events::EventEmitter<I> {
             process::nextTick(emitError);
             return false;
         } else {
-            StringBuffer::Ptr key = StringBuffer::create();
+            StringBuilder::Ptr key = StringBuilder::create();
             key->append(String::valueOf(addressType));
             key->appendChar(':');
             key->append(address);

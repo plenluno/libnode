@@ -9,7 +9,7 @@
 #include <libnode/detail/http/outgoing_message.h>
 
 #include <libj/this.h>
-#include <libj/string_buffer.h>
+#include <libj/string_builder.h>
 #include <libj/detail/gc_collect.h>
 
 namespace libj {
@@ -50,7 +50,7 @@ class Agent : public events::EventEmitter<node::http::Agent> {
         String::CPtr localAddress) {
         LIBJ_STATIC_SYMBOL_DEF(symRequest, "$request");
 
-        StringBuffer::Ptr sb = StringBuffer::create();
+        StringBuilder::Ptr sb = StringBuilder::create();
         sb->append(host);
         sb->appendChar(':');
         sb->append(port);
@@ -166,7 +166,7 @@ class Agent : public events::EventEmitter<node::http::Agent> {
             String::CPtr port = args->getCPtr<String>(2);
             String::CPtr localAddress = args->getCPtr<String>(3);
 
-            StringBuffer::Ptr sb = StringBuffer::create();
+            StringBuilder::Ptr sb = StringBuilder::create();
             sb->append(host);
             sb->appendChar(':');
             sb->append(port);

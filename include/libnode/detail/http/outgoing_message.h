@@ -63,7 +63,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (hasFlag(CHUNKED_ENCODING)) {
             if (str) {
                 Size len = Buffer::byteLength(str, enc);
-                StringBuffer::Ptr data = StringBuffer::create();
+                StringBuilder::Ptr data = StringBuilder::create();
                 data->append(toHex(len));
                 data->appendCStr("\r\n");
                 data->append(str);
@@ -108,7 +108,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (hot) {
             if (hasFlag(CHUNKED_ENCODING)) {
                 Size len = Buffer::byteLength(str, enc);
-                StringBuffer::Ptr chunk = StringBuffer::create();
+                StringBuilder::Ptr chunk = StringBuilder::create();
                 chunk->append(header_);
                 chunk->append(toHex(len));
                 chunk->appendCStr("\r\n");
@@ -127,7 +127,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
         if (!hot) {
             if (hasFlag(CHUNKED_ENCODING)) {
-                StringBuffer::Ptr chunk = StringBuffer::create();
+                StringBuilder::Ptr chunk = StringBuilder::create();
                 chunk->appendCStr("0\r\n");
                 chunk->append(trailer_);
                 chunk->appendCStr("\r\n");
@@ -194,7 +194,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
     Boolean addTrailers(libj::JsObject::CPtr headers) {
         if (!headers) return false;
 
-        StringBuffer::Ptr trailer = StringBuffer::create();
+        StringBuilder::Ptr trailer = StringBuilder::create();
         typedef libj::JsObject::Entry Entry;
         TypedSet<Entry::CPtr>::CPtr entrys = headers->entrySet();
         TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
@@ -244,7 +244,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             headers = obj;
         }
 
-        StringBuffer::Ptr statusLine = StringBuffer::create();
+        StringBuilder::Ptr statusLine = StringBuilder::create();
         statusLine->appendCStr("HTTP/1.1 ");
         statusLine->append(status->code());
         statusLine->appendChar(' ');
@@ -495,7 +495,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
     }
 
     void store(
-        StringBuffer::Ptr messageHeader,
+        StringBuilder::Ptr messageHeader,
         String::CPtr field,
         const Value& value) {
         LIBJ_STATIC_SYMBOL_DEF(symClose,   "close");
@@ -535,7 +535,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         unsetFlag(SENT_DATE_HEADER);
         unsetFlag(SENT_EXPECT_HEADER);
 
-        StringBuffer::Ptr messageHeader = StringBuffer::create();
+        StringBuilder::Ptr messageHeader = StringBuilder::create();
         messageHeader->append(firstLine);
 
         if (headers) {
@@ -652,7 +652,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             writeHead(statusCode_);
         } else {
             assert(method_ && path_);
-            StringBuffer::Ptr sb = StringBuffer::create();
+            StringBuilder::Ptr sb = StringBuilder::create();
             sb->append(method_);
             sb->appendChar(' ');
             sb->append(path_);

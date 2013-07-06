@@ -1090,7 +1090,7 @@ class GotStatInRealpath : LIBJ_JS_FUNCTION(GotStatInRealpath)
             return Status::OK;
         }
 
-        StringBuffer::Ptr id = StringBuffer::create();
+        StringBuilder::Ptr id = StringBuilder::create();
         id->append(stat->get(node::fs::STAT_DEV));
         id->appendChar(':');
         id->append(stat->get(node::fs::STAT_INO));
