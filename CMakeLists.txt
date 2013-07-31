@@ -36,6 +36,7 @@ option(LIBNODE_USE_UTF32       "Use UTF32"         OFF)
 option(LIBNODE_USE_SSL         "Use SSL"           OFF)
 option(LIBNODE_USE_CRYPTO      "Use Crypto"        ON)
 option(LIBNODE_REMOVE_LISTENER "Remove Listeners"  ON)
+option(LIBNODE_BUILD_EXT       "Build Extensions"  ON)
 option(LIBNODE_BUILD_TEST      "Build Tests"       OFF)
 option(LIBNODE_BUILD_EXAMPLE   "Build Examples"    OFF)
 
@@ -406,6 +407,12 @@ target_link_libraries(node
 set_target_properties(node PROPERTIES
     COMPILE_FLAGS "${libnode-cflags}"
 )
+
+# build extensionss ------------------------------------------------------------
+
+if(LIBNODE_BUILD_EXT)
+    add_subdirectory(exts)
+endif(LIBNODE_BUILD_EXT)
 
 # build tests ------------------------------------------------------------------
 
