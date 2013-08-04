@@ -1,4 +1,7 @@
 unnecessaryQualification:include/libnode/detail/net/socket.h:38
 unnecessaryQualification:include/libnode/detail/http/agent.h:20
 unnecessaryQualification:include/libnode/detail/http/server.h:23
-preprocessorErrorDirective:deps/libj/deps/boost-svn/boost/cstdint.hpp
+*:deps/libj/deps/boost-svn/boost/cstdint.hpp
+*:deps/libj/deps/boost-svn/boost/config/requires_threads.hpp
+*:deps/libj/deps/boost-svn/boost/thread/detail/platform.hpp
+*:deps/libj/deps/boost-svn/boost/thread/mutex.hpp
