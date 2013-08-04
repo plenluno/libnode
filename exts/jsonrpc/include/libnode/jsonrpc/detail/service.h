@@ -116,6 +116,41 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         Boolean emitted_;
     };
 
+    class Response20 : LIBNODE_JSONRPC_RESPONSE(Response20)
+     public:
+        Response20(
+            Service* self,
+            const Value& id)
+            : self_(self)
+            , id_(id)
+            , emitted_(false) {}
+
+        Boolean result(const Value& res) {
+            if (emitted_) {
+                return false;
+            } else {
+                self_->emitResult20(res, id_);
+                emitted_ = true;
+                return true;
+            }
+        }
+
+        Boolean error(libj::Error::CPtr err) {
+            if (emitted_) {
+                return false;
+            } else {
+                self_->emitError20(err, id_);
+                emitted_ = true;
+                return true;
+            }
+        }
+
+     private:
+        Service* self_;
+        Value id_;
+        Boolean emitted_;
+    };
+
     class OnMessage : LIBJ_JS_FUNCTION(OnMessage)
      public:
         OnMessage(
@@ -164,7 +199,8 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
             } else if (id.isNull()) {
                 // notification
                 Method::CPtr method = methods_->getCPtr<Method>(name);
-                if (method) {
+                if (method &&
+                    params->length() == method->parameters()->length()) {
                     params->add(noResponse);
                     (*method->function())(params);
                 }
@@ -187,9 +223,101 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
             }
         }
 
+        Boolean checkId20(const Value& id) {
+            return id.isNull()
+                || id.isUndefined()
+                || id.type() == Type<Long>::id()
+                || id.type() == Type<Double>::id()
+                || id.instanceof(Type<String>::id());
+        }
+
+        Boolean checkParams20(const Value& params) {
+            return params.isUndefined()
+                || params.instanceof(Type<JsArray>::id())
+                || params.instanceof(Type<libj::JsObject>::id());
+        }
+
+        JsArray::Ptr toArguments20(Method::CPtr method, const Value& params) {
+            JsArray::CPtr ps = method->parameters();
+            Size arity = ps->length();
+            if (params.isUndefined()) {
+                if (!arity) {
+                    return JsArray::create();
+                } else {
+                    return JsArray::null();
+                }
+            } else if (params.instanceof(Type<JsArray>::id())) {
+                JsArray::Ptr args = toPtr<JsArray>(params);
+                if (args->length() == arity) {
+                    return args;
+                } else {
+                    return JsArray::null();
+                }
+            } else {
+                assert(params.instanceof(Type<libj::JsObject>::id()));
+                libj::JsObject::Ptr obj = toPtr<libj::JsObject>(params);
+                if (obj->size() == arity) {
+                    JsArray::Ptr args = JsArray::create(arity);
+                    typedef libj::Map::Entry Entry;
+                    TypedSet<Entry::CPtr>::CPtr es = obj->entrySet();
+                    TypedIterator<Entry::CPtr>::Ptr itr = es->iteratorTyped();
+                    while (itr->hasNext()) {
+                        Entry::CPtr e = itr->next();
+                        Int index = ps->indexOf(e->getKey());
+                        if (index >= 0) {
+                            args->set(index, e->getValue());
+                        } else {
+                            return JsArray::null();
+                        }
+                    }
+                    return args;
+                } else {
+                    return JsArray::null();
+                }
+            }
+        }
+
         Int jsonrpc20(libj::JsObject::Ptr req) {
-            // TODO(plenluno): implement
-            return Status::OK;
+            static const Response::Ptr noResponse(new NoResponse());
+
+            Value id = req->get(ID);
+            Value params = req->get(PARAMS);
+            String::CPtr name = req->getCPtr<String>(METHOD);
+            if (!checkId20(id)) {
+                return self_->emitError20(
+                    Error::create(Error::INVALID_REQUEST));
+            } else if (!name || !checkParams20(params)) {
+                return self_->emitError20(
+                    Error::create(Error::INVALID_REQUEST), id);
+            } else if (id.isUndefined()) {
+                // notification
+                Method::CPtr method = methods_->getCPtr<Method>(name);
+                if (!method) return Error::METHOD_NOT_FOUND;
+
+                Size arity = method->parameters()->length();
+                JsArray::Ptr args = toArguments20(method, params);
+                if (!args) return Error::INVALID_PARAMS;
+
+                args->add(noResponse);
+                (*method->function())(args);
+                return Status::OK;
+            } else {
+                Method::CPtr method = methods_->getCPtr<Method>(name);
+                if (!method) {
+                    return self_->emitError20(
+                        Error::create(Error::METHOD_NOT_FOUND), id);
+                }
+
+                JsArray::Ptr args = toArguments20(method, params);
+                if (!args) {
+                    return self_->emitError20(
+                        Error::create(Error::INVALID_PARAMS), id);
+                }
+
+                args->add(Response::Ptr(new Response20(self_, id)));
+                (*method->function())(args);
+                return Status::OK;
+            }
         }
 
      private:
@@ -226,6 +354,17 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         return err->code();
     }
 
+    Int emitResult20(const Value& r, const Value& id) {
+        LIBJ_STATIC_SYMBOL_DEF(sym20, "2.0");
+
+        libj::JsObject::Ptr res = libj::JsObject::create();
+        res->put(ID, id);
+        res->put(RESULT, r);
+        res->put(JSONRPC, sym20);
+        emit(EVENT_RESPONSE, res);
+        return Status::OK;
+    }
+
     Int emitError20(
         libj::Error::CPtr err,
         const Value& id = Object::null()) {
@@ -233,7 +372,11 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
 
         assert(err);
         libj::JsObject::Ptr res = libj::JsObject::create();
-        res->put(ID, id);
+        if (id.isUndefined()) {
+            res->put(ID, Object::null());
+        } else {
+            res->put(ID, id);
+        }
         res->put(ERROR, toJsObject(err));
         res->put(JSONRPC, sym20);
         emit(EVENT_RESPONSE, res);
