@@ -36,7 +36,7 @@ option(LIBNODE_USE_UTF32       "Use UTF32"         OFF)
 option(LIBNODE_USE_SSL         "Use SSL"           OFF)
 option(LIBNODE_USE_CRYPTO      "Use Crypto"        ON)
 option(LIBNODE_REMOVE_LISTENER "Remove Listeners"  ON)
-option(LIBNODE_BUILD_EXT       "Build Extensions"  ON)
+option(LIBNODE_BUILD_EXT       "Build Extensions"  OFF)
 option(LIBNODE_BUILD_TEST      "Build Tests"       OFF)
 option(LIBNODE_BUILD_EXAMPLE   "Build Examples"    OFF)
 
@@ -136,7 +136,9 @@ message(STATUS "LIBNODE_USE_THREAD=${LIBNODE_USE_THREAD}")
 message(STATUS "LIBNODE_USE_UTF32=${LIBNODE_USE_UTF32}")
 message(STATUS "LIBNODE_USE_SSL=${LIBNODE_USE_SSL}")
 message(STATUS "LIBNODE_USE_CRYPTO=${LIBNODE_USE_CRYPTO}")
+message(STATUS "LIBNODE_BUILD_EXT=${LIBNODE_BUILD_EXT}")
 message(STATUS "LIBNODE_BUILD_TEST=${LIBNODE_BUILD_TEST}")
+message(STATUS "LIBNODE_BUILD_EXAMPLE=${LIBNODE_BUILD_EXAMPLE}")
 message(STATUS "LIBNODE_REMOVE_LISTENER=${LIBNODE_REMOVE_LISTENER}")
 
 # variables --------------------------------------------------------------------
