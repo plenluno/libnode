@@ -14,7 +14,7 @@ namespace jsonrpc {
 class Add : LIBJ_JS_FUNCTION(Add)
  public:
     virtual Value operator()(JsArray::Ptr args) {
-        Response::Ptr r = args->getPtr<Response>(2);
+        Respond::Ptr r = args->getPtr<Respond>(2);
         Long x, y;
         if (to<Long>(args->get(0), &x) &&
             to<Long>(args->get(1), &y)) {
@@ -32,7 +32,7 @@ class Close : LIBJ_JS_FUNCTION(Close)
         , service_(service) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        Response::Ptr r = args->getPtr<Response>(0);
+        Respond::Ptr r = args->getPtr<Respond>(0);
         service_->close();
         done_ = true;
         return r->result(UNDEFINED);

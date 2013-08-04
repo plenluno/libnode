@@ -1,7 +1,7 @@
 // Copyright (c) 2013 Plenluno All rights reserved.
 
-#ifndef LIBNODE_JSONRPC_RESPONSE_H_
-#define LIBNODE_JSONRPC_RESPONSE_H_
+#ifndef LIBNODE_JSONRPC_RESPOND_H_
+#define LIBNODE_JSONRPC_RESPOND_H_
 
 #include <libj/error.h>
 #include <libj/js_function.h>
@@ -10,7 +10,7 @@ namespace libj {
 namespace node {
 namespace jsonrpc {
 
-class Response : LIBJ_JS_FUNCTION(Response)
+class Respond : LIBJ_JS_FUNCTION(Respond)
  public:
     virtual Value operator()(JsArray::Ptr args);
 
@@ -23,10 +23,10 @@ class Response : LIBJ_JS_FUNCTION(Response)
 }  // namespace node
 }  // namespace libj
 
-#include <libnode/jsonrpc/impl/response.h>
+#include <libnode/jsonrpc/impl/respond.h>
 
-#define LIBNODE_JSONRPC_RESPONSE(T) \
-    public libj::node::jsonrpc::Response { \
-    LIBNODE_JSONRPC_RESPONSE_DEFS(T)
+#define LIBNODE_JSONRPC_RESPOND(T) \
+    public libj::node::jsonrpc::Respond { \
+    LIBNODE_JSONRPC_RESPOND_DEFS(T)
 
-#endif  // LIBNODE_JSONRPC_RESPONSE_H_
+#endif  // LIBNODE_JSONRPC_RESPOND_H_

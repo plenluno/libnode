@@ -1,13 +1,13 @@
 // Copyright (c) 2013 Plenluno All rights reserved.
 
-#ifndef LIBNODE_JSONRPC_IMPL_RESPONSE_H_
-#define LIBNODE_JSONRPC_IMPL_RESPONSE_H_
+#ifndef LIBNODE_JSONRPC_IMPL_RESPOND_H_
+#define LIBNODE_JSONRPC_IMPL_RESPOND_H_
 
 namespace libj {
 namespace node {
 namespace jsonrpc {
 
-inline Value Response::operator()(JsArray::Ptr args) {
+inline Value Respond::operator()(JsArray::Ptr args) {
     libj::Error::CPtr err = args->getCPtr<libj::Error>(0);
     if (err) {
         return error(err);
@@ -20,8 +20,8 @@ inline Value Response::operator()(JsArray::Ptr args) {
 }  // namespace node
 }  // namespace libj
 
-#define LIBNODE_JSONRPC_RESPONSE_DEFS(T) \
-    LIBJ_MUTABLE_DEFS(T, libj::node::jsonrpc::Response) \
+#define LIBNODE_JSONRPC_RESPOND_DEFS(T) \
+    LIBJ_MUTABLE_DEFS(T, libj::node::jsonrpc::Respond) \
     LIBJ_JS_FUNCTION_TO_STRING(T)
 
-#endif  // LIBNODE_JSONRPC_IMPL_RESPONSE_H_
+#endif  // LIBNODE_JSONRPC_IMPL_RESPOND_H_

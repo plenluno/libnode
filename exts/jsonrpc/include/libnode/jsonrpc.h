@@ -5,7 +5,7 @@
 
 #include <libnode/jsonrpc/error.h>
 #include <libnode/jsonrpc/method.h>
-#include <libnode/jsonrpc/response.h>
+#include <libnode/jsonrpc/respond.h>
 #include <libnode/jsonrpc/service.h>
 #include <libnode/jsonrpc/properties.h>
 

@@ -55,9 +55,9 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
     }
 
  private:
-    class NoResponse : LIBNODE_JSONRPC_RESPONSE(NoResponse)
+    class NotRespond : LIBNODE_JSONRPC_RESPOND(NotRespond)
      public:
-        NoResponse() : emitted_(false) {}
+        NotRespond() : emitted_(false) {}
 
         Boolean result(const Value& res) {
             if (emitted_) {
@@ -81,9 +81,9 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         Boolean emitted_;
     };
 
-    class Response10 : LIBNODE_JSONRPC_RESPONSE(Response10)
+    class Respond10 : LIBNODE_JSONRPC_RESPOND(Respond10)
      public:
-        Response10(
+        Respond10(
             Service* self,
             const Value& id)
             : self_(self)
@@ -116,9 +116,9 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         Boolean emitted_;
     };
 
-    class Response20 : LIBNODE_JSONRPC_RESPONSE(Response20)
+    class Respond20 : LIBNODE_JSONRPC_RESPOND(Respond20)
      public:
-        Response20(
+        Respond20(
             Service* self,
             const Value& id)
             : self_(self)
@@ -185,7 +185,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
 
      private:
         Int jsonrpc10(libj::JsObject::Ptr req) {
-            static const Response::Ptr noResponse(new NoResponse());
+            static const Respond::Ptr notRespond(new NotRespond());
 
             Value id = req->get(ID);
             String::CPtr name = req->getCPtr<String>(METHOD);
@@ -201,7 +201,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                 Method::CPtr method = methods_->getCPtr<Method>(name);
                 if (method &&
                     params->length() == method->parameters()->length()) {
-                    params->add(noResponse);
+                    params->add(notRespond);
                     (*method->function())(params);
                 }
                 return Status::OK;
@@ -217,7 +217,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                         Error::create(Error::INVALID_PARAMS), id);
                 }
 
-                params->add(Response::Ptr(new Response10(self_, id)));
+                params->add(Respond::Ptr(new Respond10(self_, id)));
                 (*method->function())(params);
                 return Status::OK;
             }
@@ -278,7 +278,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         }
 
         Int jsonrpc20(libj::JsObject::Ptr req) {
-            static const Response::Ptr noResponse(new NoResponse());
+            static const Respond::Ptr notRespond(new NotRespond());
 
             Value id = req->get(ID);
             Value params = req->get(PARAMS);
@@ -298,7 +298,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                 JsArray::Ptr args = toArguments20(method, params);
                 if (!args) return Error::INVALID_PARAMS;
 
-                args->add(noResponse);
+                args->add(notRespond);
                 (*method->function())(args);
                 return Status::OK;
             } else {
@@ -314,7 +314,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                         Error::create(Error::INVALID_PARAMS), id);
                 }
 
-                args->add(Response::Ptr(new Response20(self_, id)));
+                args->add(Respond::Ptr(new Respond20(self_, id)));
                 (*method->function())(args);
                 return Status::OK;
             }
