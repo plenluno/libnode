@@ -15,7 +15,7 @@ namespace querystring {
 static void addPair(JsObject::Ptr obj, String::CPtr key, String::CPtr val) {
     if (obj->containsKey(key)) {
         Value v = obj->get(key);
-        if (v.instanceof(Type<String>::id())) {
+        if (v.is<String>()) {
             JsArray::Ptr ary = JsArray::create();
             ary->add(obj->get(key));
             ary->add(val);
@@ -75,10 +75,10 @@ JsObject::Ptr parse(String::CPtr query, Char sep, Char eq) {
 }
 
 static String::CPtr toString(Value val) {
-    if (val.isUndefined() ||
-        val.equals(Object::null()) ||
-        val.instanceof(Type<JsArray>::id()) ||
-        val.instanceof(Type<JsObject>::id())) {
+    if (val.isNull() ||
+        val.isUndefined() ||
+        val.is<JsArray>() ||
+        val.is<JsObject>()) {
         return String::create();
     } else {
         return util::percentEncode(String::valueOf(val));
@@ -102,7 +102,7 @@ String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
         Entry::CPtr entry = itr->nextTyped();
         Value key = entry->getKey();
         Value val = entry->getValue();
-        if (val.instanceof(Type<JsArray>::id())) {
+        if (val.is<JsArray>()) {
             JsArray::CPtr ary = toCPtr<JsArray>(val);
             for (Size i = 0; i < ary->length(); i++) {
                 if (i) {

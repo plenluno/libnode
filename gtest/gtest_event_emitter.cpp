@@ -117,12 +117,12 @@ TEST(GTestEventEmitter, TestEmit) {
     ASSERT_TRUE(results()->get(1).equals(2));
 
     ee->emit(event);
-    ASSERT_TRUE(results()->get(2).instanceof(Type<Error>::id()));
-    ASSERT_TRUE(results()->get(3).instanceof(Type<Error>::id()));
+    ASSERT_TRUE(results()->get(2).is<Error>());
+    ASSERT_TRUE(results()->get(3).is<Error>());
 
     ee->emit(event, static_cast<Value>(args));
-    ASSERT_TRUE(results()->get(4).instanceof(Type<Error>::id()));
-    ASSERT_TRUE(results()->get(5).instanceof(Type<Error>::id()));
+    ASSERT_TRUE(results()->get(4).is<Error>());
+    ASSERT_TRUE(results()->get(5).is<Error>());
 }
 
 TEST(GTestEventEmitter, TestEmit2) {

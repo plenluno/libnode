@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/uv/error.h>
@@ -35,11 +35,11 @@ TEST(GTestError, TestValueOf) {
 
 TEST(GTestError, TestInstanceOf) {
     Error::CPtr e = Error::create(uv::Error::_EOF);
-    ASSERT_TRUE(e->instanceof(Type<uv::Error>::id()));
-    ASSERT_TRUE(e->instanceof(Type<libj::Error>::id()));
-    ASSERT_TRUE(e->instanceof(Type<libj::Status>::id()));
-    ASSERT_TRUE(e->instanceof(Type<Immutable>::id()));
-    ASSERT_TRUE(e->instanceof(Type<Object>::id()));
+    ASSERT_TRUE(e->is<uv::Error>());
+    ASSERT_TRUE(e->is<libj::Error>());
+    ASSERT_TRUE(e->is<libj::Status>());
+    ASSERT_TRUE(e->is<Immutable>());
+    ASSERT_TRUE(e->is<Object>());
 }
 
 }  // namespace uv

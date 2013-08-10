@@ -164,7 +164,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
 
             String::CPtr json = args->getCPtr<String>(0);
             Value val = json::parse(json);
-            if (val.instanceof(Type<libj::Error>::id())) {
+            if (val.is<libj::Error>()) {
                 return self_->emitError20(
                     Error::create(Error::PARSE_ERROR));
             }
@@ -226,15 +226,15 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         Boolean checkId20(const Value& id) {
             return id.isNull()
                 || id.isUndefined()
-                || id.type() == Type<Long>::id()
-                || id.type() == Type<Double>::id()
-                || id.instanceof(Type<String>::id());
+                || id.is<Long>()
+                || id.is<Double>()
+                || id.is<String>();
         }
 
         Boolean checkParams20(const Value& params) {
             return params.isUndefined()
-                || params.instanceof(Type<JsArray>::id())
-                || params.instanceof(Type<libj::JsObject>::id());
+                || params.is<JsArray>()
+                || params.is<libj::JsObject>();
         }
 
         JsArray::Ptr toArguments20(Method::CPtr method, const Value& params) {
@@ -246,7 +246,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                 } else {
                     return JsArray::null();
                 }
-            } else if (params.instanceof(Type<JsArray>::id())) {
+            } else if (params.is<JsArray>()) {
                 JsArray::Ptr args = toPtr<JsArray>(params);
                 if (args->length() == arity) {
                     return args;
@@ -254,7 +254,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                     return JsArray::null();
                 }
             } else {
-                assert(params.instanceof(Type<libj::JsObject>::id()));
+                assert(params.is<libj::JsObject>());
                 libj::JsObject::Ptr obj = toPtr<libj::JsObject>(params);
                 if (obj->size() == arity) {
                     JsArray::Ptr args = JsArray::create(arity);

@@ -11,7 +11,7 @@ namespace libj {
 namespace node {
 
 inline Boolean Buffer::isBuffer(const Value& val) {
-    return val.instanceof(Type<Buffer>::id());
+    return val.is<Buffer>();
 }
 
 inline Size Buffer::byteLength(String::CPtr str, Encoding enc) {

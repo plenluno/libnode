@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/http/status.h>
@@ -39,10 +39,10 @@ TEST(GTestHttpStatus, TestToString) {
 
 TEST(GTestHttpStatus, TestInstanceOf) {
     Status::CPtr s = Status::create(Status::NOT_FOUND);
-    ASSERT_TRUE(s->instanceof(Type<Status>::id()));
-    ASSERT_TRUE(s->instanceof(Type<libj::Status>::id()));
-    ASSERT_TRUE(s->instanceof(Type<Immutable>::id()));
-    ASSERT_TRUE(s->instanceof(Type<Object>::id()));
+    ASSERT_TRUE(s->is<Status>());
+    ASSERT_TRUE(s->is<libj::Status>());
+    ASSERT_TRUE(s->is<Immutable>());
+    ASSERT_TRUE(s->is<Object>());
 }
 
 }  // namespace http

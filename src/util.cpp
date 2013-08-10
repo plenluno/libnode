@@ -23,15 +23,15 @@ namespace node {
 namespace util {
 
 Boolean isArray(const Value& val) {
-    return val.instanceof(Type<JsArray>::id());
+    return val.is<JsArray>();
 }
 
 Boolean isError(const Value& val) {
-    return val.instanceof(Type<libj::Error>::id());
+    return val.is<libj::Error>();
 }
 
 Boolean isRegExp(const Value& val) {
-    return val.instanceof(Type<JsRegExp>::id());
+    return val.is<JsRegExp>();
 }
 
 Boolean extend(JsObject::Ptr extended, JsObject::CPtr original) {

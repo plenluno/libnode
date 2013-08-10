@@ -54,7 +54,7 @@ class EventEmitter
         Size n = a->size();
         for (Size i = 0; i < n; i++) {
             Value v = a->get(i);
-            if (v.instanceof(Type<Once>::id())) {
+            if (v.is<Once>()) {
                 typename Once::Ptr once = toPtr<Once>(v);
                 if (once->listener()->equals(listener)) {
                     a->remove(i);
@@ -101,7 +101,7 @@ class EventEmitter
         Size i = 0;
         while (i < a->size()) {
             Value v = a->get(i);
-            if (!v.instanceof(Type<Once>::id())) i++;
+            if (!v.is<Once>()) i++;
             JsFunction::Ptr f = toPtr<JsFunction>(v);
             (*f)(args);
         }
