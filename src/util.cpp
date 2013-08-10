@@ -4,6 +4,7 @@
 #include <libnode/util.h>
 
 #include <libj/error.h>
+#include <libj/endian.h>
 #include <libj/js_array.h>
 #include <libj/js_regexp.h>
 
@@ -298,6 +299,8 @@ static Size percentDecode(
 }
 
 String::CPtr percentEncode(String::CPtr str, String::Encoding enc) {
+    static const Boolean isBigEndian = endian() == BIG;
+
     if (!str || str->length() == 0)
         return String::create();
 
@@ -306,11 +309,25 @@ String::CPtr percentEncode(String::CPtr str, String::Encoding enc) {
     case String::UTF8:
         buf = Buffer::create(str, Buffer::UTF8);
         break;
+    case String::UTF16:
+        if (isBigEndian) {
+            buf = Buffer::create(str, Buffer::UTF16BE);
+        } else {
+            buf = Buffer::create(str, Buffer::UTF16LE);
+        }
+        break;
     case String::UTF16BE:
         buf = Buffer::create(str, Buffer::UTF16BE);
         break;
     case String::UTF16LE:
         buf = Buffer::create(str, Buffer::UTF16LE);
+        break;
+    case String::UTF32:
+        if (isBigEndian) {
+            buf = Buffer::create(str, Buffer::UTF32BE);
+        } else {
+            buf = Buffer::create(str, Buffer::UTF32LE);
+        }
         break;
     case String::UTF32BE:
         buf = Buffer::create(str, Buffer::UTF32BE);
@@ -341,10 +358,12 @@ String::CPtr percentDecode(String::CPtr str, String::Encoding enc) {
     case String::UTF8:
         res = String::create(decoded, enc, size);
         break;
+    case String::UTF16:
     case String::UTF16BE:
     case String::UTF16LE:
         res = String::create(decoded, enc, size >> 1);
         break;
+    case String::UTF32:
     case String::UTF32BE:
     case String::UTF32LE:
         res = String::create(decoded, enc, size >> 2);
