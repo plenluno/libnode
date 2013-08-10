@@ -294,7 +294,6 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                 Method::CPtr method = methods_->getCPtr<Method>(name);
                 if (!method) return Error::METHOD_NOT_FOUND;
 
-                Size arity = method->parameters()->length();
                 JsArray::Ptr args = toArguments20(method, params);
                 if (!args) return Error::INVALID_PARAMS;
 
