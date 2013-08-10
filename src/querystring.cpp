@@ -99,7 +99,7 @@ String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
         } else {
             res->appendChar(sep);
         }
-        Entry::CPtr entry = itr->next();
+        Entry::CPtr entry = itr->nextTyped();
         Value key = entry->getKey();
         Value val = entry->getValue();
         if (val.instanceof(Type<JsArray>::id())) {

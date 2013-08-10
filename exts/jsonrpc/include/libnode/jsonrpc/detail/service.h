@@ -262,7 +262,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                     TypedSet<Entry::CPtr>::CPtr es = obj->entrySet();
                     TypedIterator<Entry::CPtr>::Ptr itr = es->iteratorTyped();
                     while (itr->hasNext()) {
-                        Entry::CPtr e = itr->next();
+                        Entry::CPtr e = itr->nextTyped();
                         Int index = ps->indexOf(e->getKey());
                         if (index >= 0) {
                             args->set(index, e->getValue());

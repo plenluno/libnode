@@ -70,7 +70,7 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
         TypedSet<Entry::CPtr>::CPtr entrys = headers->entrySet();
         TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
         while (itr->hasNext()) {
-            Entry::CPtr entry = itr->next();
+            Entry::CPtr entry = itr->nextTyped();
             String::CPtr key = toCPtr<String>(entry->getKey());
             String::CPtr val = toCPtr<String>(entry->getValue());
             self->setHeader(key, val);

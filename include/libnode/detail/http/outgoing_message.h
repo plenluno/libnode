@@ -199,7 +199,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         TypedSet<Entry::CPtr>::CPtr entrys = headers->entrySet();
         TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
         while (itr->hasNext()) {
-            Entry::CPtr entry = itr->next();
+            Entry::CPtr entry = itr->nextTyped();
             String::CPtr key = toCPtr<String>(entry->getKey());
             String::CPtr val = toCPtr<String>(entry->getValue());
             if (key && val) {
@@ -234,7 +234,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             TypedSet<Entry::CPtr>::CPtr entrys = obj->entrySet();
             TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
             while (itr->hasNext()) {
-                Entry::CPtr entry = itr->next();
+                Entry::CPtr entry = itr->nextTyped();
                 hs->put(entry->getKey(), entry->getValue());
             }
             headers = hs;
@@ -543,7 +543,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             TypedSet<Entry::CPtr>::CPtr entrys = headers->entrySet();
             TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
             while (itr->hasNext()) {
-                Entry::CPtr entry = itr->next();
+                Entry::CPtr entry = itr->nextTyped();
                 String::CPtr field = toCPtr<String>(entry->getKey());
                 Value value = entry->getValue();
 
@@ -614,7 +614,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         TypedSet<Entry::CPtr>::CPtr entrys = headers_->entrySet();
         TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
         while (itr->hasNext()) {
-            Entry::CPtr entry = itr->next();
+            Entry::CPtr entry = itr->nextTyped();
             headers->put(
                 headerNames_->get(entry->getKey()),
                 entry->getValue());

@@ -40,7 +40,7 @@ Boolean extend(JsObject::Ptr extended, JsObject::CPtr original) {
     TypedSet<Entry::CPtr>::CPtr entrys = original->entrySet();
     TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
     while (itr->hasNext()) {
-        Entry::CPtr entry = itr->next();
+        Entry::CPtr entry = itr->nextTyped();
         extended->put(entry->getKey(), entry->getValue());
     }
     return true;
