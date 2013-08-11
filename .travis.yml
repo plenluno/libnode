@@ -10,7 +10,7 @@ install:
 before_script:
   - mkdir build
   - cd build
-  - cmake -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_EXAMPLE=ON -DLIBNODE_BUILD_TEST=ON ..
+  - cmake -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_TEST=ON ..
 
 script:
   - make
