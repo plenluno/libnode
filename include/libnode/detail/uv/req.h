@@ -5,6 +5,8 @@
 
 #include <libj/js_function.h>
 
+#include <uv.h>
+
 namespace libj {
 namespace node {
 namespace detail {

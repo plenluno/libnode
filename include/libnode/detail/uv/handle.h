@@ -5,6 +5,9 @@
 
 #include <libnode/uv/error.h>
 
+#include <libj/symbol.h>
+#include <libj/js_object.h>
+
 #include <assert.h>
 
 namespace libj {
@@ -57,6 +60,40 @@ class Handle {
  protected:
     static void setLastError() {
         node::uv::Error::setLast(uv_last_error(uv_default_loop()).code);
+    }
+
+    static JsObject::Ptr addressToJs(const sockaddr* addr) {
+        LIBJ_STATIC_SYMBOL_DEF(symIpV4,    "IPv4");
+        LIBJ_STATIC_SYMBOL_DEF(symIpV6,    "IPv6");
+        LIBJ_STATIC_SYMBOL_DEF(symPort,    "port");
+        LIBJ_STATIC_SYMBOL_DEF(symFamily,  "family");
+        LIBJ_STATIC_SYMBOL_DEF(symAddress, "address");
+
+        char ip[INET6_ADDRSTRLEN];
+        Int port;
+        const sockaddr_in *a4;
+        const sockaddr_in6 *a6;
+
+        JsObject::Ptr res = JsObject::create();
+        switch (addr->sa_family) {
+        case AF_INET:
+            a4 = reinterpret_cast<const sockaddr_in*>(addr);
+            uv_inet_ntop(AF_INET, &a4->sin_addr, ip, sizeof ip);
+            port = ntohs(a4->sin_port);
+            res->put(symFamily, symIpV4);
+            break;
+        case AF_INET6:
+            a6 = reinterpret_cast<const sockaddr_in6*>(addr);
+            uv_inet_ntop(AF_INET6, &a6->sin6_addr, ip, sizeof ip);
+            port = ntohs(a6->sin6_port);
+            res->put(symFamily, symIpV6);
+            break;
+        default:
+            assert(false);
+        }
+        res->put(symPort, port);
+        res->put(symAddress, String::create(ip));
+        return res;
     }
 
  private:
