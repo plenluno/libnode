@@ -87,6 +87,8 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
         JsFunction::Ptr callback = JsFunction::null()) {
         if (!handle_ || bindState_ != UNBOUND) return false;
 
+        bindState_ = BINDING;
+
         if (callback) once(EVENT_LISTENING, callback);
 
         return lookup(
@@ -312,7 +314,7 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
 
             String::CPtr ip = args->getCPtr<String>(1);
             if (self_->uvBind(ip, port_, 0)) {
-                libj::Error::CPtr err = node::uv::Error::last();
+                err = node::uv::Error::last();
                 self_->bindState_ = UNBOUND;
                 self_->emit(EVENT_ERROR, err);
                 return err;
