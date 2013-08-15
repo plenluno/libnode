@@ -8,6 +8,7 @@ set(libnode-test-src
     gtest_main.cpp
     gtest_buffer.cpp
     gtest_common.cpp
+    gtest_dgram.cpp
 #   gtest_dns.cpp
     gtest_event_emitter.cpp
     gtest_fs.cpp

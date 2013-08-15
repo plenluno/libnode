@@ -179,6 +179,8 @@ endif(LIBNODE_BUILD_TEST)
 set(libnode-src
     src/buffer.cpp
     src/dns.cpp
+    src/dgram.cpp
+    src/dgram/socket.cpp
     src/events/event_emitter.cpp
     src/fs.cpp
     src/fs/stats.cpp
