@@ -27,15 +27,15 @@ class Udp : public Handle {
 
     Int bind(String::CPtr address, Int port, Int flags, Int family) {
         assert(address);
-        const char* addr = address->toStdString().c_str();
+        std::string addr = address->toStdString();
 
         Int r;
         switch (family) {
         case AF_INET:
-            r = uv_udp_bind(&udp_, uv_ip4_addr(addr, port), flags);
+            r = uv_udp_bind(&udp_, uv_ip4_addr(addr.c_str(), port), flags);
             break;
         case AF_INET6:
-            r = uv_udp_bind6(&udp_, uv_ip6_addr(addr, port), flags);
+            r = uv_udp_bind6(&udp_, uv_ip6_addr(addr.c_str(), port), flags);
             break;
         default:
             assert(false);
@@ -81,9 +81,13 @@ class Udp : public Handle {
         String::CPtr iface,
         uv_membership membership) {
         assert(address);
-        const char* addr = address->toStdString().c_str();
-        const char* ifc = iface ? iface->toStdString().c_str() : NULL;
-        int r = uv_udp_set_membership(&udp_, addr, ifc, membership);
+        std::string addr = address->toStdString();
+        std::string ifc = iface ? iface->toStdString() : std::string();
+        int r = uv_udp_set_membership(
+            &udp_,
+            addr.c_str(),
+            iface ? ifc.c_str() : NULL,
+            membership);
         if (r) setLastError();
         return r;
     }
@@ -107,7 +111,7 @@ class Udp : public Handle {
         assert(offset <  buffer->length());
         assert(length <= buffer->length() - offset);
 
-        const char* addr = address->toStdString().c_str();
+        std::string addr = address->toStdString();
 
         UdpSend* udpSend = new UdpSend();
         udpSend->buffer = buffer;
@@ -123,7 +127,7 @@ class Udp : public Handle {
                 &udp_,
                 &buf,
                 1,
-                uv_ip4_addr(addr, port),
+                uv_ip4_addr(addr.c_str(), port),
                 onSend);
             break;
         case AF_INET6:
@@ -132,7 +136,7 @@ class Udp : public Handle {
                 &udp_,
                 &buf,
                 1,
-                uv_ip6_addr(addr, port),
+                uv_ip6_addr(addr.c_str(), port),
                 onSend);
             break;
         default:
