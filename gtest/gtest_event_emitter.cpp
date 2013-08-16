@@ -55,8 +55,8 @@ class Sub : LIBJ_JS_FUNCTION(Sub)
     Value operator()(JsArray::Ptr args) {
         if (args &&
             args->size() == 2 &&
-            args->get(0).type() == Type<Int>::id() &&
-            args->get(1).type() == Type<Int>::id()) {
+            args->get(0).is<Int>() &&
+            args->get(1).is<Int>()) {
             int x, y;
             to<Int>(args->get(0), &x);
             to<Int>(args->get(1), &y);
