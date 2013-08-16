@@ -39,6 +39,7 @@ class Udp : public Handle {
             break;
         default:
             assert(false);
+            r = -1;
         }
         if (r) setLastError();
         return r;
@@ -141,6 +142,7 @@ class Udp : public Handle {
             break;
         default:
             assert(false);
+            r = -1;
         }
 
         udpSend->dispatched();
