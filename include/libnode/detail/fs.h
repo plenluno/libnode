@@ -161,7 +161,7 @@ void stat(String::CPtr path, JsFunction::Ptr callback) {
 
 void fstat(const Value& fd, JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    to<uv_file>(fd, &(fsReq->file));
+    fsReq->file = to<uv_file>(fd, fsReq->file);
 
     int r = uv_fs_fstat(
         uv_default_loop(),
@@ -195,10 +195,8 @@ void chown(
         fsReq->path = path->toStdString();
     }
 
-    Int _uid = INVALID_UID;
-    Int _gid = INVALID_GID;
-    to<Int>(uid, &_uid);
-    to<Int>(gid, &_gid);
+    Int _uid = to<Int>(uid, INVALID_UID);
+    Int _gid = to<Int>(gid, INVALID_GID);
 
     int r = uv_fs_chown(
         uv_default_loop(),
@@ -216,12 +214,10 @@ void fchown(
     const Value& gid,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    to<uv_file>(fd, &(fsReq->file));
+    fsReq->file = to<uv_file>(fd, fsReq->file);
 
-    Int _uid = INVALID_UID;
-    Int _gid = INVALID_GID;
-    to<Int>(uid, &_uid);
-    to<Int>(gid, &_gid);
+    Int _uid = to<Int>(uid, INVALID_UID);
+    Int _gid = to<Int>(gid, INVALID_GID);
 
     int r = uv_fs_fchown(
         uv_default_loop(),
@@ -256,7 +252,7 @@ void fchmod(
     UInt mode,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    to<uv_file>(fd, &(fsReq->file));
+    fsReq->file = to<uv_file>(fd, fsReq->file);
 
     int r = uv_fs_fchmod(
         uv_default_loop(),
@@ -272,7 +268,7 @@ void ftruncate(
     Size len,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    to<uv_file>(fd, &(fsReq->file));
+    fsReq->file = to<uv_file>(fd, fsReq->file);
 
     int r = uv_fs_ftruncate(
         uv_default_loop(),
@@ -309,7 +305,7 @@ void futimes(
     Double mtime,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    to<uv_file>(fd, &(fsReq->file));
+    fsReq->file = to<uv_file>(fd, fsReq->file);
 
     int r = uv_fs_futime(
         uv_default_loop(),
@@ -325,7 +321,7 @@ void fsync(
     const Value& fd,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    to<uv_file>(fd, &(fsReq->file));
+    fsReq->file = to<uv_file>(fd, fsReq->file);
 
     int r = uv_fs_fsync(
         uv_default_loop(),
@@ -522,7 +518,7 @@ void close(
     const Value& fd,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    to<uv_file>(fd, &(fsReq->file));
+    fsReq->file = to<uv_file>(fd, fsReq->file);
 
     int r = uv_fs_close(
         uv_default_loop(),
@@ -549,7 +545,7 @@ void read(
     }
 
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    to<uv_file>(fd, &(fsReq->file));
+    fsReq->file = to<uv_file>(fd, fsReq->file);
     fsReq->buffer = buffer;
 
     void* buf = buffer ? const_cast<void*>(buffer->data()) : NULL;
@@ -635,8 +631,7 @@ class AfterStatInReadFile : LIBJ_JS_FUNCTION(AfterStatInReadFile)
         } else {
             node::fs::Stats::CPtr stats =
                 toCPtr<node::fs::Stats>(args->get(1));
-            Size size = 0;
-            to<Size>(stats->get(node::fs::STAT_SIZE), &size);
+            Size size = to<Size>(stats->get(node::fs::STAT_SIZE));
             Buffer::Ptr res = Buffer::create(size);
             JsFunction::Ptr cb(new AfterOpenInReadFile(res, size, callback_));
             fs::open(path_, node::fs::R, 0666, cb);
@@ -671,7 +666,7 @@ void write(
     }
 
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    to<uv_file>(fd, &(fsReq->file));
+    fsReq->file = to<uv_file>(fd, fsReq->file);
     fsReq->buffer = buffer;
 
     void* buf = buffer ? const_cast<void*>(buffer->data()) : NULL;
@@ -736,8 +731,7 @@ class AfterWriteInWriteAll : LIBJ_JS_FUNCTION(AfterWriteInWriteAll)
             JsFunction::Ptr cb(new AfterCloseInWriteAll(callback_, err));
             close(fd_, cb);
         } else {
-            Size written = 0;
-            to<Size>(args->get(1), &written);
+            Size written = to<Size>(args->get(1));
             if (written == length_) {
                 close(fd_, callback_);
             } else {

@@ -28,7 +28,9 @@ class Agent : public events::EventEmitter<node::http::Agent> {
         Agent* agent = new Agent();
         if (options) {
             agent->options_ = options;
-            to<Size>(options->get(OPTION_MAX_SOCKETS), &agent->maxSockets_);
+            agent->maxSockets_ = to<Size>(
+                options->get(OPTION_MAX_SOCKETS),
+                agent->maxSockets_);
         }
 
         agent->on(EVENT_FREE, JsFunction::Ptr(new Free(agent->requests_)));

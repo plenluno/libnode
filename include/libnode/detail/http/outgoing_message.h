@@ -358,11 +358,9 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
  private:
     static String::CPtr toHex(Size val) {
-        Size n;
-        to<Size>(val, &n);
         const Size kLen = ((sizeof(Size) << 3) / 3) + 3;
         char s[kLen];
-        snprintf(s, kLen, "%zx", n);
+        snprintf(s, kLen, "%zx", val);
         return String::create(s);
     }
 
@@ -938,8 +936,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
         virtual Value operator()(JsArray::Ptr args) {
             IncomingMessage::Ptr res = args->getPtr<IncomingMessage>(0);
-            Boolean shouldKeepAlive = false;
-            to<Boolean>(args->get(1), &shouldKeepAlive);
+            Boolean shouldKeepAlive = to<Boolean>(args->get(1));
 
             OutgoingMessage* req = socket_->httpMessage();
             if (req->res_) {

@@ -32,9 +32,8 @@ class Add : LIBJ_JS_FUNCTION(Add)
 
         Int sum = 0;
         for (Size i = 0; i < args->length(); i++) {
-            int x;
-            if (to<Int>(args->get(i), &x)) {
-                sum += x;
+            if (args->get(i).is<Int>()) {
+                sum += to<Int>(args->get(i));
             } else {
                 Value err = Error::create(Error::ILLEGAL_ARGUMENT);
                 results()->add(err);
@@ -57,10 +56,7 @@ class Sub : LIBJ_JS_FUNCTION(Sub)
             args->size() == 2 &&
             args->get(0).is<Int>() &&
             args->get(1).is<Int>()) {
-            int x, y;
-            to<Int>(args->get(0), &x);
-            to<Int>(args->get(1), &y);
-            Value res = x - y;
+            Value res = to<Int>(args->get(0)) - to<Int>(args->get(1));
             results()->add(res);
             return res;
         } else {
@@ -206,13 +202,8 @@ TEST(GTestEventEmitter, TestOnce) {
     JsFunction::Ptr f = toPtr<JsFunction>(v);
     ASSERT_EQ(sub, f);
 
-    Value v0 = results()->get(0);
-    Value v1 = results()->get(1);
-    Int i0, i1;
-    to<Int>(v0, &i0);
-    to<Int>(v1, &i1);
-    ASSERT_EQ(9, i0);
-    ASSERT_EQ(3, i1);
+    ASSERT_EQ(9, to<Int>(results()->get(0)));
+    ASSERT_EQ(3, to<Int>(results()->get(1)));
 }
 
 }  // namespace events

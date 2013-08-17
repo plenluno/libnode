@@ -62,8 +62,8 @@ Value setInterval(JsFunction::Ptr callback, UInt delay, JsArray::Ptr args) {
 }
 
 Boolean clearTimeout(const Value& timeoutId) {
-    detail::uv::Timer* timer = NULL;
-    if (to<detail::uv::Timer*>(timeoutId, &timer) && timer) {
+    detail::uv::Timer* timer = to<detail::uv::Timer*>(timeoutId);
+    if (timer) {
         timer->close();
         return true;
     } else {
@@ -72,8 +72,8 @@ Boolean clearTimeout(const Value& timeoutId) {
 }
 
 Boolean clearInterval(const Value& intervalId) {
-    detail::uv::Timer* timer = NULL;
-    if (to<detail::uv::Timer*>(intervalId, &timer) && timer) {
+    detail::uv::Timer* timer = to<detail::uv::Timer*>(intervalId);
+    if (timer) {
         timer->close();
         return true;
     } else {

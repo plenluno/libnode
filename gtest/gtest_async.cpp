@@ -36,8 +36,7 @@ class GTestAsyncCallback : LIBJ_JS_FUNCTION(GTestAsyncCallback)
     UInt sum() { return sum_; }
 
     virtual Value operator()(JsArray::Ptr args) {
-        UInt res = 0;
-        to<UInt>(args->get(0), &res);
+        UInt res = to<UInt>(args->get(0));
         sum_ += res;
         count_++;
         if (count_ >= numTasks_) async_->close();

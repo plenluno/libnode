@@ -26,10 +26,8 @@ class Server : public events::EventEmitter<I> {
         Ptr server(new Server());
 
         if (options) {
-            Boolean allowHalfOpen = false;
-            to<Boolean>(
-                options->get(node::net::OPTION_ALLOW_HALF_OPEN),
-                &allowHalfOpen);
+            Boolean allowHalfOpen = to<Boolean>(
+                options->get(node::net::OPTION_ALLOW_HALF_OPEN));
             if (allowHalfOpen) server->setFlag(ALLOW_HALF_OPEN);
         }
 

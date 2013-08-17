@@ -287,7 +287,7 @@ class Parser : public Flags {
         Boolean skipBody = false;
         if (!hasFlag(UPGRADE)) {
             Value r = onIncoming_->call(incoming_, hasFlag(SHOULD_KEEP_ALIVE));
-            to<Boolean>(r, &skipBody);
+            skipBody = to<Boolean>(r);
         }
         return skipBody;
     }

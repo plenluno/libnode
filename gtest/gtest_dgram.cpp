@@ -52,7 +52,7 @@ class GTestDgramAfterSend : LIBJ_JS_FUNCTION(GTestDgramAfterSend)
 
     virtual Value operator()(JsArray::Ptr args) {
         assert(!args->getCPtr<libj::Error>(0));
-        assert(libj::to<Size>(args->get(1), static_cast<Size>(0)));
+        assert(to<Size>(args->get(1)));
         count_++;
         if (count_ >= NUM_SEND) {
             client_->close();

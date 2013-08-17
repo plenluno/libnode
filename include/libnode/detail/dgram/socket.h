@@ -214,9 +214,9 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
             for (Size i = 0; i < len; i++) {
                 JsArray::Ptr ps = self_->sendQueue_->getPtr<JsArray>(i);
                 Buffer::CPtr buf = ps->getCPtr<Buffer>(0);
-                Size offset = libj::to<Size>(ps->get(1), static_cast<Size>(0));
-                Size length = libj::to<Size>(ps->get(2), static_cast<Size>(0));
-                Int port = libj::to<Int>(ps->get(3), static_cast<Int>(0));
+                Size offset = to<Size>(ps->get(1));
+                Size length = to<Size>(ps->get(2));
+                Int port = to<Int>(ps->get(3));
                 String::CPtr address = ps->getCPtr<String>(4);
                 JsFunction::Ptr callback = ps->getPtr<JsFunction>(5);
                 self_->send(buf, offset, length, port, address, callback);
@@ -231,10 +231,8 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
     class AfterSend : LIBJ_JS_FUNCTION(AfterSend)
      public:
         virtual Value operator()(JsArray::Ptr args) {
-            assert(!libj::to<Int>(args->get(0), -1));
-            uv::UdpSend* udpSend = libj::to<uv::UdpSend*>(
-                args->get(1),
-                static_cast<uv::UdpSend*>(NULL));
+            assert(!to<Int>(args->get(0), -1));
+            uv::UdpSend* udpSend = to<uv::UdpSend*>(args->get(1));
             if (udpSend && udpSend->cb) {
                 udpSend->cb->call(
                     libj::Error::null(),

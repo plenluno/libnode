@@ -44,15 +44,14 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         LIBJ_STATIC_SYMBOL_DEF(OPTION_HANDLE, "handle");
 
         if (options) {
-            Boolean allowHalfOpen = false;
-            to<Boolean>(options->get(OPTION_ALLOW_HALF_OPEN), &allowHalfOpen);
-
-            int fd;
-            if (to<int>(options->get(OPTION_FD), &fd)) {
+            Boolean allowHalfOpen =
+                to<Boolean>(options->get(OPTION_ALLOW_HALF_OPEN));
+            uv_file fd;
+            if (to<uv_file>(options->get(OPTION_FD), &fd)) {
                 return create(fd, allowHalfOpen);
             } else {
-                uv::Stream* handle = NULL;
-                to<uv::Stream*>(options->get(OPTION_HANDLE), &handle);
+                uv::Stream* handle =
+                    to<uv::Stream*>(options->get(OPTION_HANDLE));
                 return create(handle, allowHalfOpen);
             }
         } else {
@@ -182,8 +181,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
 
         if (handle_ && handle_->type() == UV_TCP) {
             uv::Tcp* tcp = static_cast<uv::Tcp*>(handle_);
-            Int port = -1;
-            to<Int>(tcp->getPeerName()->get(symPort), &port);
+            Int port = to<Int>(tcp->getPeerName()->get(symPort), -1);
             return port;
         } else {
             return -1;
@@ -316,8 +314,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         if (!vPort.isUndefined()) {
             String::CPtr sPort = String::valueOf(vPort);
             if (sPort) {
-                Long lPort = -1;
-                to<Long>(json::parse(sPort), &lPort);
+                Long lPort = to<Long>(json::parse(sPort), -1);
                 port = static_cast<Int>(lPort);
             }
         }
@@ -726,9 +723,8 @@ class Socket : public events::EventEmitter<node::net::Socket> {
                 return Error::ILLEGAL_STATE;
             }
 
-            int status;
-            Boolean success = to<int>(args->get(0), &status);
-            assert(success);
+            assert(args->get(0).is<int>());
+            int status = to<int>(args->get(0));
             if (status) {
                 node::uv::Error::CPtr err = node::uv::Error::last();
                 self_->destroy(err, req_->cb);
@@ -765,14 +761,12 @@ class Socket : public events::EventEmitter<node::net::Socket> {
             assert(self_->hasFlag(CONNECTING));
             self_->unsetFlag(CONNECTING);
 
-            int status;
-            Boolean readable;
-            Boolean writable;
-            Boolean success =
-                to<int>(args->get(0), &status) &&
-                to<Boolean>(args->get(3), &readable) &&
-                to<Boolean>(args->get(4), &writable);
-            assert(success);
+            assert(args->get(0).is<int>());
+            assert(args->get(3).is<Boolean>());
+            assert(args->get(4).is<Boolean>());
+            int status = to<int>(args->get(0));
+            Boolean readable = to<Boolean>(args->get(3));
+            Boolean writable = to<Boolean>(args->get(4));
 
             if (!status) {
                 if (readable) {
@@ -841,8 +835,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
 
             Error::CPtr err = args->getCPtr<Error>(0);
             String::CPtr ip = args->getCPtr<String>(1);
-            Int addressType = 0;
-            to<Int>(args->get(2), &addressType);
+            Int addressType = to<Int>(args->get(2));
 
             if (err) {
                 JsFunction::Ptr destroy(

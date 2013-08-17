@@ -28,8 +28,8 @@ class GTestOnData : LIBJ_JS_FUNCTION(GTestOnData)
 
     virtual Value operator()(JsArray::Ptr args) {
         count_++;
-        Buffer::CPtr buf = toCPtr<Buffer>(args->get(0));
-        String::CPtr str = toCPtr<String>(args->get(0));
+        Buffer::CPtr buf = args->getCPtr<Buffer>(0);
+        String::CPtr str = args->getCPtr<String>(0);
         if (buf) {
             bufs_->add(buf);
         } else if (str) {

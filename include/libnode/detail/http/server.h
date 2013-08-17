@@ -342,8 +342,7 @@ class Server : public net::Server<node::http::Server> {
             LIBJ_STATIC_SYMBOL_DEF(symContExp,   "100-continue");
 
             IncomingMessage::Ptr in = args->getPtr<IncomingMessage>(0);
-            Boolean shouldKeepAlive = false;
-            to<Boolean>(args->get(1), &shouldKeepAlive);
+            Boolean shouldKeepAlive = to<Boolean>(args->get(1));
 
             incomings_->push(in);
 
@@ -451,8 +450,7 @@ class Server : public net::Server<node::http::Server> {
      public:
         virtual Value operator()(JsArray::Ptr args) {
             Error::CPtr err = args->getCPtr<Error>(0);
-            net::Socket* conn = NULL;
-            to<net::Socket*>(args->get(1), &conn);
+            net::Socket* conn = to<net::Socket*>(args->get(1));
             if (conn) conn->destroy(err);
             return Status::OK;
         }
