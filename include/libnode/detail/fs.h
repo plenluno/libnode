@@ -629,8 +629,7 @@ class AfterStatInReadFile : LIBJ_JS_FUNCTION(AfterStatInReadFile)
             assert(args->length() == 1);
             if (callback_) (*callback_)(args);
         } else {
-            node::fs::Stats::CPtr stats =
-                toCPtr<node::fs::Stats>(args->get(1));
+            node::fs::Stats::CPtr stats = args->getCPtr<node::fs::Stats>(1);
             Size size = to<Size>(stats->get(node::fs::STAT_SIZE));
             Buffer::Ptr res = Buffer::create(size);
             JsFunction::Ptr cb(new AfterOpenInReadFile(res, size, callback_));

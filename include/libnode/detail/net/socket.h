@@ -196,7 +196,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         Size bytes = bytesDispatched_;
         Size len = connectBufQueue_->length();
         for (Size i = 0; i < len; i++) {
-            bytes += toCPtr<Buffer>(connectBufQueue_->get(i))->length();
+            bytes += connectBufQueue_->getCPtr<Buffer>(i)->length();
         }
         return bytes;
     }

@@ -22,7 +22,7 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
             http::HEADER_CONTENT_TYPE,
             String::create("text/plain"));
 
-        Buffer::CPtr content = toCPtr<Buffer>(args->get(1));
+        Buffer::CPtr content = args->getCPtr<Buffer>(1);
         if (content) {
             res_->setHeader(
                 http::HEADER_CONTENT_LENGTH,
@@ -52,14 +52,11 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
     OnRequest(String::CPtr root) : root_(root) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        http::ServerRequest::Ptr req =
-            toPtr<http::ServerRequest>(args->get(0));
-        http::ServerResponse::Ptr res =
-            toPtr<http::ServerResponse>(args->get(1));
+        http::ServerRequest::Ptr req = args->getPtr<http::ServerRequest>(0);
+        http::ServerResponse::Ptr res = args->getPtr<http::ServerResponse>(1);
         JsObject::Ptr url = url::parse(req->url());
         OnRead::Ptr onRead(new OnRead(res));
-        String::CPtr path =
-            root_->concat(toCPtr<String>(url->get(url::PATHNAME)));
+        String::CPtr path = root_->concat(url->getCPtr<String>(url::PATHNAME));
         console::printv(console::LEVEL_INFO, "GET %v\n", path);
         fs::readFile(path, onRead);
         return Status::OK;

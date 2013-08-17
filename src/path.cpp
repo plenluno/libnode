@@ -86,7 +86,7 @@ String::CPtr join(JsArray::CPtr paths) {
     Size len = paths->length();
     Boolean first = true;
     for (Size i = 0; i < len; i++) {
-        String::CPtr path = toCPtr<String>(paths->get(i));
+        String::CPtr path = paths->getCPtr<String>(i);
         if (path) {
             if (first) {
                 first = false;
@@ -114,7 +114,7 @@ String::CPtr resolve(JsArray::CPtr paths) {
     resolved->append(getCwd());
     Size len = paths->length();
     for (Size i = 0; i < len; i++) {
-        String::CPtr path = toCPtr<String>(paths->get(i));
+        String::CPtr path = paths->getCPtr<String>(i);
         if (path) {
             if (path->startsWith(sep())) {
                 resolved = StringBuilder::create();

@@ -396,7 +396,7 @@ class Server : public net::Server<node::http::Server> {
         ServerOnConnection(Server* srv) : self_(srv) {}
 
         virtual Value operator()(JsArray::Ptr args) {
-            net::Socket::Ptr socket = toPtr<net::Socket>(args->get(0));
+            net::Socket::Ptr socket = args->getPtr<net::Socket>(0);
             assert(socket);
 
             JsArray::Ptr incomings = JsArray::create();

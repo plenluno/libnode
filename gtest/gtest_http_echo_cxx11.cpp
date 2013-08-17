@@ -20,8 +20,8 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
     srv->on(
         http::Server::EVENT_REQUEST,
         JsClosure::create([srv] (JsArray::Ptr args) {
-            auto req = toPtr<http::ServerRequest>(args->get(0));
-            auto res = toPtr<http::ServerResponse>(args->get(1));
+            auto req = args->getPtr<http::ServerRequest>(0);
+            auto res = args->getPtr<http::ServerResponse>(1);
 
             req->setEncoding(Buffer::UTF8);
 

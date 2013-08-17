@@ -27,7 +27,7 @@ inline Buffer::Ptr Buffer::concat(JsArray::CPtr list, Size total) {
     Size len = list->length();
     Size sum = 0;
     for (Size i = 0; i < len; i++) {
-        CPtr b = toCPtr<Buffer>(list->get(i));
+        CPtr b = list->getCPtr<Buffer>(i);
         if (b) sum += b->length();
     }
     Size bufLen = sum < total ? sum : total;
@@ -35,7 +35,7 @@ inline Buffer::Ptr Buffer::concat(JsArray::CPtr list, Size total) {
     Ptr buf = create(bufLen);
     Size offset = 0;
     for (Size i = 0; i < len; i++) {
-        CPtr b = toCPtr<Buffer>(list->get(i));
+        CPtr b = list->getCPtr<Buffer>(i);
         if (b) offset += b->copy(buf, offset);
     }
     return buf;

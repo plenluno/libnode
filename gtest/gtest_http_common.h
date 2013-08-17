@@ -68,10 +68,8 @@ class GTestHttpServerOnRequest : LIBJ_JS_FUNCTION(GTestHttpServerOnRequest)
         , chunked_(chunked) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        http::ServerRequest::Ptr req =
-            toPtr<http::ServerRequest>(args->get(0));
-        http::ServerResponse::Ptr res =
-            toPtr<http::ServerResponse>(args->get(1));
+        http::ServerRequest::Ptr req = args->getPtr<http::ServerRequest>(0);
+        http::ServerResponse::Ptr res = args->getPtr<http::ServerResponse>(1);
 
         req->setEncoding(Buffer::UTF8);
         res->setSendDate(false);
@@ -111,8 +109,7 @@ class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
     }
 
     virtual Value operator()(JsArray::Ptr args) {
-        http::ClientResponse::Ptr res =
-            toPtr<http::ClientResponse>(args->get(0));
+        http::ClientResponse::Ptr res = args->getPtr<http::ClientResponse>(0);
 
         statusCodes_->add(res->statusCode());
 
