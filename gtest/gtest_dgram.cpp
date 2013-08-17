@@ -50,6 +50,8 @@ class GTestDgramAfterSend : LIBJ_JS_FUNCTION(GTestDgramAfterSend)
         : count_(0)
         , client_(&(*cli)) {}
 
+    UInt count() { return count_; }
+
     virtual Value operator()(JsArray::Ptr args) {
         assert(!args->getCPtr<libj::Error>(0));
         assert(to<Size>(args->get(1)));
@@ -90,6 +92,7 @@ TEST(GTestDgram, TestDgramSend) {
     JsArray::CPtr rinfos = onMessage->rinfos();
     Size numMsgs = messages->length();
     ASSERT_EQ(NUM_SEND, numMsgs);
+    ASSERT_EQ(NUM_SEND, afterSend->count());
     for (Size i = 0; i < numMsgs; i++) {
         console::printf(console::LEVEL_INFO, ".");
 
