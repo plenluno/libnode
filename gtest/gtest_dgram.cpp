@@ -75,19 +75,16 @@ TEST(GTestDgram, TestDgramSend) {
     server->on(dgram::Socket::EVENT_MESSAGE, onMessage);
     server->bind(port);
 
-    String::CPtr hello = String::create("hello");
-    String::CPtr localhost = String::create("localhost");
+    String::CPtr hello = str("hello");
     dgram::Socket::Ptr client = dgram::createSocket(dgram::Socket::UDP4);
     GTestDgramAfterSend::Ptr afterSend(new GTestDgramAfterSend(client));
     for (Size i = 0; i < NUM_SEND; i++) {
         Buffer::Ptr msg = Buffer::create(hello);
-        client->send(msg, 0, msg->length(), port, localhost, afterSend);
+        client->send(msg, 0, msg->length(), port, str("localhost"), afterSend);
     }
 
     node::run();
 
-    String::CPtr address = String::create("address");
-    String::CPtr localIP = String::create("127.0.0.1");
     JsArray::CPtr messages = onMessage->messages();
     JsArray::CPtr rinfos = onMessage->rinfos();
     Size numMsgs = messages->length();
@@ -100,7 +97,8 @@ TEST(GTestDgram, TestDgramSend) {
         ASSERT_TRUE(msg->equals(hello));
 
         JsObject::CPtr rinfo = rinfos->getCPtr<JsObject>(i);
-        ASSERT_TRUE(rinfo->getCPtr<String>(address)->equals(localIP));
+        String::CPtr addr = rinfo->getCPtr<String>(str("address"));
+        ASSERT_TRUE(addr->equals(str("127.0.0.1")));
     }
     console::printf(console::LEVEL_INFO, "\n");
 }

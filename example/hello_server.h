@@ -27,7 +27,7 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
 inline void helloServer() {
     http::Server::Ptr srv =
         http::Server::create(JsFunction::Ptr(new OnRequest()));
-    srv->listen(1337, String::create("127.0.0.1"));
+    srv->listen(1337, str("127.0.0.1"));
     node::run();
 }
 

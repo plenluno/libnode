@@ -42,7 +42,7 @@ TEST(GTestNetTcp, TestTcp) {
     for (Size i = 0; i < numMsgs; i++) {
         console::printf(console::LEVEL_INFO, ".");
         String::CPtr msg = messages->getCPtr<Buffer>(i)->toString();
-        ASSERT_TRUE(msg->equals(String::create("abc")));
+        ASSERT_TRUE(msg->equals(str("abc")));
     }
     console::printf(console::LEVEL_INFO, "\n");
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 
@@ -38,7 +38,7 @@ class GTestHttpEchoOnConnectV09 : LIBJ_JS_FUNCTION(GTestHttpEchoOnConnectV09)
     GTestHttpEchoOnConnectV09(net::Socket::Ptr sock) : sock_(sock) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        sock_->end(String::create("GET /index.html\r\n"));
+        sock_->end(str("GET /index.html\r\n"));
         return Status::OK;
     }
 
@@ -51,7 +51,7 @@ class GTestHttpEchoOnConnectV10 : LIBJ_JS_FUNCTION(GTestHttpEchoOnConnectV10)
     GTestHttpEchoOnConnectV10(net::Socket::Ptr sock) : sock_(sock) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        sock_->end(String::create(
+        sock_->end(str(
             "GET /index.html HTTP/1.0\r\n"
             "Content-Length: 3\r\n"
             "\r\n"
@@ -123,7 +123,7 @@ TEST(GTestHttpEchoOld, TestHttpV10) {
     JsArray::CPtr msgs = GTestOnEnd::messages();
     ASSERT_EQ(1, msgs->length());
     Buffer::CPtr res = msgs->getCPtr<Buffer>(0);
-    ASSERT_TRUE(res && res->toString()->equals(String::create(
+    ASSERT_TRUE(res && res->toString()->equals(str(
         "HTTP/1.1 200 OK\r\n"
         "Content-Length: 3\r\n"
         "Content-Type: text/plain\r\n"
@@ -161,7 +161,7 @@ TEST(GTestHttpEchoOld, TestHttpV10NoContentLength) {
     JsArray::CPtr msgs = GTestOnEnd::messages();
     ASSERT_EQ(1, msgs->length());
     Buffer::CPtr res = msgs->getCPtr<Buffer>(0);
-    ASSERT_TRUE(res && res->toString()->equals(String::create(
+    ASSERT_TRUE(res && res->toString()->equals(str(
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/plain\r\n"
         "Connection: close\r\n"

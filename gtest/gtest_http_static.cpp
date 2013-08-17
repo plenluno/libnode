@@ -18,9 +18,7 @@ class OnRead : LIBJ_JS_FUNCTION(OnRead)
     static void unsetServer() { srv_ = http::Server::null(); }
 
     virtual Value operator()(JsArray::Ptr args) {
-        res_->setHeader(
-            http::HEADER_CONTENT_TYPE,
-            String::create("text/plain"));
+        res_->setHeader(http::HEADER_CONTENT_TYPE, str("text/plain"));
 
         Buffer::CPtr content = args->getCPtr<Buffer>(1);
         if (content) {
@@ -79,12 +77,10 @@ TEST(GTestHttpStatic, TestStatic) {
     server->listen(10000);
     OnRead::setServer(server);
 
-    String::CPtr url = String::create("http://127.0.0.1:10000/CMakeCache.txt");
+    String::CPtr url = str("http://127.0.0.1:10000/CMakeCache.txt");
     JsObject::Ptr options = url::parse(url);
     JsObject::Ptr headers = JsObject::create();
-    headers->put(
-        http::HEADER_CONNECTION,
-        String::create("close"));
+    headers->put(http::HEADER_CONNECTION, str("close"));
     options->put(http::OPTION_HEADERS, headers);
 
     JsFunction::Ptr onResponse(new GTestHttpClientOnResponse());

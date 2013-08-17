@@ -31,13 +31,11 @@ The following HTTP server responds with "Hello World" for every request.
     auto srv = http::Server::create(
         JsClosure::create([] (JsArray::Ptr args) {
             auto res = args->getPtr<http::ServerResponse>(1);
-            res->setHeader(
-                http::HEADER_CONTENT_TYPE,
-                String::create("text/plain"));
-            res->end(String::create("Hello World\n"));
+            res->setHeader(http::HEADER_CONTENT_TYPE, str("text/plain"));
+            res->end(str("Hello World\n"));
             return UNDEFINED;
         }));
-    srv->listen(1337, String::create("127.0.0.1"));
+    srv->listen(1337, str("127.0.0.1"));
     node::run();
 
 For more information about the usage, please refer to libnode/gtest.

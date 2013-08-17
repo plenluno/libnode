@@ -17,92 +17,92 @@ namespace node {
 TEST(GTestPath, TestNormalize) {
     String::CPtr null = String::null();
     String::CPtr normal = path::normalize(null);
-    ASSERT_TRUE(normal->equals(String::create()));
+    ASSERT_TRUE(normal->equals(str()));
 
-    normal = path::normalize(String::create());
-    ASSERT_TRUE(normal->equals(String::create(".")));
+    normal = path::normalize(str());
+    ASSERT_TRUE(normal->equals(str(".")));
 
-    normal = path::normalize(String::create("."));
-    ASSERT_TRUE(normal->equals(String::create(".")));
+    normal = path::normalize(str("."));
+    ASSERT_TRUE(normal->equals(str(".")));
 
-    normal = path::normalize(String::create(".."));
-    ASSERT_TRUE(normal->equals(String::create("..")));
+    normal = path::normalize(str(".."));
+    ASSERT_TRUE(normal->equals(str("..")));
 
-    normal = path::normalize(String::create("/"));
-    ASSERT_TRUE(normal->equals(String::create("/")));
+    normal = path::normalize(str("/"));
+    ASSERT_TRUE(normal->equals(str("/")));
 
-    normal = path::normalize(String::create("//"));
-    ASSERT_TRUE(normal->equals(String::create("/")));
+    normal = path::normalize(str("//"));
+    ASSERT_TRUE(normal->equals(str("/")));
 
-    normal = path::normalize(String::create("x1"));
-    ASSERT_TRUE(normal->equals(String::create("x1")));
+    normal = path::normalize(str("x1"));
+    ASSERT_TRUE(normal->equals(str("x1")));
 
-    normal = path::normalize(String::create("/x2"));
-    ASSERT_TRUE(normal->equals(String::create("/x2")));
+    normal = path::normalize(str("/x2"));
+    ASSERT_TRUE(normal->equals(str("/x2")));
 
-    normal = path::normalize(String::create("/x3/"));
-    ASSERT_TRUE(normal->equals(String::create("/x3/")));
+    normal = path::normalize(str("/x3/"));
+    ASSERT_TRUE(normal->equals(str("/x3/")));
 
-    normal = path::normalize(String::create("/x/y"));
-    ASSERT_TRUE(normal->equals(String::create("/x/y")));
+    normal = path::normalize(str("/x/y"));
+    ASSERT_TRUE(normal->equals(str("/x/y")));
 
-    normal = path::normalize(String::create("/x/y/"));
-    ASSERT_TRUE(normal->equals(String::create("/x/y/")));
+    normal = path::normalize(str("/x/y/"));
+    ASSERT_TRUE(normal->equals(str("/x/y/")));
 
-    normal = path::normalize(String::create("x/y"));
-    ASSERT_TRUE(normal->equals(String::create("x/y")));
+    normal = path::normalize(str("x/y"));
+    ASSERT_TRUE(normal->equals(str("x/y")));
 
-    normal = path::normalize(String::create("x/y/"));
-    ASSERT_TRUE(normal->equals(String::create("x/y/")));
+    normal = path::normalize(str("x/y/"));
+    ASSERT_TRUE(normal->equals(str("x/y/")));
 
-    normal = path::normalize(String::create("x/./y"));
-    ASSERT_TRUE(normal->equals(String::create("x/y")));
+    normal = path::normalize(str("x/./y"));
+    ASSERT_TRUE(normal->equals(str("x/y")));
 
-    normal = path::normalize(String::create("x/././y"));
-    ASSERT_TRUE(normal->equals(String::create("x/y")));
+    normal = path::normalize(str("x/././y"));
+    ASSERT_TRUE(normal->equals(str("x/y")));
 
-    normal = path::normalize(String::create("x/./y/."));
-    ASSERT_TRUE(normal->equals(String::create("x/y")));
+    normal = path::normalize(str("x/./y/."));
+    ASSERT_TRUE(normal->equals(str("x/y")));
 
-    normal = path::normalize(String::create("x/../y"));
-    ASSERT_TRUE(normal->equals(String::create("y")));
+    normal = path::normalize(str("x/../y"));
+    ASSERT_TRUE(normal->equals(str("y")));
 
-    normal = path::normalize(String::create("x/../../y"));
-    ASSERT_TRUE(normal->equals(String::create("../y")));
+    normal = path::normalize(str("x/../../y"));
+    ASSERT_TRUE(normal->equals(str("../y")));
 
-    normal = path::normalize(String::create("x/../y/.."));
-    ASSERT_TRUE(normal->equals(String::create(".")));
+    normal = path::normalize(str("x/../y/.."));
+    ASSERT_TRUE(normal->equals(str(".")));
 
-    normal = path::normalize(String::create("//x//.//y//..//"));
-    ASSERT_TRUE(normal->equals(String::create("/x/")));
+    normal = path::normalize(str("//x//.//y//..//"));
+    ASSERT_TRUE(normal->equals(str("/x/")));
 
-    normal = path::normalize(String::create("x/y/..."));
-    ASSERT_TRUE(normal->equals(String::create("x/y/...")));
+    normal = path::normalize(str("x/y/..."));
+    ASSERT_TRUE(normal->equals(str("x/y/...")));
 }
 
 TEST(GTestPath, TestJoin) {
     JsArray::Ptr null = JsArray::null();
     String::CPtr joined = path::join(null);
-    ASSERT_TRUE(joined->equals(String::create(".")));
+    ASSERT_TRUE(joined->equals(str(".")));
 
     joined = path::join(JsArray::create());
-    ASSERT_TRUE(joined->equals(String::create(".")));
+    ASSERT_TRUE(joined->equals(str(".")));
 
     JsArray::Ptr paths = JsArray::create();
-    paths->add(String::create("/foo"));
-    paths->add(String::create("bar"));
-    paths->add(String::create("baz/asdf"));
-    paths->add(String::create("quux"));
-    paths->add(String::create(".."));
+    paths->add(str("/foo"));
+    paths->add(str("bar"));
+    paths->add(str("baz/asdf"));
+    paths->add(str("quux"));
+    paths->add(str(".."));
     joined = path::join(paths);
-    ASSERT_TRUE(joined->equals(String::create("/foo/bar/baz/asdf")));
+    ASSERT_TRUE(joined->equals(str("/foo/bar/baz/asdf")));
 
     paths->clear();
-    paths->add(String::create("foo"));
+    paths->add(str("foo"));
     paths->add(JsObject::create());
-    paths->add(String::create("/bar"));
+    paths->add(str("/bar"));
     joined = path::join(paths);
-    ASSERT_TRUE(joined->equals(String::create("foo/bar")));
+    ASSERT_TRUE(joined->equals(str("foo/bar")));
 }
 
 TEST(GTestPath, TestResolve) {
@@ -124,131 +124,131 @@ TEST(GTestPath, TestResolve) {
     ASSERT_TRUE(resolved->equals(current));
 
     paths->clear();
-    paths->add(String::create());
+    paths->add(str());
     resolved = path::resolve(paths);
     ASSERT_TRUE(resolved->equals(current));
 
     paths->clear();
-    paths->add(String::create("/foo/bar"));
-    paths->add(String::create("./baz"));
+    paths->add(str("/foo/bar"));
+    paths->add(str("./baz"));
     resolved = path::resolve(paths);
-    ASSERT_TRUE(resolved->equals(String::create("/foo/bar/baz")));
+    ASSERT_TRUE(resolved->equals(str("/foo/bar/baz")));
 
     paths->clear();
-    paths->add(String::create("/foo/bar"));
-    paths->add(String::create("/tmp/file"));
+    paths->add(str("/foo/bar"));
+    paths->add(str("/tmp/file"));
     resolved = path::resolve(paths);
-    ASSERT_TRUE(resolved->equals(String::create("/tmp/file")));
+    ASSERT_TRUE(resolved->equals(str("/tmp/file")));
 
     paths->clear();
-    paths->add(String::create("wwwroot"));
-    paths->add(String::create("static_files/png/"));
-    paths->add(String::create("../gif/image.gif"));
+    paths->add(str("wwwroot"));
+    paths->add(str("static_files/png/"));
+    paths->add(str("../gif/image.gif"));
     resolved = path::resolve(paths);
     ASSERT_TRUE(resolved->equals(current->concat(
-        String::create("/wwwroot/static_files/gif/image.gif"))));
+        str("/wwwroot/static_files/gif/image.gif"))));
 }
 
 TEST(GTestPath, TestDirname) {
     String::CPtr null = String::null();
     String::CPtr dir = path::dirname(null);
-    ASSERT_TRUE(dir->equals(String::create(".")));
+    ASSERT_TRUE(dir->equals(str(".")));
 
-    dir = path::dirname(String::create("/"));
-    ASSERT_TRUE(dir->equals(String::create("/")));
+    dir = path::dirname(str("/"));
+    ASSERT_TRUE(dir->equals(str("/")));
 
-    dir = path::dirname(String::create("//"));
-    ASSERT_TRUE(dir->equals(String::create("/")));
+    dir = path::dirname(str("//"));
+    ASSERT_TRUE(dir->equals(str("/")));
 
-    dir = path::dirname(String::create("///"));
-    ASSERT_TRUE(dir->equals(String::create("/")));
+    dir = path::dirname(str("///"));
+    ASSERT_TRUE(dir->equals(str("/")));
 
-    dir = path::dirname(String::create("////"));
-    ASSERT_TRUE(dir->equals(String::create("//")));
+    dir = path::dirname(str("////"));
+    ASSERT_TRUE(dir->equals(str("//")));
 
-    dir = path::dirname(String::create("/./"));
-    ASSERT_TRUE(dir->equals(String::create("/")));
+    dir = path::dirname(str("/./"));
+    ASSERT_TRUE(dir->equals(str("/")));
 
-    dir = path::dirname(String::create("/././"));
-    ASSERT_TRUE(dir->equals(String::create("/.")));
+    dir = path::dirname(str("/././"));
+    ASSERT_TRUE(dir->equals(str("/.")));
 
-    dir = path::dirname(String::create("x1"));
-    ASSERT_TRUE(dir->equals(String::create(".")));
+    dir = path::dirname(str("x1"));
+    ASSERT_TRUE(dir->equals(str(".")));
 
-    dir = path::dirname(String::create("/x2"));
-    ASSERT_TRUE(dir->equals(String::create("/")));
+    dir = path::dirname(str("/x2"));
+    ASSERT_TRUE(dir->equals(str("/")));
 
-    dir = path::dirname(String::create("x3/"));
-    ASSERT_TRUE(dir->equals(String::create(".")));
+    dir = path::dirname(str("x3/"));
+    ASSERT_TRUE(dir->equals(str(".")));
 
-    dir = path::dirname(String::create("/x4/"));
-    ASSERT_TRUE(dir->equals(String::create("/")));
+    dir = path::dirname(str("/x4/"));
+    ASSERT_TRUE(dir->equals(str("/")));
 
-    dir = path::dirname(String::create("/x/y"));
-    ASSERT_TRUE(dir->equals(String::create("/x")));
+    dir = path::dirname(str("/x/y"));
+    ASSERT_TRUE(dir->equals(str("/x")));
 
-    dir = path::dirname(String::create("x/y/"));
-    ASSERT_TRUE(dir->equals(String::create("x")));
+    dir = path::dirname(str("x/y/"));
+    ASSERT_TRUE(dir->equals(str("x")));
 }
 
 TEST(GTestPath, TestBasename) {
     String::CPtr null = String::null();
     String::CPtr base = path::basename(null);
-    ASSERT_TRUE(base->equals(String::create()));
+    ASSERT_TRUE(base->equals(str()));
 
-    base = path::basename(String::create("/"));
-    ASSERT_TRUE(base->equals(String::create()));
+    base = path::basename(str("/"));
+    ASSERT_TRUE(base->equals(str()));
 
-    base = path::basename(String::create("//"));
-    ASSERT_TRUE(base->equals(String::create()));
+    base = path::basename(str("//"));
+    ASSERT_TRUE(base->equals(str()));
 
-    base = path::basename(String::create("///"));
-    ASSERT_TRUE(base->equals(String::create("/")));
+    base = path::basename(str("///"));
+    ASSERT_TRUE(base->equals(str("/")));
 
-    base = path::basename(String::create("/./"));
-    ASSERT_TRUE(base->equals(String::create("./")));
+    base = path::basename(str("/./"));
+    ASSERT_TRUE(base->equals(str("./")));
 
-    base = path::basename(String::create("x1"));
-    ASSERT_TRUE(base->equals(String::create("x1")));
+    base = path::basename(str("x1"));
+    ASSERT_TRUE(base->equals(str("x1")));
 
-    base = path::basename(String::create("/x2"));
-    ASSERT_TRUE(base->equals(String::create("x2")));
+    base = path::basename(str("/x2"));
+    ASSERT_TRUE(base->equals(str("x2")));
 
-    base = path::basename(String::create("/x3/"));
-    ASSERT_TRUE(base->equals(String::create("x3/")));
+    base = path::basename(str("/x3/"));
+    ASSERT_TRUE(base->equals(str("x3/")));
 
-    base = path::basename(String::create("x/y"));
-    ASSERT_TRUE(base->equals(String::create("y")));
+    base = path::basename(str("x/y"));
+    ASSERT_TRUE(base->equals(str("y")));
 
-    base = path::basename(String::create("/x/y/"));
-    ASSERT_TRUE(base->equals(String::create("y/")));
+    base = path::basename(str("/x/y/"));
+    ASSERT_TRUE(base->equals(str("y/")));
 }
 
 TEST(GTestPath, TestExtname) {
     String::CPtr null = String::null();
     String::CPtr ext = path::extname(null);
-    ASSERT_TRUE(ext->equals(String::create()));
+    ASSERT_TRUE(ext->equals(str()));
 
-    ext = path::extname(String::create("."));
-    ASSERT_TRUE(ext->equals(String::create()));
+    ext = path::extname(str("."));
+    ASSERT_TRUE(ext->equals(str()));
 
-    ext = path::extname(String::create("index"));
-    ASSERT_TRUE(ext->equals(String::create()));
+    ext = path::extname(str("index"));
+    ASSERT_TRUE(ext->equals(str()));
 
-    ext = path::extname(String::create("index."));
-    ASSERT_TRUE(ext->equals(String::create(".")));
+    ext = path::extname(str("index."));
+    ASSERT_TRUE(ext->equals(str(".")));
 
-    ext = path::extname(String::create(".html"));
-    ASSERT_TRUE(ext->equals(String::create(".html")));
+    ext = path::extname(str(".html"));
+    ASSERT_TRUE(ext->equals(str(".html")));
 
-    ext = path::extname(String::create("index.html"));
-    ASSERT_TRUE(ext->equals(String::create(".html")));
+    ext = path::extname(str("index.html"));
+    ASSERT_TRUE(ext->equals(str(".html")));
 
-    ext = path::extname(String::create("/xyz/index.html"));
-    ASSERT_TRUE(ext->equals(String::create(".html")));
+    ext = path::extname(str("/xyz/index.html"));
+    ASSERT_TRUE(ext->equals(str(".html")));
 
-    ext = path::extname(String::create("/xyz/index.html/"));
-    ASSERT_TRUE(ext->equals(String::create()));
+    ext = path::extname(str("/xyz/index.html/"));
+    ASSERT_TRUE(ext->equals(str()));
 }
 
 }  // namespace node

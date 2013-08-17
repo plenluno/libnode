@@ -30,10 +30,7 @@ TEST(GTestFs, TestWriteFile) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::writeFile(
-        String::create("hello.txt"),
-        Buffer::create(String::create("hello")),
-        cb);
+    fs::writeFile(str("hello.txt"), Buffer::create(str("hello")), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 }
@@ -47,7 +44,7 @@ TEST(GTestFs, TestStat) {
     node::run();
     ASSERT_TRUE(!!cb->getArgs()->getCPtr<Error>(0));
 
-    fs::stat(String::create("hello.txt"), cb);
+    fs::stat(str("hello.txt"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 
@@ -99,12 +96,12 @@ TEST(GTestFs, TestReadFile) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::readFile(String::create("hello.txt"), cb);
+    fs::readFile(str("hello.txt"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
     Buffer::CPtr buf = cb->getArgs()->getCPtr<Buffer>(1);
     ASSERT_TRUE(!!buf);
-    ASSERT_TRUE(buf->toString()->equals(String::create("hello")));
+    ASSERT_TRUE(buf->toString()->equals(str("hello")));
 }
 
 TEST(GTestFs, TestAppendFile) {
@@ -113,19 +110,16 @@ TEST(GTestFs, TestAppendFile) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::appendFile(
-        String::create("hello.txt"),
-        Buffer::create(String::create(" world")),
-        cb);
+    fs::appendFile(str("hello.txt"), Buffer::create(str(" world")), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 
-    fs::readFile(String::create("hello.txt"), cb);
+    fs::readFile(str("hello.txt"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
     Buffer::CPtr buf = cb->getArgs()->getCPtr<Buffer>(1);
     ASSERT_TRUE(!!buf);
-    ASSERT_TRUE(buf->toString()->equals(String::create("hello world")));
+    ASSERT_TRUE(buf->toString()->equals(str("hello world")));
 }
 
 TEST(GTestFs, TestReaddir) {
@@ -133,11 +127,11 @@ TEST(GTestFs, TestReaddir) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::readdir(String::create("."), cb);
+    fs::readdir(str("."), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
     JsArray::CPtr a = cb->getArgs()->getCPtr<JsArray>(1);
-    ASSERT_TRUE(a->contains(String::create("hello.txt")));
+    ASSERT_TRUE(a->contains(str("hello.txt")));
 }
 
 TEST(GTestFs, TestRename) {
@@ -146,10 +140,7 @@ TEST(GTestFs, TestRename) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::rename(
-        String::create("hello.txt"),
-        String::create("hell.txt"),
-        cb);
+    fs::rename(str("hello.txt"), str("hell.txt"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 }
@@ -159,11 +150,11 @@ TEST(GTestFs, TestTruncate) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::truncate(String::create("hell.txt"), 4, cb);
+    fs::truncate(str("hell.txt"), 4, cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 
-    fs::readFile(String::create("hell.txt"), cb);
+    fs::readFile(str("hell.txt"), cb);
     node::run();
     Buffer::CPtr buf = cb->getArgs()->getCPtr<Buffer>(1);
     ASSERT_TRUE(!!buf);
@@ -175,7 +166,7 @@ TEST(GTestFs, TestMkdir) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::mkdir(String::create("mydir"), cb);
+    fs::mkdir(str("mydir"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 }
@@ -186,17 +177,14 @@ TEST(GTestFs, TestSymlink) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::symlink(
-        String::create("mydir"),
-        String::create("mylink"),
-        cb);
+    fs::symlink(str("mydir"), str("mylink"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 }
 
 TEST(GTestFs, TestLstat) {
     FsCallback::Ptr cb(new FsCallback());
-    fs::lstat(String::create("mydir"), cb);
+    fs::lstat(str("mydir"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 
@@ -205,7 +193,7 @@ TEST(GTestFs, TestLstat) {
     ASSERT_TRUE(stats->isDirectory());
     ASSERT_FALSE(stats->isSocket());
 
-    fs::lstat(String::create("mylink"), cb);
+    fs::lstat(str("mylink"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 
@@ -227,8 +215,8 @@ TEST(GTestFs, TestRealpath) {
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
     ASSERT_TRUE(cb->getArgs()->getCPtr<String>(1)->equals(current));
 
-    fs::realpath(String::create("./mylink"), cb);
-    String::CPtr real = current->concat(String::create("/mydir"));
+    fs::realpath(str("./mylink"), cb);
+    String::CPtr real = current->concat(str("/mydir"));
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
     ASSERT_TRUE(cb->getArgs()->getCPtr<String>(1)->equals(real));
@@ -239,7 +227,7 @@ TEST(GTestFs, TestRmdir) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::rmdir(String::create("mydir"), cb);
+    fs::rmdir(str("mydir"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 }
@@ -249,11 +237,11 @@ TEST(GTestFs, TestUnlink) {
     node::run();
 
     FsCallback::Ptr cb(new FsCallback());
-    fs::unlink(String::create("hell.txt"), cb);
+    fs::unlink(str("hell.txt"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 
-    fs::unlink(String::create("mylink"), cb);
+    fs::unlink(str("mylink"), cb);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
 }

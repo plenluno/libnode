@@ -23,7 +23,7 @@ inline void helloServer() {
             res->end(HELLO_WORLD);
             return UNDEFINED;
         }));
-    srv->listen(1337, String::create("127.0.0.1"));
+    srv->listen(1337, str("127.0.0.1"));
     node::run();
 }
 

@@ -36,7 +36,7 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
                     auto body = onData->string();
                     res->setHeader(
                         http::HEADER_CONTENT_TYPE,
-                        String::create("text/plain"));
+                        str("text/plain"));
                     res->setHeader(
                         http::HEADER_CONTENT_LENGTH,
                         String::valueOf(Buffer::byteLength(body)));
@@ -50,13 +50,12 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
         }));
     srv->listen(10000);
 
-    auto msg = String::create("cxx11");
-    auto url = String::create("http://127.0.0.1:10000/abc");
-    auto options = url::parse(url);
+    auto msg = str("cxx11");
+    auto options = url::parse(str("http://127.0.0.1:10000/abc"));
     auto headers = JsObject::create();
     headers->put(
         http::HEADER_CONNECTION,
-        String::create("close"));
+        str("close"));
     headers->put(
         http::HEADER_CONTENT_LENGTH,
         String::valueOf(Buffer::byteLength(msg)));

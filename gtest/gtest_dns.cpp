@@ -14,22 +14,18 @@ TEST(GTestDns, TestHttpGet) {
     GTestOnEnd::clear();
     GTestHttpClientOnResponse::clear();
 
-    String::CPtr url = String::create("http://nodejs.org");
     JsObject::Ptr headers = JsObject::create();
 #ifdef USE_PROXY
-    String::CPtr host = String::create("nodejs.org");
-    String::CPtr proxyHost = String::create("proxy");
-    String::CPtr proxyPort = String::create("8080");
     JsObject::Ptr options = JsObject::create();
     options->put(http::OPTION_HEADERS, headers);
-    options->put(http::OPTION_PATH, url);
-    options->put(http::OPTION_HOST, proxyHost);
-    options->put(http::OPTION_PORT, proxyPort);
-    headers->put(http::HEADER_HOST, host);
+    options->put(http::OPTION_PATH, str("http://nodejs.org"));
+    options->put(http::OPTION_HOST, str("proxy"));  // proxy host
+    options->put(http::OPTION_PORT, str("8080"));   // proxy port
+    headers->put(http::HEADER_HOST, str("nodejs.org"));
 #else
-    JsObject::Ptr options = url::parse(url);
+    JsObject::Ptr options = url::parse(str("http://nodejs.org"));
 #endif
-    headers->put(http::HEADER_CONNECTION, String::create("close"));
+    headers->put(http::HEADER_CONNECTION, str("close"));
 
     GTestHttpClientOnResponse::Ptr onResponse(new GTestHttpClientOnResponse());
     http::get(options, onResponse);

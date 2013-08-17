@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/buffer.h>
@@ -15,7 +15,7 @@ TEST(GTestBuffer, TestCreate2) {
     Buffer::Ptr buf = Buffer::create("abc", 3);
     ASSERT_TRUE(!!buf);
     ASSERT_EQ(3, buf->length());
-    ASSERT_TRUE(buf->toString()->equals(String::create("abc")));
+    ASSERT_TRUE(buf->toString()->equals(str("abc")));
 }
 
 TEST(GTestBuffer, TestCreate3) {
@@ -25,7 +25,7 @@ TEST(GTestBuffer, TestCreate3) {
     Buffer::Ptr buf = Buffer::create(ary);
     ASSERT_TRUE(!!buf);
     ASSERT_EQ(2, buf->length());
-    ASSERT_TRUE(buf->toString()->equals(String::create("01")));
+    ASSERT_TRUE(buf->toString()->equals(str("01")));
 }
 
 TEST(GTestBuffer, TestCreate4) {
@@ -64,8 +64,7 @@ TEST(GTestBuffer, TestCopy) {
     ASSERT_EQ(3, buf1->copy(buf, 0, 1, 4));
     ASSERT_EQ(2, buf2->copy(buf, 3));
     ASSERT_EQ(5, buf->length());
-    String::CPtr str = buf->toString();
-    ASSERT_TRUE(str->equals(String::create("bcdxy")));
+    ASSERT_TRUE(buf->toString()->equals(str("bcdxy")));
 }
 
 TEST(GTestBuffer, TestConcat) {
@@ -78,15 +77,14 @@ TEST(GTestBuffer, TestConcat) {
     ary->add(buf3);
     Buffer::Ptr buf = Buffer::concat(ary, 5);
     ASSERT_EQ(5, buf->length());
-    String::CPtr str = buf->toString();
-    ASSERT_TRUE(str->equals(String::create("abcxy")));
+    ASSERT_TRUE(buf->toString()->equals(str("abcxy")));
 }
 
 TEST(GTestBuffer, TestConcat2) {
     Buffer::Ptr buf1 = Buffer::create("abc", 3);
     Buffer::Ptr buf2 = Buffer::create("xyz", 3);
     Buffer::Ptr buf = buf1->concat(buf2);
-    ASSERT_TRUE(buf->toString()->equals(String::create("abcxyz")));
+    ASSERT_TRUE(buf->toString()->equals(str("abcxyz")));
 }
 
 TEST(GTestBuffer, TestWriteRead) {

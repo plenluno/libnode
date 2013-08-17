@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/url.h>
@@ -16,7 +16,7 @@ TEST(GTestHttpEcho, TestConnectionKeepAlive) {
     GTestHttpServerOnEnd::clear();
     GTestHttpClientOnResponse::clear();
 
-    String::CPtr msg = String::create("abc");
+    String::CPtr msg = str("abc");
 
     http::Server::Ptr srv = http::Server::create();
     GTestHttpServerOnRequest::Ptr onRequest(
@@ -24,8 +24,7 @@ TEST(GTestHttpEcho, TestConnectionKeepAlive) {
     srv->on(http::Server::EVENT_REQUEST, onRequest);
     srv->listen(10000);
 
-    String::CPtr url = String::create("http://127.0.0.1:10000/xyz");
-    JsObject::Ptr options = url::parse(url);
+    JsObject::Ptr options = url::parse(str("http://127.0.0.1:10000/xyz"));
     JsObject::Ptr headers = JsObject::create();
     headers->put(
         http::HEADER_CONTENT_LENGTH,
@@ -63,7 +62,7 @@ TEST(GTestHttpEcho, TestConnectionClose) {
     GTestHttpServerOnEnd::clear();
     GTestHttpClientOnResponse::clear();
 
-    String::CPtr msg = String::create("xyz");
+    String::CPtr msg = str("xyz");
 
     http::Server::Ptr srv = http::Server::create();
     GTestHttpServerOnRequest::Ptr onRequest(
@@ -71,12 +70,9 @@ TEST(GTestHttpEcho, TestConnectionClose) {
     srv->on(http::Server::EVENT_REQUEST, onRequest);
     srv->listen(10000);
 
-    String::CPtr url = String::create("http://127.0.0.1:10000/abc");
-    JsObject::Ptr options = url::parse(url);
+    JsObject::Ptr options = url::parse(str("http://127.0.0.1:10000/abc"));
     JsObject::Ptr headers = JsObject::create();
-    headers->put(
-        http::HEADER_CONNECTION,
-        String::create("close"));
+    headers->put(http::HEADER_CONNECTION, str("close"));
     headers->put(
         http::HEADER_CONTENT_LENGTH,
         String::valueOf(Buffer::byteLength(msg)));

@@ -78,11 +78,11 @@ TEST(GTestEventEmitter, TestCreate) {
 
 TEST(GTestEventEmitter, TestOnAndAddListener) {
     EventEmitter::Ptr ee = EventEmitter::create();
-    String::CPtr event = String::create("event");
+    String::CPtr event = str("event");
     JsFunction::Ptr add = Add::create();
     JsFunction::Ptr sub = Sub::create();
     ee->on(event, add);
-    ee->addListener(String::create("event"), sub);
+    ee->addListener(str("event"), sub);
 
     JsArray::Ptr a = ee->listeners(event);
     ASSERT_EQ(2, a->size());
@@ -97,7 +97,7 @@ TEST(GTestEventEmitter, TestOnAndAddListener) {
 
 TEST(GTestEventEmitter, TestEmit) {
     EventEmitter::Ptr ee = EventEmitter::create();
-    String::CPtr event = String::create("event");
+    String::CPtr event = str("event");
     JsFunction::Ptr add = Add::create();
     JsFunction::Ptr sub = Sub::create();
     ee->on(event, add);
@@ -123,7 +123,7 @@ TEST(GTestEventEmitter, TestEmit) {
 
 TEST(GTestEventEmitter, TestEmit2) {
     EventEmitter::Ptr ee = EventEmitter::create();
-    String::CPtr event = String::create("event");
+    String::CPtr event = str("event");
     JsFunction::Ptr add = Add::create();
     ee->on(event, add);
 
@@ -151,7 +151,7 @@ TEST(GTestEventEmitter, TestEmit2) {
 
 TEST(GTestEventEmitter, TestRemoveListener) {
     EventEmitter::Ptr ee = EventEmitter::create();
-    String::CPtr event = String::create("event");
+    String::CPtr event = str("event");
     JsFunction::Ptr add = Add::create();
     JsFunction::Ptr sub = Sub::create();
     ee->once(event, add);
@@ -171,7 +171,7 @@ TEST(GTestEventEmitter, TestRemoveListener) {
 
 TEST(GTestEventEmitter, TestRemoveAllListener) {
     EventEmitter::Ptr ee = EventEmitter::create();
-    String::CPtr event = String::create("event");
+    String::CPtr event = str("event");
     JsFunction::Ptr add = Add::create();
     JsFunction::Ptr sub = Sub::create();
     ee->once(event, add);
@@ -184,7 +184,7 @@ TEST(GTestEventEmitter, TestRemoveAllListener) {
 
 TEST(GTestEventEmitter, TestOnce) {
     EventEmitter::Ptr ee = EventEmitter::create();
-    String::CPtr event = String::create("event");
+    String::CPtr event = str("event");
     JsFunction::Ptr add = Add::create();
     JsFunction::Ptr sub = Sub::create();
     ee->once(event, add);

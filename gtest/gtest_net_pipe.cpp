@@ -13,7 +13,7 @@ TEST(GTestNetPipe, TestPipe) {
     GTestOnEnd::clear();
     GTestOnClose::clear();
 
-    String::CPtr path = String::create("./echo.sock");
+    String::CPtr path = str("./echo.sock");
     net::Server::Ptr server = net::createServer();
     server->on(
         net::Server::EVENT_CONNECTION,
@@ -42,7 +42,7 @@ TEST(GTestNetPipe, TestPipe) {
     for (Size i = 0; i < numMsgs; i++) {
         console::printf(console::LEVEL_INFO, ".");
         String::CPtr msg = messages->getCPtr<Buffer>(i)->toString();
-        ASSERT_TRUE(msg->equals(String::create("abc")));
+        ASSERT_TRUE(msg->equals(str("abc")));
     }
     console::printf(console::LEVEL_INFO, "\n");
 }

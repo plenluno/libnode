@@ -73,7 +73,7 @@ TEST(GTestMessageQueue, TestPostMessageSameThread) {
     mq->on(MessageQueue::EVENT_MESSAGE, onMessage);
 
     for (UInt i = 0; i < NUM_POSTS; i++) {
-        mq->postMessage(String::create("msg"));
+        mq->postMessage(str("msg"));
     }
 
     node::run();

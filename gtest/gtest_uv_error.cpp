@@ -16,21 +16,18 @@ TEST(GTestError, TestCreate) {
 }
 
 TEST(GTestError, TestMessage) {
-    String::CPtr strEOF = String::create("end of file");
     Error::CPtr e = Error::create(Error::_EOF);
-    ASSERT_TRUE(e->message()->equals(strEOF));
+    ASSERT_TRUE(e->message()->equals(str("end of file")));
 }
 
 TEST(GTestError, TestToString) {
-    String::CPtr strEOF = String::create("end of file");
     Error::CPtr e = Error::create(Error::_EOF);
-    ASSERT_TRUE(e->toString()->equals(strEOF));
+    ASSERT_TRUE(e->toString()->equals(str("end of file")));
 }
 
 TEST(GTestError, TestValueOf) {
-    String::CPtr strEOF = String::create("end of file");
     Error::CPtr e = Error::valueOf(UV_EOF);
-    ASSERT_TRUE(e->message()->equals(strEOF));
+    ASSERT_TRUE(e->message()->equals(str("end of file")));
 }
 
 TEST(GTestError, TestInstanceOf) {

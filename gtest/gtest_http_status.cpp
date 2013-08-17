@@ -15,26 +15,21 @@ TEST(GTestHttpStatus, TestCreate) {
 }
 
 TEST(GTestHttpStatus, TestMessage) {
-    String::CPtr strNotFound = String::create("Not Found");
-    String::CPtr strUnknown = String::create("Unknown");
-
     Status::CPtr s = Status::create(Status::NOT_FOUND);
-    ASSERT_TRUE(s->message()->equals(strNotFound));
+    ASSERT_TRUE(s->message()->equals(str("Not Found")));
 
     s = Status::create(libj::Status::OK);
-    ASSERT_TRUE(s->message()->equals(strUnknown));
+    ASSERT_TRUE(s->message()->equals(str("Unknown")));
 }
 
 TEST(GTestHttpStatus, TestMessage2) {
-    String::CPtr str404 = String::create("404");
-    Status::CPtr s = Status::create(Status::NOT_FOUND, str404);
-    ASSERT_TRUE(s->message()->equals(str404));
+    Status::CPtr s = Status::create(Status::NOT_FOUND, str("404"));
+    ASSERT_TRUE(s->message()->equals(str("404")));
 }
 
 TEST(GTestHttpStatus, TestToString) {
-    String::CPtr strNotFound = String::create("Not Found");
     Status::CPtr s = Status::create(Status::NOT_FOUND);
-    ASSERT_TRUE(s->toString()->equals(strNotFound));
+    ASSERT_TRUE(s->toString()->equals(str("Not Found")));
 }
 
 TEST(GTestHttpStatus, TestInstanceOf) {

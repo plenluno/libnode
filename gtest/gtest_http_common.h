@@ -31,9 +31,7 @@ class GTestHttpServerOnEnd : LIBJ_JS_FUNCTION(GTestHttpServerOnEnd)
     virtual Value operator()(JsArray::Ptr args) {
         String::CPtr body = onData_->string();
 
-        res_->setHeader(
-            http::HEADER_CONTENT_TYPE,
-            String::create("text/plain"));
+        res_->setHeader(http::HEADER_CONTENT_TYPE, str("text/plain"));
         if (!chunked_) {
             res_->setHeader(
                 http::HEADER_CONTENT_LENGTH,

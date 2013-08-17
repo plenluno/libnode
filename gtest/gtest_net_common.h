@@ -78,9 +78,9 @@ class GTestNetSocketOnConnect : LIBJ_JS_FUNCTION(GTestNetSocketOnConnect)
     GTestNetSocketOnConnect(net::Socket::Ptr sock) : sock_(sock) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        sock_->write(String::create("a"));
-        sock_->write(String::create("b"));
-        sock_->end(String::create("c"));
+        sock_->write(str("a"));
+        sock_->write(str("b"));
+        sock_->end(str("c"));
         return Status::OK;
     }
 

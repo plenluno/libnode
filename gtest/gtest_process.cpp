@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/node.h>
@@ -54,7 +54,7 @@ TEST(GTestProcess, TestNextTick) {
     process::nextTick(JsFunction::Ptr(new GTestProcessNextTick1(a)));
     process::nextTick(JsFunction::Ptr(new GTestProcessNextTick3(a)));
     node::run();
-    ASSERT_TRUE(a->toString()->equals(String::create("1,3,2")));
+    ASSERT_TRUE(a->toString()->equals(str("1,3,2")));
 }
 
 }  // namespace node
