@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 
@@ -9,7 +9,7 @@ namespace node {
 
 static const UInt NUM_CONNS = 7;
 
-TEST(GTestNetTcpEcho, TestTcpEcho) {
+TEST(GTestNetTcp, TestTcp) {
     GTestOnEnd::clear();
     GTestOnClose::clear();
 

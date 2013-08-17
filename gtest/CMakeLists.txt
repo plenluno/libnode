@@ -17,8 +17,8 @@ set(libnode-test-src
     gtest_http_echo_old.cpp
     gtest_http_static.cpp
     gtest_http_status.cpp
-#   gtest_net_pipe_echo.cpp
-    gtest_net_tcp_echo.cpp
+    gtest_net_pipe.cpp
+    gtest_net_tcp.cpp
     gtest_path.cpp
     gtest_process.cpp
     gtest_querystring.cpp
