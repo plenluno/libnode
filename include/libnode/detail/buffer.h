@@ -16,7 +16,7 @@ class Buffer : public I {
     typedef typename I::CPtr CPtr;
 
     Buffer(Size length)
-        : buffer_(new libj::detail::JsArrayBuffer(length))
+        : buffer_(new libj::detail::JsArrayBuffer(length, false))
         , offset_(0)
         , length_(length) {}
 
