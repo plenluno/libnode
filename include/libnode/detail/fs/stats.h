@@ -34,11 +34,11 @@ class Stats : public libj::detail::JsObject<node::fs::Stats> {
         put(node::fs::STAT_BLOCKS,  static_cast<Long>(s->st_blocks));
 #endif
         put(node::fs::STAT_ATIME,
-            JsDate::create(static_cast<Double>(s->st_atime)));
+            JsDate::create(static_cast<Double>(s->st_atime) * 1000));
         put(node::fs::STAT_MTIME,
-            JsDate::create(static_cast<Double>(s->st_mtime)));
+            JsDate::create(static_cast<Double>(s->st_mtime) * 1000));
         put(node::fs::STAT_CTIME,
-            JsDate::create(static_cast<Double>(s->st_ctime)));
+            JsDate::create(static_cast<Double>(s->st_ctime) * 1000));
     }
 
     virtual Boolean isFile() const {
