@@ -19,7 +19,7 @@ class Stats : public libj::detail::JsObject<node::fs::Stats> {
  public:
     LIBJ_MUTABLE_DEFS(Stats, node::fs::Stats);
 
-    Stats(const struct stat* s)
+    Stats(const uv_statbuf_t* s)
         : mode_(static_cast<Int>(s->st_mode)) {
         put(node::fs::STAT_DEV,     static_cast<Int>(s->st_dev));
         put(node::fs::STAT_INO,     static_cast<Long>(s->st_ino));

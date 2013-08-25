@@ -86,7 +86,7 @@ static void onError(uv_fs_t* req) {
 
 static node::fs::Stats::Ptr getStats(uv_fs_t* req) {
     return node::fs::Stats::Ptr(
-        new Stats(static_cast<const struct stat*>(req->ptr)));
+        new Stats(static_cast<const uv_statbuf_t*>(req->ptr)));
 }
 
 static Buffer::Ptr getBuffer(uv_fs_t* req) {
