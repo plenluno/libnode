@@ -52,6 +52,7 @@ TEST(GTestFs, TestStat) {
     ASSERT_TRUE(!!stats);
     ASSERT_TRUE(stats->isFile());
     ASSERT_FALSE(stats->isDirectory());
+    ASSERT_EQ(5, to<Size>(stats->get(fs::STAT_SIZE)));
 }
 
 TEST(GTestFs, TestOpen) {
