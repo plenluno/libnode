@@ -13,6 +13,7 @@
 #include <libj/js_date.h>
 #include <libj/typed_linked_list.h>
 #include <libj/typed_value_holder.h>
+#include <libj/detail/to_string.h>
 
 #ifdef LIBJ_PF_WINDOWS
 #include <libj/platform/windows.h>
@@ -63,15 +64,18 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (hasFlag(CHUNKED_ENCODING)) {
             if (str) {
                 Size len = Buffer::byteLength(str, enc);
-                StringBuilder::Ptr data = StringBuilder::create();
-                data->append(toHex(len));
-                data->appendStr("\r\n");
-                data->append(str);
-                data->appendStr("\r\n");
-                return send(data->toString(), enc);
+                StringBuilder::Ptr sb = StringBuilder::create();
+                appendHex(sb, len);
+                sb->appendStr(symCRLF->data());
+                sb->append(str);
+                sb->appendStr(symCRLF->data());
+                return send(sb->toString(), enc);
             } else {
                 Size len = buf->length();
-                send(toHex(len)->concat(symCRLF));
+                StringBuilder::Ptr sb = StringBuilder::create();
+                appendHex(sb, len);
+                sb->appendStr(symCRLF->data());
+                send(sb->toString());
                 send(buf);
                 return send(symCRLF);
             }
@@ -110,7 +114,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
                 Size len = Buffer::byteLength(str, enc);
                 StringBuilder::Ptr chunk = StringBuilder::create();
                 chunk->append(header_);
-                chunk->append(toHex(len));
+                appendHex(chunk, len);
                 chunk->appendStr("\r\n");
                 chunk->append(str);
                 chunk->appendStr("\r\n0\r\n");
@@ -357,11 +361,10 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
     }
 
  private:
-    static String::CPtr toHex(Size val) {
-        const Size kLen = ((sizeof(Size) << 3) / 3) + 3;
-        char s[kLen];
-        snprintf(s, kLen, "%zx", val);
-        return String::create(s);
+    static void appendHex(StringBuilder::Ptr sb, Size n) {
+        const Size kLen = sizeof(Size) * 2;
+        Char buf[kLen];
+        sb->appendStr(libj::detail::unsignedToString<Size>(n, buf, kLen, 16));
     }
 
     static JsArray::Ptr freeParser(Parser* parser, OutgoingMessage* req) {
