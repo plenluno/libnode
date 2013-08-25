@@ -92,7 +92,7 @@ TEST(GTestHttpStatic, TestStatic) {
 
     JsArray::CPtr messages = GTestOnEnd::messages();
     ASSERT_EQ(1, messages->length());
-    ASSERT_TRUE(messages->getCPtr<String>(0)->length());
+    ASSERT_TRUE(!!messages->getCPtr<String>(0)->length());
 
     OnRead::unsetServer();
 }

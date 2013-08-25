@@ -74,7 +74,7 @@ static Int getCode(JsObject::CPtr res) {
     }
 }
 
-static Int getId(JsObject::CPtr res) {
+static Long getId(JsObject::CPtr res) {
     Value id = res->get(ID);
     if (id.isNull()) {
         return 0;
