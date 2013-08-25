@@ -15,10 +15,6 @@
 #include <libj/typed_value_holder.h>
 #include <libj/detail/to_string.h>
 
-#ifdef LIBJ_PF_WINDOWS
-#include <libj/platform/windows.h>
-#endif
-
 #include <assert.h>
 #include <stdio.h>
 
