@@ -169,7 +169,7 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
             if (vals) {
                 StringBuilder::Ptr sb = StringBuilder::create();
                 sb->append(vals);
-                sb->appendCStr(", ");
+                sb->appendStr(", ");
                 sb->append(value);
                 dest->put(field, sb->toString());
             } else {

@@ -94,7 +94,7 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
     if (auth && !self->getHeader(node::http::HEADER_AUTHORIZATION)) {
         Buffer::Ptr authBuf = Buffer::create(auth);
         StringBuilder::Ptr basicAuth = StringBuilder::create();
-        basicAuth->appendCStr("Basic ");
+        basicAuth->appendStr("Basic ");
         basicAuth->append(authBuf->toString(Buffer::BASE64));
         self->setHeader(
             node::http::HEADER_AUTHORIZATION,
@@ -114,7 +114,7 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
         firstLine->append(method);
         firstLine->appendChar(' ');
         firstLine->append(self->path_);
-        firstLine->appendCStr(" HTTP/1.1\r\n");
+        firstLine->appendStr(" HTTP/1.1\r\n");
         self->storeHeader(firstLine->toString(), self->renderHeaders());
     }
 
