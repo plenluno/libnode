@@ -16,3 +16,6 @@
 [submodule "deps/http-parser"]
 	path = deps/http-parser
 	url = https://github.com/plenluno/http-parser.git
+[submodule "example/deps/gflags"]
+	path = example/deps/gflags
+	url = https://github.com/plenluno/gflags.git
