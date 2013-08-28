@@ -6,7 +6,7 @@
 
 #include <libj/console.h>
 
-#include <google/gflags.h>
+#include <gflags/gflags.h>
 
 DEFINE_int32(repeat, 1, "the number of repetitions");
 
@@ -109,8 +109,8 @@ inline void httpClient(String::CPtr url) {
 
 int main(int argc, char** argv) {
     std::string usage = "usage: http-client url";
-    google::SetUsageMessage("\n\n" + usage);
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::SetUsageMessage("\n\n" + usage);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
     if (argc < 2) {
         libj::console::log(usage.data());
         return 0;
