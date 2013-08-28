@@ -4,6 +4,13 @@ cmake_minimum_required(VERSION 2.8)
 
 project(example)
 
+# gflags
+include_directories(
+    deps/gflags/include
+)
+
+add_subdirectory(deps/gflags)
+
 # hello-server
 add_executable(hello-server
     hello_server.cpp
