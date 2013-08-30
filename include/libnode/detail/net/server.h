@@ -193,11 +193,11 @@ class Server : public events::EventEmitter<I> {
             return false;
         } else {
             StringBuilder::Ptr key = StringBuilder::create();
-            key->append(String::valueOf(addressType));
+            key->append(addressType);
             key->appendChar(':');
             key->append(address);
             key->appendChar(':');
-            key->append(String::valueOf(port));
+            key->append(port);
             connectionKey_ = key->toString();
             typename EmitListening::Ptr emitListening(new EmitListening(this));
             process::nextTick(emitListening);
