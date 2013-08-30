@@ -62,15 +62,15 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
                 Size len = Buffer::byteLength(str, enc);
                 StringBuilder::Ptr sb = StringBuilder::create();
                 appendHex(sb, len);
-                sb->appendStr(symCRLF->data());
+                sb->appendStr(LIBJ_U("\r\n"));
                 sb->append(str);
-                sb->appendStr(symCRLF->data());
+                sb->appendStr(LIBJ_U("\r\n"));
                 return send(sb->toString(), enc);
             } else {
                 Size len = buf->length();
                 StringBuilder::Ptr sb = StringBuilder::create();
                 appendHex(sb, len);
-                sb->appendStr(symCRLF->data());
+                sb->appendStr(LIBJ_U("\r\n"));
                 send(sb->toString());
                 send(buf);
                 return send(symCRLF);
@@ -111,11 +111,11 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
                 StringBuilder::Ptr chunk = StringBuilder::create();
                 chunk->append(header_);
                 appendHex(chunk, len);
-                chunk->appendStr("\r\n");
+                chunk->appendStr(LIBJ_U("\r\n"));
                 chunk->append(str);
-                chunk->appendStr("\r\n0\r\n");
+                chunk->appendStr(LIBJ_U("\r\n0\r\n"));
                 chunk->append(trailer_);
-                chunk->appendStr("\r\n");
+                chunk->appendStr(LIBJ_U("\r\n"));
                 ret = socket_->write(chunk->toString(), enc);
             } else {
                 ret = socket_->write(header_->concat(str), enc);
@@ -128,9 +128,9 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (!hot) {
             if (hasFlag(CHUNKED_ENCODING)) {
                 StringBuilder::Ptr chunk = StringBuilder::create();
-                chunk->appendStr("0\r\n");
+                chunk->appendStr(LIBJ_U("0\r\n"));
                 chunk->append(trailer_);
-                chunk->appendStr("\r\n");
+                chunk->appendStr(LIBJ_U("\r\n"));
                 ret = send(chunk->toString());
             } else {
                 ret = send(String::create());
@@ -204,9 +204,9 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             String::CPtr val = toCPtr<String>(entry->getValue());
             if (key && val) {
                 trailer->append(key);
-                trailer->appendStr(": ");
+                trailer->appendStr(LIBJ_U(": "));
                 trailer->append(val);
-                trailer->appendStr("\r\n");
+                trailer->appendStr(LIBJ_U("\r\n"));
             }
         }
         trailer_ = trailer->toString();
@@ -245,11 +245,11 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         }
 
         StringBuilder::Ptr statusLine = StringBuilder::create();
-        statusLine->appendStr("HTTP/1.1 ");
+        statusLine->appendStr(LIBJ_U("HTTP/1.1 "));
         statusLine->append(status->code());
         statusLine->appendChar(' ');
         statusLine->append(status->message());
-        statusLine->appendStr("\r\n");
+        statusLine->appendStr(LIBJ_U("\r\n"));
 
         if (statusCode == 204 || statusCode == 304 ||
             (statusCode >= 100 && statusCode < 200)) {
@@ -499,9 +499,9 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         LIBJ_STATIC_SYMBOL_DEF(symChunked, "chunked");
 
         messageHeader->append(field);
-        messageHeader->appendStr(": ");
+        messageHeader->appendStr(LIBJ_U(": "));
         messageHeader->append(value);
-        messageHeader->appendStr("\r\n");
+        messageHeader->appendStr(LIBJ_U("\r\n"));
 
         String::CPtr lowerField = field->toLowerCase();
         if (lowerField->equals(node::http::LHEADER_CONNECTION)) {
@@ -557,9 +557,9 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         }
 
         if (hasFlag(SEND_DATE) && !hasFlag(SENT_DATE_HEADER)) {
-            messageHeader->appendStr("Date: ");
+            messageHeader->appendStr(LIBJ_U("Date: "));
             messageHeader->append(utcDate());
-            messageHeader->appendStr("\r\n");
+            messageHeader->appendStr(LIBJ_U("\r\n"));
         }
 
         if (!hasFlag(SENT_CONNECTION_HEADER)) {
@@ -569,14 +569,14 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
                  hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT) ||
                  agent_);
             messageHeader->append(node::http::HEADER_CONNECTION);
-            messageHeader->appendStr(": ");
+            messageHeader->appendStr(LIBJ_U(": "));
             if (shouldSendKeepAlive) {
-                messageHeader->appendStr("keep-alive");
+                messageHeader->appendStr(LIBJ_U("keep-alive"));
             } else {
                 setFlag(LAST);
-                messageHeader->appendStr("close");
+                messageHeader->appendStr(LIBJ_U("close"));
             }
-            messageHeader->appendStr("\r\n");
+            messageHeader->appendStr(LIBJ_U("\r\n"));
         }
 
         if (!hasFlag(SENT_CONTENT_LENGTH_HEADER) &&
@@ -585,7 +585,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
                 if (hasFlag(USE_CHUNKED_ENCODING_BY_DEFAULT)) {
                     messageHeader->append(
                         node::http::HEADER_TRANSFER_ENCODING);
-                    messageHeader->appendStr(": chunked\r\n");
+                    messageHeader->appendStr(LIBJ_U(": chunked\r\n"));
                     setFlag(CHUNKED_ENCODING);
                 } else {
                     setFlag(LAST);
@@ -595,7 +595,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             }
         }
 
-        messageHeader->appendStr("\r\n");
+        messageHeader->appendStr(LIBJ_U("\r\n"));
         header_ = messageHeader->toString();
         unsetFlag(HEADER_SENT);
 
@@ -653,7 +653,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             sb->append(method_);
             sb->appendChar(' ');
             sb->append(path_);
-            sb->appendStr(" HTTP/1.1\r\n");
+            sb->appendStr(LIBJ_U(" HTTP/1.1\r\n"));
             String::CPtr firstLine = sb->toString();
             storeHeader(firstLine, renderHeaders());
         }
