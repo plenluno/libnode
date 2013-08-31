@@ -66,7 +66,7 @@ JsObject::Ptr parse(String::CPtr urlStr) {
     if (scheme) {
         scheme = scheme->toLowerCase();
         StringBuilder::Ptr sb = StringBuilder::create();
-        sb->append(scheme);
+        sb->appendStr(scheme);
         sb->appendChar(':');
         urlObj->put(PROTOCOL, sb->toString());
     }
@@ -77,9 +77,9 @@ JsObject::Ptr parse(String::CPtr urlStr) {
 
         if (port) {
             StringBuilder::Ptr sb = StringBuilder::create();
-            sb->append(host);
+            sb->appendStr(host);
             sb->appendChar(':');
-            sb->append(port);
+            sb->appendStr(port);
             urlObj->put(HOST, sb->toString());
         } else {
             urlObj->put(HOST, host);
@@ -95,9 +95,9 @@ JsObject::Ptr parse(String::CPtr urlStr) {
 
         if (query) {
             StringBuilder::Ptr sb = StringBuilder::create();
-            sb->append(path);
+            sb->appendStr(path);
             sb->appendChar('?');
-            sb->append(query);
+            sb->appendStr(query);
             urlObj->put(PATH, sb->toString());
         } else {
             urlObj->put(PATH, path);
@@ -109,14 +109,14 @@ JsObject::Ptr parse(String::CPtr urlStr) {
 
         StringBuilder::Ptr sb = StringBuilder::create();
         sb->appendChar('?');
-        sb->append(query);
+        sb->appendStr(query);
         urlObj->put(SEARCH, sb->toString());
     }
 
     if (fragment) {
         StringBuilder::Ptr sb = StringBuilder::create();
         sb->appendChar('#');
-        sb->append(fragment);
+        sb->appendStr(fragment);
         urlObj->put(HASH, sb->toString());
     }
 

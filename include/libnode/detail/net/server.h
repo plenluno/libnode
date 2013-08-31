@@ -195,7 +195,7 @@ class Server : public events::EventEmitter<I> {
             StringBuilder::Ptr key = StringBuilder::create();
             key->append(addressType);
             key->appendChar(':');
-            key->append(address);
+            key->appendStr(address);
             key->appendChar(':');
             key->append(port);
             connectionKey_ = key->toString();

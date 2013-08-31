@@ -53,12 +53,12 @@ class Agent : public events::EventEmitter<node::http::Agent> {
         LIBJ_STATIC_SYMBOL_DEF(symRequest, "$request");
 
         StringBuilder::Ptr sb = StringBuilder::create();
-        sb->append(host);
+        sb->appendStr(host);
         sb->appendChar(':');
-        sb->append(port);
+        sb->appendStr(port);
         if (localAddress) {
             sb->appendChar(':');
-            sb->append(localAddress);
+            sb->appendStr(localAddress);
         }
         String::CPtr name = sb->toString();
 
@@ -169,12 +169,12 @@ class Agent : public events::EventEmitter<node::http::Agent> {
             String::CPtr localAddress = args->getCPtr<String>(3);
 
             StringBuilder::Ptr sb = StringBuilder::create();
-            sb->append(host);
+            sb->appendStr(host);
             sb->appendChar(':');
-            sb->append(port);
+            sb->appendStr(port);
             if (localAddress) {
                 sb->appendChar(':');
-                sb->append(localAddress);
+                sb->appendStr(localAddress);
             }
             String::CPtr name = sb->toString();
 

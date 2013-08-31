@@ -168,9 +168,9 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
             String::CPtr vals = headers_->getCPtr<String>(field);
             if (vals) {
                 StringBuilder::Ptr sb = StringBuilder::create();
-                sb->append(vals);
+                sb->appendStr(vals);
                 sb->appendStr(LIBJ_U(", "));
-                sb->append(value);
+                sb->appendStr(value);
                 dest->put(field, sb->toString());
             } else {
                 dest->put(field, value);

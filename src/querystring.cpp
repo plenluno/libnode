@@ -108,14 +108,14 @@ String::CPtr stringify(JsObject::CPtr obj, Char sep, Char eq) {
                 if (i) {
                     res->appendChar(sep);
                 }
-                res->append(toString(key));
+                res->appendStr(toString(key));
                 res->appendChar(eq);
-                res->append(toString(ary->get(i)));
+                res->appendStr(toString(ary->get(i)));
             }
         } else {
-            res->append(toString(key));
+            res->appendStr(toString(key));
             res->appendChar(eq);
-            res->append(toString(val));
+            res->appendStr(toString(val));
         }
     }
     return res->toString();

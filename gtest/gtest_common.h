@@ -33,7 +33,7 @@ class GTestOnData : LIBJ_JS_FUNCTION(GTestOnData)
         if (buf) {
             bufs_->add(buf);
         } else if (str) {
-            strBuf_->append(str);
+            strBuf_->appendStr(str);
         } else {
             assert(false);
         }

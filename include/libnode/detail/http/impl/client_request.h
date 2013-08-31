@@ -83,9 +83,9 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
             self->setHeader(node::http::HEADER_HOST, host);
         } else {
             StringBuilder::Ptr hostHeader = StringBuilder::create();
-            hostHeader->append(host);
+            hostHeader->appendStr(host);
             hostHeader->appendChar(':');
-            hostHeader->append(port);
+            hostHeader->appendStr(port);
             self->setHeader(node::http::HEADER_HOST, hostHeader->toString());
         }
     }
@@ -95,7 +95,7 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
         Buffer::Ptr authBuf = Buffer::create(auth);
         StringBuilder::Ptr basicAuth = StringBuilder::create();
         basicAuth->appendStr(LIBJ_U("Basic "));
-        basicAuth->append(authBuf->toString(Buffer::BASE64));
+        basicAuth->appendStr(authBuf->toString(Buffer::BASE64));
         self->setHeader(
             node::http::HEADER_AUTHORIZATION,
             basicAuth->toString());
@@ -111,9 +111,9 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
 
     if (self->getHeader(node::http::HEADER_EXPECT)) {
         StringBuilder::Ptr firstLine = StringBuilder::create();
-        firstLine->append(method);
+        firstLine->appendStr(method);
         firstLine->appendChar(' ');
-        firstLine->append(self->path_);
+        firstLine->appendStr(self->path_);
         firstLine->appendStr(LIBJ_U(" HTTP/1.1\r\n"));
         self->storeHeader(firstLine->toString(), self->renderHeaders());
     }
