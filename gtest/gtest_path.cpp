@@ -196,6 +196,9 @@ TEST(GTestPath, TestBasename) {
     String::CPtr base = path::basename(null);
     ASSERT_TRUE(base->equals(str()));
 
+    base = path::basename(String::create());
+    ASSERT_TRUE(base->equals(str()));
+
     base = path::basename(str("/"));
     ASSERT_TRUE(base->equals(str()));
 

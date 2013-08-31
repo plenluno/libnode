@@ -4,6 +4,7 @@
 
 #include <libj/symbol.h>
 #include <libj/string_builder.h>
+#include <libj/typed_js_array.h>
 
 #ifdef LIBJ_PF_WINDOWS
 # include <libj/platform/windows.h>
@@ -17,6 +18,12 @@ namespace libj {
 namespace node {
 namespace path {
 
+#ifdef LIBJ_PF_WINDOWS
+static const Char SEP = '\\';
+#else
+static const Char SEP = '/';
+#endif
+
 String::CPtr normalize(String::CPtr path) {
     LIBJ_STATIC_SYMBOL_DEF(symCurrent, ".");
     LIBJ_STATIC_SYMBOL_DEF(symParent,  "..");
@@ -25,10 +32,11 @@ String::CPtr normalize(String::CPtr path) {
 
     Boolean absolute = false;
     Boolean endsWithSep = false;
-    JsArray::Ptr dirs = JsArray::create();
+    typedef TypedJsArray<String::CPtr> StringArray;
+    StringArray::Ptr dirs = StringArray::create();
     Size len = path->length();
     for (Size i = 0; i < len;) {
-        Size idx = path->indexOf('/', i);
+        Size idx = path->indexOf(SEP, i);
         if (idx == 0) {
             absolute = true;
         } else if (idx != i) {
@@ -38,16 +46,16 @@ String::CPtr normalize(String::CPtr path) {
             } else {
                 dir = path->substring(i, idx);
             }
-            if (dir->compareTo(symParent) == 0) {
+            if (dir->equals(symParent)) {
                 Size numDirs = dirs->size();
                 if (numDirs > 0 &&
-                    dirs->get(numDirs - 1).compareTo(symParent) != 0) {
-                    dirs->remove(numDirs - 1);
+                    !dirs->getTyped(numDirs - 1)->equals(symParent)) {
+                    dirs->removeTyped(numDirs - 1);
                 } else {
-                    dirs->add(dir);
+                    dirs->addTyped(dir);
                 }
-            } else if (dir->compareTo(symCurrent) != 0) {
-                dirs->add(dir);
+            } else if (!dir->equals(symCurrent)) {
+                dirs->addTyped(dir);
             }
         }
 
@@ -62,14 +70,14 @@ String::CPtr normalize(String::CPtr path) {
 
     StringBuilder::Ptr normal = StringBuilder::create();
     if (absolute)
-        normal->append(sep());
+        normal->appendChar(SEP);
     Size numDirs = dirs->size();
     for (Size i = 0; i < numDirs; i++) {
-        if (i) normal->append(sep());
-        normal->append(dirs->get(i));
+        if (i) normal->appendChar(SEP);
+        normal->appendStr(dirs->getTyped(i));
     }
     if (numDirs > 0 && endsWithSep)
-        normal->append(sep());
+        normal->appendChar(SEP);
     if (normal->length() == 0) {
         return symCurrent;
     } else {
@@ -91,37 +99,33 @@ String::CPtr join(JsArray::CPtr paths) {
             if (first) {
                 first = false;
             } else {
-                joined->append(sep());
+                joined->appendChar(SEP);
             }
-            joined->append(path);
+            joined->appendStr(path);
         }
     }
     return normalize(joined->toString());
 }
 
-
-static String::CPtr getCwd() {
+String::CPtr resolve(JsArray::CPtr paths) {
     const Size kMax = 8192;
     char dir[kMax];
     getcwd(dir, kMax);
-    return String::create(dir);
-}
 
-String::CPtr resolve(JsArray::CPtr paths) {
-    if (!paths) return getCwd();
+    if (!paths) return String::create(dir);
 
     StringBuilder::Ptr resolved = StringBuilder::create();
-    resolved->append(getCwd());
+    resolved->appendStr(dir);
     Size len = paths->length();
     for (Size i = 0; i < len; i++) {
         String::CPtr path = paths->getCPtr<String>(i);
         if (path) {
-            if (path->startsWith(sep())) {
+            if (path->charAt(0) == SEP) {
                 resolved = StringBuilder::create();
             } else if (!path->isEmpty()) {
-                resolved->append(sep());
+                resolved->appendChar(SEP);
             }
-            resolved->append(path);
+            resolved->appendStr(path);
         }
     }
     return normalize(resolved->toString());
@@ -144,7 +148,7 @@ String::CPtr dirname(String::CPtr path) {
         return symCurrent;
     } else {
         Size sepPos = pathLen - baseLen - 1;
-        assert(path->charAt(sepPos) == '/');
+        assert(path->charAt(sepPos) == SEP);
         if (sepPos) {
             return path->substring(0, sepPos);
         } else {  // path[0] is '/'
@@ -154,19 +158,24 @@ String::CPtr dirname(String::CPtr path) {
 }
 
 String::CPtr basename(String::CPtr path) {
-    LIBJ_STATIC_CONST_STRING_DEF(strDoubleSep, "//");
+    static const String::CPtr doubleSep = String::create(SEP, 2);
 
     if (!path) return String::create();
-    if (path->compareTo(sep()) == 0) return String::create();
-    if (path->compareTo(strDoubleSep) == 0) return String::create();
+
+    Size len = path->length();
+    if (!len) return String::create();
+
+    if (path->equals(sep())) return String::create();
+    if (path->equals(doubleSep)) return String::create();
 
     Size lastIndex;
-    Size len = path->length();
-    if (path->endsWith(sep())) {
-        Size from = len - sep()->length() - 1;
-        lastIndex = path->lastIndexOf(sep(), from);
+    assert(len >= 1);
+    if (path->charAt(len - 1) == SEP) {
+        assert(len >= 2);
+        Size from = len - 2;
+        lastIndex = path->lastIndexOf(SEP, from);
     } else {
-        lastIndex = path->lastIndexOf(sep());
+        lastIndex = path->lastIndexOf(SEP);
     }
     String::CPtr base;
     if (lastIndex == NO_POS) {
@@ -196,8 +205,8 @@ String::CPtr extname(String::CPtr path) {
 }
 
 String::CPtr sep() {
-    LIBJ_STATIC_SYMBOL_DEF(symSep, "/");
-    return symSep;
+    static const String::CPtr sep = String::create(SEP);
+    return sep;
 }
 
 }  // namespace path
