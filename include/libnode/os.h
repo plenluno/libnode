@@ -9,6 +9,8 @@ namespace libj {
 namespace node {
 namespace os {
 
+String::CPtr endianness();
+
 JsObject::Ptr networkInterface();
 
 }  // namespace os
