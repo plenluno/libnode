@@ -260,7 +260,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             unsetFlag(SHOULD_KEEP_ALIVE);
         }
 
-        storeHeader(statusLine->toString(), headers);
+        storeHeader(statusLine, headers);
     }
 
     Boolean headersSent() const {
@@ -525,15 +525,14 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         }
     }
 
-    void storeHeader(String::CPtr firstLine, libj::JsObject::CPtr headers) {
+    void storeHeader(StringBuilder::Ptr firstLine, libj::JsObject::CPtr headers) {
         unsetFlag(SENT_CONNECTION_HEADER);
         unsetFlag(SENT_CONTENT_LENGTH_HEADER);
         unsetFlag(SENT_TRANSFER_ENCODING_HEADER);
         unsetFlag(SENT_DATE_HEADER);
         unsetFlag(SENT_EXPECT_HEADER);
 
-        StringBuilder::Ptr messageHeader = StringBuilder::create();
-        messageHeader->appendStr(firstLine);
+        StringBuilder::Ptr messageHeader = firstLine;
 
         if (headers) {
             typedef libj::JsObject::Entry Entry;
@@ -649,12 +648,11 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             writeHead(statusCode_);
         } else {
             assert(method_ && path_);
-            StringBuilder::Ptr sb = StringBuilder::create();
-            sb->appendStr(method_);
-            sb->appendChar(' ');
-            sb->appendStr(path_);
-            sb->appendStr(LIBJ_U(" HTTP/1.1\r\n"));
-            String::CPtr firstLine = sb->toString();
+            StringBuilder::Ptr firstLine = StringBuilder::create();
+            firstLine->appendStr(method_);
+            firstLine->appendChar(' ');
+            firstLine->appendStr(path_);
+            firstLine->appendStr(LIBJ_U(" HTTP/1.1\r\n"));
             storeHeader(firstLine, renderHeaders());
         }
     }

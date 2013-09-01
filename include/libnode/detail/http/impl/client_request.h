@@ -115,7 +115,7 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInClient(
         firstLine->appendChar(' ');
         firstLine->appendStr(self->path_);
         firstLine->appendStr(LIBJ_U(" HTTP/1.1\r\n"));
-        self->storeHeader(firstLine->toString(), self->renderHeaders());
+        self->storeHeader(firstLine, self->renderHeaders());
     }
 
     self->socketPath_ =
