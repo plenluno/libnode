@@ -525,7 +525,9 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         }
     }
 
-    void storeHeader(StringBuilder::Ptr firstLine, libj::JsObject::CPtr headers) {
+    void storeHeader(
+        StringBuilder::Ptr firstLine,
+        libj::JsObject::CPtr headers) {
         unsetFlag(SENT_CONNECTION_HEADER);
         unsetFlag(SENT_CONTENT_LENGTH_HEADER);
         unsetFlag(SENT_TRANSFER_ENCODING_HEADER);
