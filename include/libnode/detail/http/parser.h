@@ -18,6 +18,9 @@ namespace detail {
 namespace http {
 
 class Parser : public Flags {
+ private:
+    typedef TypedJsArray<String::CPtr> StringArray;
+
  public:
     Parser(
         enum http_parser_type type,
@@ -25,8 +28,8 @@ class Parser : public Flags {
         Size maxHeadersCount = 0)
         : url_(String::null())
         , method_(String::null())
-        , fields_(JsArray::create())
-        , values_(JsArray::create())
+        , fields_(StringArray::create())
+        , values_(StringArray::create())
         , maxHeadersCount_(maxHeadersCount)
         , socket_(sock)
         , incoming_(IncomingMessage::null())
@@ -123,36 +126,36 @@ class Parser : public Flags {
     static int onHeaderField(
         http_parser* parser, const char* at, size_t len) {
         Parser* self = static_cast<Parser*>(parser->data);
-        JsArray::Ptr fields = self->fields_;
-        JsArray::Ptr values = self->values_;
+        StringArray::Ptr fields = self->fields_;
+        StringArray::Ptr values = self->values_;
         Size numFields = fields->size();
         Size numValues = values->size();
         if (numFields == numValues) {
-            fields->add(String::null());
+            fields->addTyped(String::null());
         }
 
         assert(fields->size() == numValues + 1);
-        String::CPtr field = fields->getCPtr<String>(numValues);
+        String::CPtr field = fields->getTyped(numValues);
         field = concat(field, at, len);
-        fields->set(numValues, field);
+        fields->setTyped(numValues, field);
         return 0;
     }
 
     static int onHeaderValue(
         http_parser* parser, const char* at, size_t len) {
         Parser* self = static_cast<Parser*>(parser->data);
-        JsArray::Ptr fields = self->fields_;
-        JsArray::Ptr values = self->values_;
+        StringArray::Ptr fields = self->fields_;
+        StringArray::Ptr values = self->values_;
         Size numFields = fields->size();
         Size numValues = values->size();
         if (numValues != numFields) {
-            values->add(String::null());
+            values->addTyped(String::null());
         }
 
         assert(values->size() == numFields);
-        String::CPtr value = values->getCPtr<String>(numFields - 1);
+        String::CPtr value = values->getTyped(numFields - 1);
         value = concat(value, at, len);
-        values->set(numFields - 1, value);
+        values->setTyped(numFields - 1, value);
         return 0;
     }
 
@@ -267,8 +270,8 @@ class Parser : public Flags {
         }
         for (Size i = 0; i < n; i++) {
             incoming_->addHeaderLine(
-                fields_->getCPtr<String>(i),
-                values_->getCPtr<String>(i));
+                fields_->getTyped(i),
+                values_->getTyped(i));
         }
 
         url_ = String::null();
@@ -310,8 +313,8 @@ class Parser : public Flags {
             assert(values_->size() == n);
             for (Size i = 0; i < n; i++) {
                 incoming_->addHeaderLine(
-                    fields_->getCPtr<String>(i),
-                    values_->getCPtr<String>(i));
+                    fields_->getTyped(i),
+                    values_->getTyped(i));
             }
             url_ = String::null();
             fields_->clear();
@@ -349,8 +352,8 @@ class Parser : public Flags {
     Int majorVer_;
     Int minorVer_;
     Int statusCode_;
-    JsArray::Ptr fields_;
-    JsArray::Ptr values_;
+    StringArray::Ptr fields_;
+    StringArray::Ptr values_;
     Size maxHeadersCount_;
     net::Socket::Ptr socket_;
     IncomingMessage::Ptr incoming_;
