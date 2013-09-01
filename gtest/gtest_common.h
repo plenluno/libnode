@@ -3,13 +3,19 @@
 #ifndef LIBNODE_GTEST_GTEST_COMMON_H_
 #define LIBNODE_GTEST_GTEST_COMMON_H_
 
+#include <gtest/gtest.h>
+
 #include <libnode/buffer.h>
 #include <libnode/node.h>
+#include <libnode/url.h>
 
 #include <libj/console.h>
 #include <libj/debug_print.h>
+#include <libj/json.h>
+#include <libj/js_closure.h>
 #include <libj/js_function.h>
 #include <libj/string_builder.h>
+#include <libj/symbol.h>
 
 #include <assert.h>
 

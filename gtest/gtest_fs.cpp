@@ -1,6 +1,5 @@
 // Copyright (c) 2013 Plenluno All rights reserved.
 
-#include <gtest/gtest.h>
 #include <libnode/fs.h>
 #include <libnode/path.h>
 

@@ -1,8 +1,6 @@
 // Copyright (c) 2012-2013 Plenluno All rights reserved.
 
-#include <gtest/gtest.h>
 #include <libnode/fs.h>
-#include <libnode/url.h>
 
 #include "./gtest_http_common.h"
 

@@ -1,10 +1,7 @@
 // Copyright (c) 2013 Plenluno All rights reserved.
 
-#include <gtest/gtest.h>
 #include <libnode/os.h>
 #include <libnode/net.h>
-
-#include <libj/symbol.h>
 
 #include "./gtest_common.h"
 

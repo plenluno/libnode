@@ -1,7 +1,5 @@
 // Copyright (c) 2012-2013 Plenluno All rights reserved.
 
-#include <gtest/gtest.h>
-
 #include "./gtest_http_common.h"
 #include "./gtest_net_common.h"
 
