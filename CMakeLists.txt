@@ -197,6 +197,7 @@ set(libnode-src
     src/net/server.cpp
     src/net/socket.cpp
     src/node.cpp
+    src/os.cpp
     src/path.cpp
     src/process.cpp
     src/querystring.cpp
