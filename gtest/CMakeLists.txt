@@ -15,6 +15,7 @@ set(libnode-test-src
     gtest_http_common.cpp
     gtest_http_echo.cpp
     gtest_http_echo_old.cpp
+    gtest_http_header_scanner.cpp
     gtest_http_static.cpp
     gtest_http_status.cpp
     gtest_net_pipe.cpp

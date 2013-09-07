@@ -129,27 +129,6 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
     void addHeaderLine(String::CPtr name, String::CPtr value) {
         LIBJ_STATIC_SYMBOL_DEF(symExtPrefix, "x-");
 
-        static Set::Ptr commaSeparated = Set::null();
-        if (!commaSeparated) {
-            commaSeparated = Set::create();
-            LIBJ_DEBUG_PRINT(
-                "static: Set %p",
-                LIBJ_DEBUG_OBJECT_PTR(commaSeparated));
-
-            commaSeparated->add(node::http::LHEADER_ACCEPT);
-            commaSeparated->add(node::http::LHEADER_ACCEPT_CHARSET);
-            commaSeparated->add(node::http::LHEADER_ACCEPT_ENCODING);
-            commaSeparated->add(node::http::LHEADER_ACCEPT_LANGUAGE);
-            commaSeparated->add(node::http::LHEADER_CONNECTION);
-            commaSeparated->add(node::http::LHEADER_COOKIE);
-            commaSeparated->add(node::http::LHEADER_PRAGMA);
-            commaSeparated->add(node::http::LHEADER_LINK);
-            commaSeparated->add(node::http::LHEADER_WWW_AUTHENTICATE);
-            commaSeparated->add(node::http::LHEADER_PROXY_AUTHENTICATE);
-            commaSeparated->add(node::http::LHEADER_SEC_WEBSOCKET_EXTENSIONS);
-            commaSeparated->add(node::http::LHEADER_SEC_WEBSOCKET_PROTOCOL);
-        }
-
         assert(name && value);
 
         libj::JsObject::Ptr dest = hasFlag(COMPLETE) ? trailers_ : headers_;
@@ -163,8 +142,19 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
                 vals->add(value);
                 dest->put(field, vals);
             }
-        } else if (commaSeparated->contains(field) ||
-                   field->startsWith(symExtPrefix)) {
+        } else if (field->startsWith(symExtPrefix) ||
+            field->equals(node::http::LHEADER_ACCEPT) ||
+            field->equals(node::http::LHEADER_ACCEPT_CHARSET) ||
+            field->equals(node::http::LHEADER_ACCEPT_ENCODING) ||
+            field->equals(node::http::LHEADER_ACCEPT_LANGUAGE) ||
+            field->equals(node::http::LHEADER_CONNECTION) ||
+            field->equals(node::http::LHEADER_COOKIE) ||
+            field->equals(node::http::LHEADER_PRAGMA) ||
+            field->equals(node::http::LHEADER_LINK) ||
+            field->equals(node::http::LHEADER_WWW_AUTHENTICATE) ||
+            field->equals(node::http::LHEADER_PROXY_AUTHENTICATE) ||
+            field->equals(node::http::LHEADER_SEC_WEBSOCKET_EXTENSIONS) ||
+            field->equals(node::http::LHEADER_SEC_WEBSOCKET_PROTOCOL)) {
             String::CPtr vals = headers_->getCPtr<String>(field);
             if (vals) {
                 StringBuilder::Ptr sb = StringBuilder::create();

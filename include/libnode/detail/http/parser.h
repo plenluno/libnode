@@ -7,6 +7,7 @@
 #include <libnode/http/method.h>
 #include <libnode/detail/flags.h>
 #include <libnode/detail/net/socket.h>
+#include <libnode/detail/http/header_scanner.h>
 #include <libnode/detail/http/incoming_message.h>
 
 #include <assert.h>
@@ -126,18 +127,8 @@ class Parser : public Flags {
     static int onHeaderField(
         http_parser* parser, const char* at, size_t len) {
         Parser* self = static_cast<Parser*>(parser->data);
-        StringArray::Ptr fields = self->fields_;
-        StringArray::Ptr values = self->values_;
-        Size numFields = fields->size();
-        Size numValues = values->size();
-        if (numFields == numValues) {
-            fields->addTyped(String::null());
-        }
-
-        assert(fields->size() == numValues + 1);
-        String::CPtr field = fields->getTyped(numValues);
-        field = concat(field, at, len);
-        fields->setTyped(numValues, field);
+        assert(self->fields_->size() == self->values_->size());
+        self->fields_->addTyped(scanHeaderField(at, len));
         return 0;
     }
 
