@@ -5,8 +5,12 @@
 
 #include <libj/endian.h>
 
-#include <sys/param.h>
-#include <sys/utsname.h>
+#ifdef LIBJ_PF_WINDOWS
+# define MAXHOSTNAMELEN 256
+#else
+# include <sys/param.h>
+# include <sys/utsname.h>
+#endif
 
 namespace libj {
 namespace node {
@@ -30,21 +34,41 @@ String::CPtr hostname() {
 }
 
 String::CPtr type() {
+#ifdef LIBJ_PF_WINDOWS
+    LIBJ_STATIC_SYMBOL_DEF(symType, "Windows_NT");
+
+    return symType;
+#else
     struct utsname info;
     if (uname(&info) < 0) {
         return String::null();
     } else {
         return String::create(info.sysname);
     }
+#endif
 }
 
 String::CPtr release() {
+#ifdef LIBJ_PF_WINDOWS
+    OSVERSIONINFO info;
+    info.dwOSVersionInfoSize = sizeof(info);
+    if (!GetVersionEx(&info)) return String::null();
+
+    StringBuilder::Ptr sb = StringBuilder::create();
+    sb->append(static_cast<ULong>(info.dwMajorVersion));
+    sb->appendChar('.');
+    sb->append(static_cast<ULong>(info.dwMinorVersion));
+    sb->appendChar('.');
+    sb->append(static_cast<ULong>(info.dwBuildNumber));
+    return sb->toString();
+#else
     struct utsname info;
     if (uname(&info) < 0) {
         return String::null();
     } else {
         return String::create(info.release);
     }
+#endif
 }
 
 JsObject::Ptr networkInterface() {
