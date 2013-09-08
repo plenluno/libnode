@@ -8,6 +8,20 @@
 namespace libj {
 namespace node {
 
+TEST(GTestOs, TestOsInfo) {
+    String::CPtr hostname = os::hostname();
+    String::CPtr type = os::type();
+    String::CPtr release = os::release();
+
+    ASSERT_TRUE(!!hostname);
+    ASSERT_TRUE(!!type);
+    ASSERT_TRUE(!!release);
+
+    console::log(hostname);
+    console::log(type);
+    console::log(release);
+}
+
 TEST(GTestOs, TestNetworkInterface) {
     LIBJ_STATIC_SYMBOL_DEF(symIPv4,     "IPv4");
     LIBJ_STATIC_SYMBOL_DEF(symIPv6,     "IPv6");

@@ -11,7 +11,15 @@ namespace os {
 
 String::CPtr endianness();
 
+String::CPtr hostname();
+
+String::CPtr type();
+
+String::CPtr release();
+
 JsObject::Ptr networkInterface();
+
+String::CPtr EOL();
 
 }  // namespace os
 }  // namespace node
