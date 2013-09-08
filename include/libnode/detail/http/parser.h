@@ -128,7 +128,7 @@ class Parser : public Flags {
         http_parser* parser, const char* at, size_t len) {
         Parser* self = static_cast<Parser*>(parser->data);
         assert(self->fields_->size() == self->values_->size());
-        self->fields_->addTyped(scanHeaderField(at, len));
+        self->fields_->addTyped(scanHeaderField<char>(at, len));
         return 0;
     }
 

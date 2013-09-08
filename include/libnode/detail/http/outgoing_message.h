@@ -159,7 +159,8 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
 
     String::CPtr getHeader(String::CPtr name) const {
         if (name && headers_) {
-            return headers_->getCPtr<String>(name->toLowerCase());
+            return headers_->getCPtr<String>(
+                scanHeaderField<Char>(name->data(), name->length()));
         } else {
             return String::null();
         }
@@ -175,7 +176,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             headerNames_ = libj::JsObject::create();
         }
 
-        String::CPtr key = name->toLowerCase();
+        String::CPtr key = scanHeaderField<Char>(name->data(), name->length());
         headers_->put(key, value);
         headerNames_->put(key, name);
         return true;
@@ -185,7 +186,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         if (header_) return false;
         if (!name || !headers_) return false;
 
-        String::CPtr key = name->toLowerCase();
+        String::CPtr key = scanHeaderField<Char>(name->data(), name->length());
         headers_->remove(key);
         headerNames_->remove(key);
         return true;
@@ -503,7 +504,8 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         messageHeader->append(value);
         messageHeader->appendStr(LIBJ_U("\r\n"));
 
-        String::CPtr lowerField = field->toLowerCase();
+        String::CPtr lowerField =
+            scanHeaderField<Char>(field->data(), field->length());
         if (lowerField->equals(node::http::LHEADER_CONNECTION)) {
             setFlag(SENT_CONNECTION_HEADER);
             if (value.equals(symClose)) {

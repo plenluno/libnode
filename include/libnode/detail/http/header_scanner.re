@@ -10,13 +10,31 @@ namespace node {
 namespace detail {
 namespace http {
 
-#define YYCTYPE     char
 #define YYLIMIT     limit
 #define YYCURSOR    cursor
 #define YYMARKER    marker
 #define YYFILL(n)
 
-inline String::CPtr scanHeaderField(const char* buf, size_t len) {
+template<typename YYCTYPE>
+inline String::CPtr createLowerString(const YYCTYPE* buf, size_t len);
+
+template<>
+inline String::CPtr createLowerString(const char* buf, size_t len) {
+    return String::create(buf, String::UTF8, len)->toLowerCase();
+}
+
+template<>
+inline String::CPtr createLowerString(const char16_t* buf, size_t len) {
+    return String::create(buf, String::UTF16, len)->toLowerCase();
+}
+
+template<>
+inline String::CPtr createLowerString(const char32_t* buf, size_t len) {
+    return String::create(buf, String::UTF32, len)->toLowerCase();
+}
+
+template<typename YYCTYPE>
+inline String::CPtr scanHeaderField(const YYCTYPE* buf, size_t len) {
     if (!buf || !len) return String::create();
 
     const YYCTYPE* limit  = buf;
@@ -96,7 +114,7 @@ inline String::CPtr scanHeaderField(const char* buf, size_t len) {
 "Overwrite"                         { return node::http::LHEADER_OVERWRITE; }
 "Status-URI"                        { return node::http::LHEADER_STATUS_URI; }
 "Timeout"                           { return node::http::LHEADER_TIMEOUT; }
-[^]                                 { return String::create(buf, String::UTF8, len)->toLowerCase(); }
+[^]                                 { return createLowerString(buf, len); }
 */
 }
 
