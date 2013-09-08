@@ -6,9 +6,8 @@
 #include <libnode/debug_print.h>
 #include <libnode/detail/flags.h>
 
-#include <libj/status.h>
 #include <libj/js_function.h>
-#include <libj/js_object.h>
+#include <libj/typed_js_array.h>
 #include <libj/detail/js_object.h>
 
 namespace libj {
@@ -20,10 +19,16 @@ template<typename I>
 class EventEmitter
     : public libj::detail::JsObject<I>
     , public node::detail::Flags {
+ private:
+    typedef TypedJsArray<String::CPtr> StringArray;
+    typedef TypedJsArray<JsFunction::Ptr> JsFunctionArray;
+    typedef TypedJsArray<JsFunctionArray::Ptr> JsFunctionArrays;
+
  public:
     EventEmitter()
         : maxListeners_(10)
-        , events_(libj::JsObject::create()) {}
+        , events_(StringArray::create())
+        , listenerArrays_(JsFunctionArrays::create()) {}
 
     virtual void on(String::CPtr event, JsFunction::Ptr listener) {
         addListener(event, listener);
@@ -40,8 +45,12 @@ class EventEmitter
         String::CPtr event, JsFunction::Ptr listener) {
         if (!listener) return;
 
-        JsArray::Ptr ls = listeners(event);
-        ls->add(listener);
+        JsFunctionArray::Ptr ls = getListeners(event);
+        if (!ls) {
+            ls = newListeners(event);
+        }
+
+        ls->addTyped(listener);
         if (maxListeners_ && ls->length() > maxListeners_) {
             LIBNODE_DEBUG_PRINT("%d listeners added", ls->length());
         }
@@ -50,21 +59,22 @@ class EventEmitter
 
     virtual void removeListener(
         String::CPtr event, JsFunction::CPtr listener) {
-        JsArray::Ptr a = listeners(event);
-        Size n = a->size();
-        for (Size i = 0; i < n; i++) {
-            Value v = a->get(i);
-            if (v.is<Once>()) {
-                typename Once::Ptr once = toPtr<Once>(v);
+        JsFunctionArray::Ptr ls = getListeners(event);
+        if (!ls) return;
+
+        Size len = ls->length();
+        for (Size i = 0; i < len; i++) {
+            JsFunction::Ptr f = ls->getTyped(i);
+            if (f->is<Once>()) {
+                typename Once::Ptr once = LIBJ_STATIC_PTR_CAST(Once)(f);
                 if (once->listener()->equals(listener)) {
-                    a->remove(i);
-                    break;
+                    ls->removeTyped(i);
+                    return;
                 }
             } else {
-                JsFunction::Ptr func = toPtr<JsFunction>(v);
-                if (func->equals(listener)) {
-                    a->remove(i);
-                    break;
+                if (f->equals(listener)) {
+                    ls->removeTyped(i);
+                    return;
                 }
             }
         }
@@ -72,10 +82,18 @@ class EventEmitter
 
     virtual void removeAllListeners() {
         events_->clear();
+        listenerArrays_->clear();
     }
 
     virtual void removeAllListeners(String::CPtr event) {
-        events_->remove(event);
+        Size len = events_->length();
+        for (Size i = 0; i < len; i++) {
+            if (events_->getTyped(i)->equals(event)) {
+                events_->removeTyped(i);
+                listenerArrays_->removeTyped(i);
+                return;
+            }
+        }
     }
 
     virtual void setMaxListeners(Size max) {
@@ -83,26 +101,27 @@ class EventEmitter
     }
 
     virtual JsArray::Ptr listeners(String::CPtr event) {
-        JsArray::Ptr a = events_->getPtr<JsArray>(event);
-        if (a) {
-            return a;
-        } else {
-            a = JsArray::create();
-            events_->put(String::intern(event), a);
-            return a;
+        JsFunctionArray::Ptr ls = getListeners(event);
+        if (!ls) {
+            ls = newListeners(event);
         }
+        return ls;
     }
 
     virtual Boolean emit(
         String::CPtr event, JsArray::Ptr args = JsArray::null()) {
-        JsArray::Ptr a = listeners(event);
-        if (a->isEmpty()) return false;
+        JsFunctionArray::Ptr ls = getListeners(event);
+        if (!ls || ls->isEmpty()) return false;
 
         Size i = 0;
-        while (i < a->size()) {
-            Value v = a->get(i);
-            if (!v.is<Once>()) i++;
-            JsFunction::Ptr f = toPtr<JsFunction>(v);
+        Size len = ls->length();
+        while (i < len) {
+            JsFunction::Ptr f = ls->getTyped(i);
+            if (f->is<Once>()) {
+                len--;
+            } else {
+                i++;
+            }
             (*f)(args);
         }
         return true;
@@ -240,7 +259,7 @@ class EventEmitter
         Value operator()(JsArray::Ptr args) {
             (*listener_)(args);
             ee_->removeListener(event_, listener_);
-            return Status::OK;
+            return UNDEFINED;
         }
 
         JsFunction::Ptr listener() {
@@ -254,8 +273,27 @@ class EventEmitter
     };
 
  private:
+    JsFunctionArray::Ptr getListeners(String::CPtr event) {
+        Size len = events_->length();
+        for (Size i = 0; i < len; i++) {
+            if (events_->getTyped(i)->equals(event)) {
+                return listenerArrays_->getTyped(i);
+            }
+        }
+        return JsFunctionArray::null();
+    }
+
+    JsFunctionArray::Ptr newListeners(String::CPtr event) {
+        events_->addTyped(String::intern(event));
+        JsFunctionArray::Ptr ls = JsFunctionArray::create();
+        listenerArrays_->addTyped(ls);
+        return ls;
+    }
+
+ private:
     Size maxListeners_;
-    libj::JsObject::Ptr events_;
+    StringArray::Ptr events_;
+    JsFunctionArrays::Ptr listenerArrays_;
 };
 
 }  // namespace events
