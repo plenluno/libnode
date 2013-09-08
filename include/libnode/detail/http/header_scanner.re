@@ -13,7 +13,11 @@ namespace http {
 #define YYLIMIT     limit
 #define YYCURSOR    cursor
 #define YYMARKER    marker
+#ifdef LIBJ_PF_WINDOWS
 #define YYFILL(n)   NULL
+#else
+#define YYFILL(n)
+#endif
 
 template<typename YYCTYPE>
 inline String::CPtr createLowerString(const YYCTYPE* buf, size_t len);
