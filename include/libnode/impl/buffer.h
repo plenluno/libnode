@@ -16,8 +16,22 @@ inline Boolean Buffer::isBuffer(const Value& val) {
 
 inline Size Buffer::byteLength(String::CPtr str, Encoding enc) {
     if (str) {
-        if (enc == NONE) enc = UTF8;
-        return create(str, enc)->length();
+        if (enc == NONE || enc == UTF8) {
+            return str->toStdString().length();
+#ifdef LIBJ_USE_UTF32
+        } else if (enc == UTF16BE || enc == UTF16LE) {
+            return str->toStdU16String().length() << 1;
+        } else if (enc == UTF32BE || enc == UTF32LE) {
+            return str->length() << 2;
+#else
+        } else if (enc == UTF16BE || enc == UTF16LE) {
+            return str->length() << 1;
+        } else if (enc == UTF32BE || enc == UTF32LE) {
+            return str->toStdU32String().length() << 2;
+#endif
+        } else {
+            return create(str, enc)->length();
+        }
     } else {
         return 0;
     }

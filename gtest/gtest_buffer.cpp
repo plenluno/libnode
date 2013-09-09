@@ -54,7 +54,12 @@ TEST(GTestBuffer, TestByteLength) {
         0x00
     };
     String::CPtr str = String::create(d, String::UTF8);
-    ASSERT_EQ(9, Buffer::byteLength(str));
+    ASSERT_EQ(9,  Buffer::byteLength(str));
+    ASSERT_EQ(9,  Buffer::byteLength(str, Buffer::UTF8));
+    ASSERT_EQ(6,  Buffer::byteLength(str, Buffer::UTF16BE));
+    ASSERT_EQ(6,  Buffer::byteLength(str, Buffer::UTF16LE));
+    ASSERT_EQ(12, Buffer::byteLength(str, Buffer::UTF32BE));
+    ASSERT_EQ(12, Buffer::byteLength(str, Buffer::UTF32LE));
 }
 
 TEST(GTestBuffer, TestCopy) {

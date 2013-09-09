@@ -14,10 +14,9 @@ Buffer::Ptr Buffer::create(const void* data, Size length) {
     if (!data) return null();
 
     detail::Buffer<Buffer>* buf(new detail::Buffer<Buffer>(length));
-    const UByte* d = static_cast<const UByte*>(data);
-    for (Size i = 0; i < length; i++) {
-        buf->writeUInt8(d[i], i);
-    }
+    const UByte* src = static_cast<const UByte*>(data);
+    UByte* dst = static_cast<UByte*>(const_cast<void*>(buf->data()));
+    std::copy(src, src + length, dst);
     return Ptr(buf);
 }
 

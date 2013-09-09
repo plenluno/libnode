@@ -120,10 +120,10 @@ class Buffer : public I {
         Size remain = length_ - offset;
         len = len < length ? len : length;
         len = len < remain ? len : remain;
-        const UByte* data = reinterpret_cast<const UByte*>(s.c_str());
-        for (Size i = 0; i < len; i++) {
-            writeUInt8(data[i], offset + i);
-        }
+        const UByte* src = reinterpret_cast<const UByte*>(s.c_str());
+        UByte* dst = static_cast<UByte*>(const_cast<void*>(buffer_->data()));
+        dst += offset_ + offset;
+        std::copy(src, src + len, dst);
         return len;
     }
 
@@ -134,22 +134,24 @@ class Buffer : public I {
         Size sourceEnd = NO_POS) const {
         if (!target) return 0;
 
-        if (sourceEnd > length_)
-            sourceEnd = length_;
+        if (sourceEnd > length_) sourceEnd = length_;
+
         Size sourceLen = 0;
         if (sourceStart < sourceEnd) {
             sourceLen = sourceEnd - sourceStart;
         }
+
         Size copyLen = 0;
         if (sourceLen && targetStart < target->length()) {
             Size max = target->length() - targetStart;
             copyLen = sourceLen < max ? sourceLen : max;
         }
-        for (Size i = 0; i < copyLen; i++) {
-            UByte value;
-            readUInt8(sourceStart + i, &value);
-            target->writeUInt8(value, targetStart + i);
-        }
+
+        const UByte* src = static_cast<const UByte*>(buffer_->data());
+        UByte* dst = static_cast<UByte*>(const_cast<void*>(target->data()));
+        src += sourceStart + offset_;
+        dst += targetStart;
+        std::copy(src, src + copyLen, dst);
         return copyLen;
     }
 
