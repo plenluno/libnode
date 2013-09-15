@@ -19,9 +19,13 @@ TEST(GTestFreeList, TestFreeList1) {
 
     ASSERT_EQ(2, sl.length());
 
-    ASSERT_TRUE(sl.alloc()->equals(String::create("a")));
-    ASSERT_TRUE(sl.alloc()->equals(String::create("b")));
+    String::CPtr a = sl.alloc();
+    String::CPtr b = sl.alloc();
+    ASSERT_TRUE(a->equals(String::create("a")));
+    ASSERT_TRUE(b->equals(String::create("b")));
     ASSERT_TRUE(!sl.alloc());
+
+    sl.free(a);
 }
 
 TEST(GTestFreeList, TestFreeList12) {
@@ -34,9 +38,14 @@ TEST(GTestFreeList, TestFreeList12) {
 
     ASSERT_EQ(2, sl.length());
 
-    ASSERT_EQ("a", *sl.alloc());
-    ASSERT_EQ("b", *sl.alloc());
+    std::string* a = sl.alloc();
+    std::string* b = sl.alloc();
+    ASSERT_EQ("a", *a);
+    ASSERT_EQ("b", *b);
     ASSERT_TRUE(!sl.alloc());
+
+    sl.free(a);
+    delete b;
 }
 
 }  // namespace detail

@@ -53,6 +53,12 @@ class FreeList<T, false> {
         : max_(max)
         , list_(TypedLinkedList<T>::create()) {}
 
+    virtual ~FreeList() {
+        while (!list_->isEmpty()) {
+            delete alloc();
+        }
+    }
+
     T alloc() {
         if (list_->isEmpty()) {
             return NULL;
