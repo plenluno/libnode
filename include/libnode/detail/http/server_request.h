@@ -34,7 +34,7 @@ class ServerRequest : public ServerRequestBase {
     IncomingMessage::Ptr msg_;
 
  public:
-    ~ServerRequest() {
+    virtual ~ServerRequest() {
         if (msg_->hasFlag(IncomingMessage::UNUSED)) {
             incomingMessageList()->free(msg_);
         } else {

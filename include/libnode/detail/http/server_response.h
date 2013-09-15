@@ -28,7 +28,7 @@ class ServerResponse : public ServerResponseBase {
     OutgoingMessage::Ptr msg_;
 
  public:
-    ~ServerResponse() {
+    virtual ~ServerResponse() {
         if (msg_->hasFlag(OutgoingMessage::UNUSED)) {
             outgoingMessageList()->free(msg_);
         } else {
