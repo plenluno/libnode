@@ -11,6 +11,7 @@ set(libnode-test-src
     gtest_dgram.cpp
 #   gtest_dns.cpp
     gtest_event_emitter.cpp
+    gtest_free_list.cpp
     gtest_fs.cpp
     gtest_http_common.cpp
     gtest_http_echo.cpp

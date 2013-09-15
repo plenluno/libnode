@@ -8,7 +8,7 @@
 #include <libnode/detail/flags.h>
 #include <libnode/detail/net/socket.h>
 #include <libnode/detail/http/header_scanner.h>
-#include <libnode/detail/http/incoming_message.h>
+#include <libnode/detail/http/incoming_message_list.h>
 
 #include <assert.h>
 #include <http_parser.h>
@@ -243,7 +243,12 @@ class Parser : public Flags {
 
  private:
     int onHeadersComplete() {
-        incoming_ = IncomingMessage::create(socket_);
+        incoming_ = incomingMessageList()->alloc();
+        if (incoming_) {
+            incoming_->setNewSocket(socket_);
+        } else {
+            incoming_ = IncomingMessage::create(socket_);
+        }
         incoming_->setUrl(url_);
         incoming_->setHttpVersionMajor(majorVer_);
         incoming_->setHttpVersionMinor(minorVer_);

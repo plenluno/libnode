@@ -1,10 +1,10 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_SERVER_REQUEST_H_
 #define LIBNODE_DETAIL_HTTP_SERVER_REQUEST_H_
 
 #include <libnode/http/server_request.h>
-#include <libnode/detail/http/incoming_message.h>
+#include <libnode/detail/http/incoming_message_list.h>
 #include <libnode/bridge/http/abstract_server_request.h>
 
 namespace libj {
@@ -28,7 +28,19 @@ class ServerRequest : public ServerRequestBase {
 
  private:
     ServerRequest(IncomingMessage::Ptr msg)
-        : ServerRequestBase(msg) {}
+        : ServerRequestBase(msg)
+        , msg_(msg) {}
+
+    IncomingMessage::Ptr msg_;
+
+ public:
+    ~ServerRequest() {
+        if (msg_->hasFlag(IncomingMessage::UNUSED)) {
+            incomingMessageList()->free(msg_);
+        } else {
+            msg_->setFlag(IncomingMessage::UNUSED);
+        }
+    }
 };
 
 }  // namespace http

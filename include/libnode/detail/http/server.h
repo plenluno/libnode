@@ -10,6 +10,7 @@
 #include <libnode/detail/http/parser.h>
 #include <libnode/detail/http/server_request.h>
 #include <libnode/detail/http/server_response.h>
+#include <libnode/detail/http/outgoing_message_list.h>
 
 #include <libj/detail/gc_collect.h>
 
@@ -296,7 +297,13 @@ class Server : public net::Server<node::http::Server> {
             , outgoings_(outgoings) {}
 
         virtual Value operator()(JsArray::Ptr args) {
-            incomings_->shift();
+            IncomingMessage::Ptr in =
+                toPtr<IncomingMessage>(incomings_->shift());
+            if (in->hasFlag(IncomingMessage::UNUSED)) {
+                incomingMessageList()->free(in);
+            } else {
+                in->setFlag(IncomingMessage::UNUSED);
+            }
 
             res_->detachSocket(socket_);
 
@@ -306,11 +313,18 @@ class Server : public net::Server<node::http::Server> {
             if (res_->hasFlag(OutgoingMessage::LAST)) {
                 socket_->destroySoon();
             } else {
-                OutgoingMessage::Ptr msg =
+                OutgoingMessage::Ptr out =
                     toPtr<OutgoingMessage>(outgoings_->shift());
-                if (msg) {
-                    msg->assignSocket(msg, socket_);
+                if (out) {
+                    out->assignSocket(out, socket_);
                 }
+            }
+
+            if (res_->hasFlag(OutgoingMessage::UNUSED)) {
+                outgoingMessageList()->free(
+                    LIBJ_STATIC_PTR_CAST(OutgoingMessage)(res_->self()));
+            } else {
+                res_->setFlag(OutgoingMessage::UNUSED);
             }
 
             LIBJ_GC_COLLECT_PER(100);

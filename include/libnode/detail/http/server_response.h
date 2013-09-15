@@ -1,10 +1,10 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_SERVER_RESPONSE_H_
 #define LIBNODE_DETAIL_HTTP_SERVER_RESPONSE_H_
 
 #include <libnode/http/server_response.h>
-#include <libnode/detail/http/outgoing_message.h>
+#include <libnode/detail/http/outgoing_message_list.h>
 #include <libnode/bridge/http/abstract_server_response.h>
 
 namespace libj {
@@ -22,7 +22,19 @@ class ServerResponse : public ServerResponseBase {
 
  private:
     ServerResponse(OutgoingMessage::Ptr msg)
-        : ServerResponseBase(msg) {}
+        : ServerResponseBase(msg)
+        , msg_(msg) {}
+
+    OutgoingMessage::Ptr msg_;
+
+ public:
+    ~ServerResponse() {
+        if (msg_->hasFlag(OutgoingMessage::UNUSED)) {
+            outgoingMessageList()->free(msg_);
+        } else {
+            msg_->setFlag(OutgoingMessage::UNUSED);
+        }
+    }
 };
 
 }  // namespace http

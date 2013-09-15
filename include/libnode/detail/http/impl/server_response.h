@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_IMPL_SERVER_RESPONSE_H_
 #define LIBNODE_DETAIL_HTTP_IMPL_SERVER_RESPONSE_H_
@@ -12,7 +12,13 @@ inline OutgoingMessage::Ptr OutgoingMessage::createInServer(
     IncomingMessage::Ptr req) {
     LIBJ_STATIC_SYMBOL_DEF(symChunked, "chunked");
 
-    OutgoingMessage::Ptr self(new OutgoingMessage());
+    OutgoingMessage::Ptr self = outgoingMessageList()->alloc();
+    if (self) {
+        self->clear();
+    } else {
+        self = OutgoingMessage::Ptr(new OutgoingMessage());
+    }
+
     self->setFlag(OutgoingMessage::SERVER_SIDE);
     self->setFlag(OutgoingMessage::SEND_DATE);
 

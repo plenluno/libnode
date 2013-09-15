@@ -672,6 +672,32 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         }
     }
 
+    void clear() {
+        socket_ = net::Socket::null();
+        statusCode_ = node::http::Status::OK;
+        method_ = String::null();
+        path_ = String::null();
+        header_ = String::null();
+        trailer_ = String::create();
+        headers_ = libj::JsObject::null();
+        headerNames_ = libj::JsObject::null();
+        output_->clear();
+        outputEncodings_->clear();
+        parser_ = NULL;
+        agent_ = node::http::Agent::null();
+        socketPath_ = String::null();
+        res_ = IncomingMessage::null();
+        timeoutCb_ = JsFunction::null();
+        socketCloseListener_ = SocketCloseListener::null();
+        socketErrorListener_ = SocketErrorListener::null();
+
+        unsetAllFlags();
+        setFlag(WRITABLE);
+        setFlag(SHOULD_KEEP_ALIVE);
+        setFlag(USE_CHUNKED_ENCODING_BY_DEFAULT);
+        setFlag(HAS_BODY);
+    }
+
  private:
     class EmitDrain : LIBJ_JS_FUNCTION(EmitDrain)
         EmitDrain(net::Socket* sock) : socket_(sock) {}
@@ -1187,6 +1213,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
         SENT_TRANSFER_ENCODING_HEADER   = 1 << 16,
         SENT_DATE_HEADER                = 1 << 17,
         SENT_EXPECT_HEADER              = 1 << 18,
+        UNUSED                          = 1 << 19,
     };
 
  private:

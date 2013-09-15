@@ -227,6 +227,28 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
         }
     }
 
+    void setNewSocket(net::Socket::Ptr socket) {
+        socket_ = socket;
+
+        // don't need to initialize the followings
+        // because updating them immediately
+        //
+        // method_ = String::null();
+        // url_ = String::create();
+        // httpVersion_ = String::null();
+        // httpVersionMajor_ = 0;
+        // httpVersionMinor_ = 0;
+        // statusCode_ = 0;
+
+        headers_->clear();
+        trailers_->clear();
+        pendings_->clear();
+        decoder_ = StringDecoder::null();
+        req_ = NULL;
+        unsetAllFlags();
+        setFlag(READABLE);
+    }
+
  private:
     class EmitPending : LIBJ_JS_FUNCTION(EmitPending)
      public:
@@ -266,6 +288,7 @@ class IncomingMessage : public events::EventEmitter<ReadableStream> {
         PAUSED      = 1 << 2,
         END_EMITTED = 1 << 3,
         UPGRADE     = 1 << 4,
+        UNUSED      = 1 << 5,
     } Flag;
 
  private:
