@@ -7,6 +7,7 @@
 
 #cmakedefine LIBNODE_DEBUG
 #cmakedefine LIBNODE_USE_BDWGC
+#cmakedefine LIBNODE_USE_CXX11
 #cmakedefine LIBNODE_USE_CRYPTO
 #cmakedefine LIBNODE_REMOVE_LISTENER
 
