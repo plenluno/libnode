@@ -17,6 +17,10 @@ class Flags {
         flags_ &= ~flag;
     }
 
+    void unsetAllFlags() {
+        flags_ = 0;
+    }
+
     Boolean hasFlag(UInt flag) const {
         return !!(flags_ & flag);
     }
