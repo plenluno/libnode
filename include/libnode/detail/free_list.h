@@ -20,8 +20,12 @@ class FreeList {
 
     T alloc() {
         if (list_->isEmpty()) {
+#ifdef LIBJ_USE_SP
             T t;  // null
             return t;
+#else
+            return NULL;
+#endif
         } else {
             return list_->shiftTyped();
         }
