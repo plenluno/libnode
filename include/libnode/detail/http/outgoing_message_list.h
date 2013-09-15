@@ -12,7 +12,7 @@ namespace detail {
 namespace http {
 
 inline FreeList<OutgoingMessage::Ptr>* outgoingMessageList() {
-    static FreeList<OutgoingMessage::Ptr> list(1000);
+    static FreeList<OutgoingMessage::Ptr> list(100);
     return &list;
 }
 
