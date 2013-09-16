@@ -335,6 +335,9 @@ String::CPtr percentEncode(String::CPtr str, String::Encoding enc) {
     case String::UTF32LE:
         buf = Buffer::create(str, Buffer::UTF32LE);
         break;
+    default:
+        assert(false);
+        buf = Buffer::null();
     }
     Size sourceLen = buf->length();
     const char* source = static_cast<const char*>(buf->data());
@@ -368,6 +371,9 @@ String::CPtr percentDecode(String::CPtr str, String::Encoding enc) {
     case String::UTF32LE:
         res = String::create(decoded, enc, size >> 2);
         break;
+    default:
+        assert(false);
+        res = String::null();
     }
     delete[] decoded;
     return res;

@@ -851,7 +851,7 @@ class OutgoingMessage : public events::EventEmitter<WritableStream> {
             }
 
             socket_->destroy();
-            return Status::OK;
+            return keeper;  // to avoid 'unused-but-set-variable'
         }
 
      private:

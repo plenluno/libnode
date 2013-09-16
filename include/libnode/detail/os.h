@@ -54,6 +54,7 @@ JsObject::Ptr networkInterface() {
             family = symIPv6;
         } else {
             assert(false);
+            family = String::null();
         }
 
         JsObject::Ptr ifo = JsObject::create();
