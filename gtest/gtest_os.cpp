@@ -30,6 +30,8 @@ TEST(GTestOs, TestNetworkInterface) {
     LIBJ_STATIC_SYMBOL_DEF(symInternal, "internal");
 
     JsObject::Ptr netif = os::networkInterface();
+    console::log(json::stringify(netif));
+
     TypedSet<Map::Entry::CPtr>::CPtr es = netif->entrySet();
     TypedIterator<Map::Entry::CPtr>::Ptr itr = es->iteratorTyped();
     while (itr->hasNext()) {
