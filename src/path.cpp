@@ -110,7 +110,8 @@ String::CPtr join(JsArray::CPtr paths) {
 String::CPtr resolve(JsArray::CPtr paths) {
     const Size kMax = 8192;
     char dir[kMax];
-    getcwd(dir, kMax);
+    char* r = getcwd(dir, kMax);
+    if (!r) return String::null();
 
     if (!paths) return String::create(dir);
 

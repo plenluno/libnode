@@ -90,6 +90,7 @@ class Handle {
             break;
         default:
             assert(false);
+            port = -1;
         }
         res->put(symPort, port);
         res->put(symAddress, String::create(ip));

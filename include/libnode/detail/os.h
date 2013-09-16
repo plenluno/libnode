@@ -24,7 +24,7 @@ JsObject::Ptr networkInterface() {
     uv_interface_address_t* interfaces;
     int count;
     uv_err_t err = uv_interface_addresses(&interfaces, &count);
-    assert(!err.code);
+    if (err.code) return JsObject::null();
 
     JsObject::Ptr res = JsObject::create();
 

@@ -67,7 +67,7 @@ TEST(GTestHttpStatic, TestStatic) {
     GTestOnClose::clear();
 
     char dir[256];
-    getcwd(dir, 256);
+    ASSERT_TRUE(getcwd(dir, 256));
     String::CPtr root = String::create(dir);
 
     OnRequest::Ptr requestHandler(new OnRequest(root));

@@ -108,7 +108,7 @@ TEST(GTestPath, TestJoin) {
 TEST(GTestPath, TestResolve) {
     const Size kMax = 8192;
     char dir[kMax];
-    getcwd(dir, kMax);
+    ASSERT_TRUE(getcwd(dir, kMax));
     String::CPtr current = String::create(dir);
 
     JsArray::Ptr null = JsArray::null();
