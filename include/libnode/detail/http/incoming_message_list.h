@@ -12,7 +12,11 @@ namespace detail {
 namespace http {
 
 inline FreeList<IncomingMessage::Ptr>* incomingMessageList() {
+#ifdef LIBJ_USE_SP
     static FreeList<IncomingMessage::Ptr> list(100);
+#else
+    static FreeList<IncomingMessage::Ptr> list(0);
+#endif
     return &list;
 }
 
