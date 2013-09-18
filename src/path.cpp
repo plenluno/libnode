@@ -20,15 +20,79 @@ namespace path {
 
 #ifdef LIBJ_PF_WINDOWS
 static const Char SEP = '\\';
+
+static inline Boolean isSep(Char c) {
+    return c == '\\' || c == '/';
+}
+
+static inline Size indexOfSep(String::CPtr str, Size from) {
+    assert(str);
+    Size len = str->length();
+    for (Size i = from; i < len; i++) {
+        if (isSep(str->charAt(i))) return i;
+    }
+    return NO_POS;
+}
+
+static inline Size lastIndexOfSep(String::CPtr str, Size from = NO_POS) {
+    assert(str);
+    Size len = str->length();
+    if (!len) return NO_POS;
+
+    if (from >= len) from = len - 1;
+
+    Size i = from;
+    while (1) {
+        if (isSep(str->charAt(i))) return i;
+        if (i) {
+            i--;
+        } else {
+            break;
+        }
+    }
+    return NO_POS;
+}
 #else
 static const Char SEP = '/';
+
+static inline Boolean isSep(Char c) {
+    return c == SEP;
+}
+
+static inline Size indexOfSep(String::CPtr str, Size from) {
+    return str->indexOf(SEP, from);
+}
+
+static inline Size lastIndexOfSep(String::CPtr str, Size from = NO_POS) {
+    return str->lastIndexOf(SEP, from);
+}
 #endif
+
+static inline String::CPtr trimSeps(String::CPtr str) {
+    assert(str);
+    Size len = str->length();
+    if (!len) return str;
+
+    Size i = len - 1;
+    while (1) {
+        if (!isSep(str->charAt(i))) {
+            return str->substring(0, i + 1);
+        }
+        if (i) {
+            i--;
+        } else {
+            break;
+        }
+    }
+    return str->substring(0, 1);
+}
 
 String::CPtr normalize(String::CPtr path) {
     LIBJ_STATIC_SYMBOL_DEF(symCurrent, ".");
     LIBJ_STATIC_SYMBOL_DEF(symParent,  "..");
+    LIBJ_STATIC_SYMBOL_DEF(symNull,    "null");
 
-    if (!path) return String::create();
+    if (!path) return symNull;
 
     Boolean absolute = false;
     Boolean endsWithSep = false;
@@ -36,7 +100,7 @@ String::CPtr normalize(String::CPtr path) {
     StringArray::Ptr dirs = StringArray::create();
     Size len = path->length();
     for (Size i = 0; i < len;) {
-        Size idx = path->indexOf(SEP, i);
+        Size idx = indexOfSep(path, i);
         if (idx == 0) {
             absolute = true;
         } else if (idx != i) {
@@ -121,8 +185,13 @@ String::CPtr resolve(JsArray::CPtr paths) {
     for (Size i = 0; i < len; i++) {
         String::CPtr path = paths->getCPtr<String>(i);
         if (path) {
-            if (path->charAt(0) == SEP) {
+            if (isSep(path->charAt(0))) {
                 resolved = StringBuilder::create();
+#ifdef LIBJ_PF_WINDOWS
+                // append the drive letter
+                resolved->appendChar(dir[0]);
+                resolved->appendChar(dir[1]);
+#endif
             } else if (!path->isEmpty()) {
                 resolved->appendChar(SEP);
             }
@@ -142,6 +211,7 @@ String::CPtr dirname(String::CPtr path) {
 
     if (!path) return symCurrent;
 
+    path = trimSeps(path);
     String::CPtr base = basename(path);
     Size baseLen = base->length();
     Size pathLen = path->length();
@@ -149,60 +219,44 @@ String::CPtr dirname(String::CPtr path) {
         return symCurrent;
     } else {
         Size sepPos = pathLen - baseLen - 1;
-        assert(path->charAt(sepPos) == SEP);
+        assert(isSep(path->charAt(sepPos)));
         if (sepPos) {
             return path->substring(0, sepPos);
-        } else {  // path[0] is '/'
-            return sep();
+        } else {
+            return path->substring(0, 1);
         }
     }
 }
 
 String::CPtr basename(String::CPtr path) {
-    static const String::CPtr doubleSep = String::create(SEP, 2);
+    LIBJ_STATIC_SYMBOL_DEF(symNull, "null");
 
-    if (!path) return String::create();
-
-    Size len = path->length();
-    if (!len) return String::create();
-
-    if (path->equals(sep())) return String::create();
-    if (path->equals(doubleSep)) return String::create();
-
-    Size lastIndex;
-    assert(len >= 1);
-    if (path->charAt(len - 1) == SEP) {
-        assert(len >= 2);
-        Size from = len - 2;
-        lastIndex = path->lastIndexOf(SEP, from);
+    if (path) {
+        path = trimSeps(path);
     } else {
-        lastIndex = path->lastIndexOf(SEP);
+        return symNull;
     }
-    String::CPtr base;
+
+    Size lastIndex = lastIndexOfSep(path);
     if (lastIndex == NO_POS) {
-        base = path;
+        return path;
     } else {
-        base = path->substring(lastIndex + 1);
+        return path->substring(lastIndex + 1);
     }
-    return base;
 }
 
 String::CPtr extname(String::CPtr path) {
     if (!path) return String::create();
 
     String::CPtr base = basename(path);
-    if (base->endsWith(sep())) return String::create();
+    if (base->charAt(0) == '.') return String::create();
 
-    Size lastIndex = NO_POS;
-    if (base->length() > 1)
-        lastIndex = base->lastIndexOf('.');
-    String::CPtr ext;
+    Size lastIndex = base->lastIndexOf('.');
     if (lastIndex == NO_POS) {
-        ext = String::create();
+        return String::create();
     } else {
-        ext = base->substring(lastIndex);
+        return base->substring(lastIndex);
     }
-    return ext;
 }
 
 String::CPtr sep() {
