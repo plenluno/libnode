@@ -25,6 +25,13 @@ static inline Boolean isSep(Char c) {
     return c == '\\' || c == '/';
 }
 
+// implement isAlpha because
+// isalpha asserts the parameter is between -1 and 255,
+// so isalpha(NO_POS) raises an exception.
+static inline Boolean isAlpha(Char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
 static inline Size indexOfSep(String::CPtr str, Size from) {
     assert(str);
     Size len = str->length();
@@ -191,6 +198,8 @@ String::CPtr resolve(JsArray::CPtr paths) {
                 // append the drive letter
                 resolved->appendChar(dir[0]);
                 resolved->appendChar(dir[1]);
+            } else if (isAlpha(path->charAt(0)) && path->charAt(1) == ':') {
+                resolved = StringBuilder::create();
 #endif
             } else if (!path->isEmpty()) {
                 resolved->appendChar(SEP);
@@ -198,7 +207,7 @@ String::CPtr resolve(JsArray::CPtr paths) {
             resolved->appendStr(path);
         }
     }
-    return normalize(resolved->toString());
+    return trimSeps(normalize(resolved->toString()));
 }
 
 String::CPtr relative(String::CPtr from, String::CPtr to) {

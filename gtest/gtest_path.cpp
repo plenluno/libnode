@@ -111,12 +111,28 @@ TEST(GTestPath, TestJoin) {
     paths->add(str("/bar"));
     joined = path::join(paths);
     ASSERT_TRUE(joined->equals(p("foo/bar")));
+
+    paths->clear();
+    paths->add(str("foo//"));
+    paths->add(JsObject::create());
+    paths->add(str("/bar//"));
+    joined = path::join(paths);
+    ASSERT_TRUE(joined->equals(p("foo/bar/")));
+
+#ifdef LIBJ_PF_WINDOWS
+    paths->clear();
+    paths->add(str("foo//"));
+    paths->add(JsObject::create());
+    paths->add(str("c:\\bar\\"));
+    joined = path::join(paths);
+    ASSERT_TRUE(joined->equals(p("foo/c:/bar/")));
+#endif
 }
 
 TEST(GTestPath, TestResolve) {
     const Size kMax = 8192;
     char dir[kMax];
-    ASSERT_TRUE(getcwd(dir, kMax));
+    ASSERT_TRUE(!!getcwd(dir, kMax));
     String::CPtr current = str(dir);
 #ifdef LIBJ_PF_WINDOWS
     String::CPtr drive = current->substring(0, 2);
@@ -159,6 +175,14 @@ TEST(GTestPath, TestResolve) {
     resolved = path::resolve(paths);
     ASSERT_TRUE(resolved->equals(current->concat(
         p("/wwwroot/static_files/gif/image.gif"))));
+
+#ifdef LIBJ_PF_WINDOWS
+    paths->clear();
+    paths->add(str("/foo/bar"));
+    paths->add(str("a:\\tmp\\XYZ\\"));
+    resolved = path::resolve(paths);
+    ASSERT_TRUE(resolved->equals(p("a:\\tmp\\XYZ")));
+#endif
 }
 
 TEST(GTestPath, TestDirname) {
@@ -200,6 +224,11 @@ TEST(GTestPath, TestDirname) {
 
     dir = path::dirname(str("x/y/"));
     ASSERT_TRUE(dir->equals(str("x")));
+
+#ifdef LIBJ_PF_WINDOWS
+    dir = path::dirname(str("c:\\x/y\\z\\"));
+    ASSERT_TRUE(dir->equals(str("c:\\x/y")));
+#endif
 }
 
 TEST(GTestPath, TestBasename) {
@@ -244,6 +273,11 @@ TEST(GTestPath, TestBasename) {
 
     base = path::basename(str("/x/y/"));
     ASSERT_TRUE(base->equals(str("y")));
+
+#ifdef LIBJ_PF_WINDOWS
+    base = path::basename(str("c:\\x/y\\z\\"));
+    ASSERT_TRUE(base->equals(str("z")));
+#endif
 }
 
 TEST(GTestPath, TestExtname) {
@@ -273,6 +307,11 @@ TEST(GTestPath, TestExtname) {
 
     ext = path::extname(str("/xyz/index.html/"));
     ASSERT_TRUE(ext->equals(str(".html")));
+
+#ifdef LIBJ_PF_WINDOWS
+    ext = path::extname(str("c:\\x/y\\z.html\\"));
+    ASSERT_TRUE(ext->equals(str(".html")));
+#endif
 }
 
 }  // namespace node
