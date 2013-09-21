@@ -11,12 +11,16 @@ TEST(GTestNetPipe, TestPipe) {
     GTestOnEnd::clear();
     GTestOnClose::clear();
 
+#ifdef LIBJ_PF_WINDOWS
+    String::CPtr path = str("\\\\.\\pipe\\echo.sock");
+#else
     String::CPtr path = str("./echo.sock");
+#endif
     net::Server::Ptr server = net::createServer();
     server->on(
         net::Server::EVENT_CONNECTION,
         JsFunction::Ptr(new GTestNetServerOnConnection(server, NUM_CONNS)));
-    server->listen(path);
+    ASSERT_TRUE(server->listen(path));
 
     for (Size i = 0; i < NUM_CONNS; i++) {
         net::Socket::Ptr socket = net::createConnection(path);
