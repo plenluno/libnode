@@ -216,7 +216,10 @@ TEST(GTestFs, TestRealpath) {
     ASSERT_TRUE(cb->getArgs()->getCPtr<String>(1)->equals(current));
 
     fs::realpath(str("./mylink"), cb);
-    String::CPtr real = current->concat(str("/mydir"));
+    JsArray::Ptr paths = JsArray::create();
+    paths->add(current);
+    paths->add(str("./mydir"));
+    String::CPtr real = path::resolve(paths);
     node::run();
     ASSERT_TRUE(!cb->getArgs()->getCPtr<Error>(0));
     ASSERT_TRUE(cb->getArgs()->getCPtr<String>(1)->equals(real));
