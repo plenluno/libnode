@@ -54,6 +54,21 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         return postRequest(json::stringify(req));
     }
 
+    virtual Boolean postRequest(String::CPtr req, JsFunction::Ptr cb) {
+        if (cb) {
+            JsArray::Ptr a = JsArray::create();
+            a->add(req);
+            a->add(cb);
+            return msgQueue_->postMessage(a);
+        } else {
+            return msgQueue_->postMessage(req);
+        }
+    }
+
+    virtual Boolean postRequest(libj::JsObject::CPtr req, JsFunction::Ptr cb) {
+        return postRequest(json::stringify(req), cb);
+    }
+
  private:
     class NotRespond : LIBNODE_JSONRPC_RESPOND(NotRespond)
      public:
@@ -85,16 +100,18 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
      public:
         Respond10(
             Service* self,
-            const Value& id)
+            const Value& id,
+            JsFunction::Ptr cb)
             : self_(self)
             , id_(id)
+            , cb_(cb)
             , emitted_(false) {}
 
         Boolean result(const Value& res) {
             if (emitted_) {
                 return false;
             } else {
-                self_->emitResult10(res, id_);
+                self_->emitResult10(res, id_, cb_);
                 emitted_ = true;
                 return true;
             }
@@ -104,7 +121,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
             if (emitted_) {
                 return false;
             } else {
-                self_->emitError10(err, id_);
+                self_->emitError10(err, id_, cb_);
                 emitted_ = true;
                 return true;
             }
@@ -113,6 +130,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
      private:
         Service* self_;
         Value id_;
+        JsFunction::Ptr cb_;
         Boolean emitted_;
     };
 
@@ -120,16 +138,18 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
      public:
         Respond20(
             Service* self,
-            const Value& id)
+            const Value& id,
+            JsFunction::Ptr cb)
             : self_(self)
             , id_(id)
+            , cb_(cb)
             , emitted_(false) {}
 
         Boolean result(const Value& res) {
             if (emitted_) {
                 return false;
             } else {
-                self_->emitResult20(res, id_);
+                self_->emitResult20(res, id_, cb_);
                 emitted_ = true;
                 return true;
             }
@@ -139,7 +159,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
             if (emitted_) {
                 return false;
             } else {
-                self_->emitError20(err, id_);
+                self_->emitError20(err, id_, cb_);
                 emitted_ = true;
                 return true;
             }
@@ -148,6 +168,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
      private:
         Service* self_;
         Value id_;
+        JsFunction::Ptr cb_;
         Boolean emitted_;
     };
 
@@ -162,29 +183,40 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         virtual Value operator()(JsArray::Ptr args) {
             LIBJ_STATIC_SYMBOL_DEF(sym20, "2.0");
 
-            String::CPtr json = args->getCPtr<String>(0);
+            String::CPtr json;
+            JsFunction::Ptr cb;
+            JsArray::Ptr a = args->getPtr<JsArray>(0);
+            if (a) {                
+                json = a->getCPtr<String>(0);
+                cb = a->getPtr<JsFunction>(1);
+                assert(cb);
+            } else {
+                json = args->getCPtr<String>(0);
+                cb = JsFunction::null();
+            }
+
             Value val = json::parse(json);
             if (val.is<libj::Error>()) {
                 return self_->emitError20(
-                    Error::create(Error::PARSE_ERROR));
+                    Error::create(Error::PARSE_ERROR), cb);
             }
 
             libj::JsObject::Ptr req = toPtr<libj::JsObject>(val);
             if (!req) {
                 return self_->emitError20(
-                    Error::create(Error::INVALID_REQUEST));
+                    Error::create(Error::INVALID_REQUEST), cb);
             }
 
             String::CPtr version = req->getCPtr<String>(JSONRPC);
             if (version && version->equals(sym20)) {
-                return jsonrpc20(req);
+                return jsonrpc20(req, cb);
             } else {
-                return jsonrpc10(req);
+                return jsonrpc10(req, cb);
             }
         }
 
      private:
-        Int jsonrpc10(libj::JsObject::Ptr req) {
+        Int jsonrpc10(libj::JsObject::Ptr req, JsFunction::Ptr cb) {
             static const Respond::Ptr notRespond(new NotRespond());
 
             Value id = req->get(ID);
@@ -192,10 +224,10 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
             JsArray::Ptr params = req->getPtr<JsArray>(PARAMS);
             if (id.isUndefined()) {
                 return self_->emitError10(
-                    Error::create(Error::INVALID_REQUEST));
+                    Error::create(Error::INVALID_REQUEST), cb);
             } else if (!name || !params) {
                 return self_->emitError10(
-                    Error::create(Error::INVALID_REQUEST), id);
+                    Error::create(Error::INVALID_REQUEST), id, cb);
             } else if (id.isNull()) {
                 // notification
                 Method::CPtr method = methods_->getCPtr<Method>(name);
@@ -203,21 +235,22 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                     params->length() == method->parameters()->length()) {
                     params->add(notRespond);
                     (*method->function())(params);
+                    if (cb) cb->call(Object::null());
                 }
                 return Status::OK;
             } else {
                 Method::CPtr method = methods_->getCPtr<Method>(name);
                 if (!method) {
                     return self_->emitError10(
-                        Error::create(Error::METHOD_NOT_FOUND), id);
+                        Error::create(Error::METHOD_NOT_FOUND), id, cb);
                 }
 
                 if (params->length() != method->parameters()->length()) {
                     return self_->emitError10(
-                        Error::create(Error::INVALID_PARAMS), id);
+                        Error::create(Error::INVALID_PARAMS), id, cb);
                 }
 
-                params->add(Respond::Ptr(new Respond10(self_, id)));
+                params->add(Respond::Ptr(new Respond10(self_, id, cb)));
                 (*method->function())(params);
                 return Status::OK;
             }
@@ -277,7 +310,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
             }
         }
 
-        Int jsonrpc20(libj::JsObject::Ptr req) {
+        Int jsonrpc20(libj::JsObject::Ptr req, JsFunction::Ptr cb) {
             static const Respond::Ptr notRespond(new NotRespond());
 
             Value id = req->get(ID);
@@ -285,10 +318,10 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
             String::CPtr name = req->getCPtr<String>(METHOD);
             if (!checkId20(id)) {
                 return self_->emitError20(
-                    Error::create(Error::INVALID_REQUEST));
+                    Error::create(Error::INVALID_REQUEST), cb);
             } else if (!name || !checkParams20(params)) {
                 return self_->emitError20(
-                    Error::create(Error::INVALID_REQUEST), id);
+                    Error::create(Error::INVALID_REQUEST), id, cb);
             } else if (id.isUndefined()) {
                 // notification
                 Method::CPtr method = methods_->getCPtr<Method>(name);
@@ -299,21 +332,22 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
 
                 args->add(notRespond);
                 (*method->function())(args);
+                if (cb) cb->call(Object::null());
                 return Status::OK;
             } else {
                 Method::CPtr method = methods_->getCPtr<Method>(name);
                 if (!method) {
                     return self_->emitError20(
-                        Error::create(Error::METHOD_NOT_FOUND), id);
+                        Error::create(Error::METHOD_NOT_FOUND), id, cb);
                 }
 
                 JsArray::Ptr args = toArguments20(method, params);
                 if (!args) {
                     return self_->emitError20(
-                        Error::create(Error::INVALID_PARAMS), id);
+                        Error::create(Error::INVALID_PARAMS), id, cb);
                 }
 
-                args->add(Respond::Ptr(new Respond20(self_, id)));
+                args->add(Respond::Ptr(new Respond20(self_, id, cb)));
                 (*method->function())(args);
                 return Status::OK;
             }
@@ -332,28 +366,43 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         return e;
     }
 
-    Int emitResult10(const Value& r, const Value& id) {
+    Int emitResult10(
+        const Value& r,
+        const Value& id,
+        JsFunction::Ptr cb) {
         libj::JsObject::Ptr res = libj::JsObject::create();
         res->put(ID, id);
         res->put(RESULT, r);
         res->put(ERROR, Object::null());
         emit(EVENT_RESPONSE, res);
+        if (cb) cb->call(res);
         return Status::OK;
     }
 
     Int emitError10(
         libj::Error::CPtr err,
-        const Value& id = Object::null()) {
+        JsFunction::Ptr cb) {
+        return emitError10(err, Object::null(), cb);
+    }
+
+    Int emitError10(
+        libj::Error::CPtr err,
+        const Value& id,
+        JsFunction::Ptr cb) {
         assert(err);
         libj::JsObject::Ptr res = libj::JsObject::create();
         res->put(ID, id);
         res->put(ERROR, toJsObject(err));
         res->put(RESULT, Object::null());
         emit(EVENT_RESPONSE, res);
+        if (cb) cb->call(res);
         return err->code();
     }
 
-    Int emitResult20(const Value& r, const Value& id) {
+    Int emitResult20(
+        const Value& r,
+        const Value& id,
+        JsFunction::Ptr cb) {
         LIBJ_STATIC_SYMBOL_DEF(sym20, "2.0");
 
         libj::JsObject::Ptr res = libj::JsObject::create();
@@ -361,12 +410,20 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         res->put(RESULT, r);
         res->put(JSONRPC, sym20);
         emit(EVENT_RESPONSE, res);
+        if (cb) cb->call(res);
         return Status::OK;
     }
 
     Int emitError20(
         libj::Error::CPtr err,
-        const Value& id = Object::null()) {
+        JsFunction::Ptr cb) {
+        return emitError20(err, Object::null(), cb);
+    }
+
+    Int emitError20(
+        libj::Error::CPtr err,
+        const Value& id,
+        JsFunction::Ptr cb) {
         LIBJ_STATIC_SYMBOL_DEF(sym20, "2.0");
 
         assert(err);
@@ -379,6 +436,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         res->put(ERROR, toJsObject(err));
         res->put(JSONRPC, sym20);
         emit(EVENT_RESPONSE, res);
+        if (cb) cb->call(res);
         return err->code();
     }
 

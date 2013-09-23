@@ -23,6 +23,10 @@ class Service : LIBNODE_EVENT_EMITTER(Service)
     virtual Boolean postRequest(String::CPtr req) = 0;
 
     virtual Boolean postRequest(JsObject::CPtr req) = 0;
+
+    virtual Boolean postRequest(String::CPtr req, JsFunction::Ptr cb) = 0;
+
+    virtual Boolean postRequest(JsObject::CPtr req, JsFunction::Ptr cb) = 0;
 };
 
 }  // namespace jsonrpc
