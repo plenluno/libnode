@@ -186,7 +186,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
             String::CPtr json;
             JsFunction::Ptr cb;
             JsArray::Ptr a = args->getPtr<JsArray>(0);
-            if (a) {                
+            if (a) {
                 json = a->getCPtr<String>(0);
                 cb = a->getPtr<JsFunction>(1);
                 assert(cb);
