@@ -63,9 +63,6 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
 };
 
 TEST(GTestHttpStatic, TestStatic) {
-    GTestOnEnd::clear();
-    GTestOnClose::clear();
-
     char dir[256];
     ASSERT_TRUE(getcwd(dir, 256));
     String::CPtr root = String::create(dir);
@@ -93,6 +90,7 @@ TEST(GTestHttpStatic, TestStatic) {
     ASSERT_TRUE(!!messages->getCPtr<String>(0)->length());
 
     OnRead::unsetServer();
+    clearGTestHttpCommon();
 }
 
 }  // namespace node

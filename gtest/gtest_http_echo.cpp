@@ -8,11 +8,6 @@ namespace node {
 static const UInt NUM_REQS = 7;
 
 TEST(GTestHttpEcho, TestConnectionKeepAlive) {
-    GTestOnEnd::clear();
-    GTestOnClose::clear();
-    GTestHttpServerOnEnd::clear();
-    GTestHttpClientOnResponse::clear();
-
     String::CPtr msg = str("abc");
 
     http::Server::Ptr srv = http::Server::create();
@@ -51,14 +46,11 @@ TEST(GTestHttpEcho, TestConnectionKeepAlive) {
         console::printf(console::LEVEL_INFO, ".");
     }
     console::printf(console::LEVEL_INFO, "\n");
+
+    clearGTestHttpCommon();
 }
 
 TEST(GTestHttpEcho, TestConnectionClose) {
-    GTestOnEnd::clear();
-    GTestOnClose::clear();
-    GTestHttpServerOnEnd::clear();
-    GTestHttpClientOnResponse::clear();
-
     String::CPtr msg = str("xyz");
 
     http::Server::Ptr srv = http::Server::create();
@@ -98,6 +90,8 @@ TEST(GTestHttpEcho, TestConnectionClose) {
         console::printf(console::LEVEL_INFO, ".");
     }
     console::printf(console::LEVEL_INFO, "\n");
+
+    clearGTestHttpCommon();
 }
 
 }  // namespace node

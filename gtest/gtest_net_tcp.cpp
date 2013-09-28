@@ -8,9 +8,6 @@ namespace node {
 static const UInt NUM_CONNS = 7;
 
 TEST(GTestNetTcp, TestTcp) {
-    GTestOnEnd::clear();
-    GTestOnClose::clear();
-
     Int port = 10000;
     net::Server::Ptr server = net::createServer();
     server->on(
@@ -43,6 +40,8 @@ TEST(GTestNetTcp, TestTcp) {
         ASSERT_TRUE(msg->equals(str("abc")));
     }
     console::printf(console::LEVEL_INFO, "\n");
+
+    clearGTestCommon();
 }
 
 }  // namespace node

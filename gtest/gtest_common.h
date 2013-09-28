@@ -110,6 +110,12 @@ class GTestOnEnd : LIBJ_JS_FUNCTION(GTestOnEnd)
     GTestOnData::Ptr onData_;
 };
 
+inline void clearGTestCommon() {
+    GTestOnData::clear();
+    GTestOnEnd::clear();
+    GTestOnClose::clear();
+}
+
 }  // namespace node
 }  // namespace libj
 

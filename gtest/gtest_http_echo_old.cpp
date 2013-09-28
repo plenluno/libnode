@@ -62,9 +62,6 @@ class GTestHttpEchoOnConnectV10 : LIBJ_JS_FUNCTION(GTestHttpEchoOnConnectV10)
 };
 
 TEST(GTestHttpEchoOld, TestHttpV09) {
-    GTestOnEnd::clear();
-    GTestHttpEchoOnCloseV09::clear();
-
     const Int port = 10000;
 
     http::Server::Ptr srv = http::Server::create();
@@ -90,12 +87,12 @@ TEST(GTestHttpEchoOld, TestHttpV09) {
     JsArray::CPtr msgs = GTestOnEnd::messages();
     ASSERT_EQ(1, msgs->length());
     ASSERT_TRUE(msgs->getCPtr<String>(0)->isEmpty());
+
+    clearGTestHttpCommon();
+    GTestHttpEchoOnCloseV09::clear();
 }
 
 TEST(GTestHttpEchoOld, TestHttpV10) {
-    GTestOnEnd::clear();
-    GTestOnClose::clear();
-
     const Int port = 10000;
 
     http::Server::Ptr srv = http::Server::create();
@@ -128,12 +125,11 @@ TEST(GTestHttpEchoOld, TestHttpV10) {
         "Connection: close\r\n"
         "\r\n"
         "1.0")));
+
+    clearGTestHttpCommon();
 }
 
 TEST(GTestHttpEchoOld, TestHttpV10NoContentLength) {
-    GTestOnEnd::clear();
-    GTestOnClose::clear();
-
     const Int port = 10000;
 
     http::Server::Ptr srv = http::Server::create();
@@ -165,6 +161,8 @@ TEST(GTestHttpEchoOld, TestHttpV10NoContentLength) {
         "Connection: close\r\n"
         "\r\n"
         "1.0")));
+
+    clearGTestHttpCommon();
 }
 
 }  // namespace node

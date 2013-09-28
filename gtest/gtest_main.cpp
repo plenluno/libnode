@@ -2,6 +2,8 @@
 
 #include <libnode/trace.h>
 #include <libnode/detail/http/agent.h>
+#include <libnode/detail/http/incoming_message_list.h>
+#include <libnode/detail/http/outgoing_message_list.h>
 
 #include <libj/detail/gc_collect.h>
 
@@ -14,8 +16,9 @@ int main(int argc, char** argv) {
     int r = RUN_ALL_TESTS();
 
 #ifdef LIBNODE_DEBUG
-    libj::node::GTestOnEnd::clear();
     libj::node::detail::http::freeGlobalAgent();
+    libj::node::detail::http::incomingMessageList()->clear();
+    libj::node::detail::http::outgoingMessageList()->clear();
 #endif
 
     LIBJ_GC_COLLECT;

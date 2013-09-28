@@ -11,9 +11,6 @@ namespace libj {
 namespace node {
 
 TEST(GTestDns, TestHttpGet) {
-    GTestOnEnd::clear();
-    GTestHttpClientOnResponse::clear();
-
     JsObject::Ptr headers = JsObject::create();
 #ifdef USE_PROXY
     JsObject::Ptr options = JsObject::create();
@@ -39,6 +36,8 @@ TEST(GTestDns, TestHttpGet) {
     ASSERT_TRUE(!!msgs->getCPtr<String>(0));
     ASSERT_TRUE(codes->get(0).equals(200));
     // console::log(msgs->get(0));
+
+    clearGTestHttpCommon();
 }
 
 }  // namespace node

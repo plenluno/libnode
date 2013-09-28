@@ -109,7 +109,7 @@ class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
     virtual Value operator()(JsArray::Ptr args) {
         http::ClientResponse::Ptr res = args->getPtr<http::ClientResponse>(0);
 
-        statusCodes_->add(res->statusCode());
+        statusCodes()->add(res->statusCode());
 
         GTestOnData::Ptr onData(new GTestOnData());
         GTestOnClose::Ptr onClose(new GTestOnClose());
@@ -124,6 +124,12 @@ class GTestHttpClientOnResponse : LIBJ_JS_FUNCTION(GTestHttpClientOnResponse)
  private:
     static JsArray::Ptr statusCodes_;
 };
+
+inline void clearGTestHttpCommon() {
+    clearGTestCommon();
+    GTestHttpServerOnEnd::clear();
+    GTestHttpClientOnResponse::clear();
+}
 
 }  // namespace node
 }  // namespace libj

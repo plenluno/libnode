@@ -6,9 +6,6 @@ namespace libj {
 namespace node {
 
 TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
-    GTestOnEnd::clear();
-    GTestHttpClientOnResponse::clear();
-
     auto srv = http::Server::create();
     srv->on(
         http::Server::EVENT_REQUEST,
@@ -67,6 +64,8 @@ TEST(GTestHttpEchoCxx11, TestEchoCxx11) {
     ASSERT_EQ(1, codes->length());
     ASSERT_TRUE(msgs->get(0).equals(msg));
     ASSERT_TRUE(codes->get(0).equals(200));
+
+    clearGTestHttpCommon();
 }
 
 }  // namespace node

@@ -8,9 +8,6 @@ namespace node {
 static const UInt NUM_CONNS = 7;
 
 TEST(GTestNetPipe, TestPipe) {
-    GTestOnEnd::clear();
-    GTestOnClose::clear();
-
 #ifdef LIBJ_PF_WINDOWS
     String::CPtr path = str("\\\\.\\pipe\\echo.sock");
 #else
@@ -47,6 +44,8 @@ TEST(GTestNetPipe, TestPipe) {
         ASSERT_TRUE(msg->equals(str("abc")));
     }
     console::printf(console::LEVEL_INFO, "\n");
+
+    clearGTestCommon();
 }
 
 }  // namespace node
