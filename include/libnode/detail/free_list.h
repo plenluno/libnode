@@ -16,7 +16,11 @@ class FreeList {
  public:
     FreeList(Size max)
         : max_(max)
-        , list_(TypedLinkedList<T>::create()) {}
+        , list_(TypedLinkedList<T>::create()) {
+        LIBJ_DEBUG_PRINT(
+            "static: FreeList %p",
+            LIBJ_DEBUG_OBJECT_PTR(list_));
+    }
 
     T alloc() {
         if (list_->isEmpty()) {
@@ -37,6 +41,10 @@ class FreeList {
         }
     }
 
+    void clear() {
+        list_->clear();
+    }
+
     Size length() const {
         return list_->length();
     }
@@ -51,7 +59,11 @@ class FreeList<T, false> {
  public:
     FreeList(Size max)
         : max_(max)
-        , list_(TypedLinkedList<T>::create()) {}
+        , list_(TypedLinkedList<T>::create()) {
+        LIBJ_DEBUG_PRINT(
+            "static: FreeList %p",
+            LIBJ_DEBUG_OBJECT_PTR(list_));
+    }
 
     virtual ~FreeList() {
         while (!list_->isEmpty()) {
@@ -73,6 +85,10 @@ class FreeList<T, false> {
         } else {
             delete t;
         }
+    }
+
+    void clear() {
+        list_->clear();
     }
 
     Size length() const {
