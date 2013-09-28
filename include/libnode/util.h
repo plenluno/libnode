@@ -17,7 +17,7 @@ Boolean isError(const Value& val);
 
 Boolean isRegExp(const Value& val);
 
-Boolean extend(JsObject::Ptr extended, JsObject::CPtr original);
+JsObject::Ptr extend(JsObject::Ptr target, JsObject::CPtr addition);
 
 String::CPtr hexEncode(Buffer::CPtr buf);
 

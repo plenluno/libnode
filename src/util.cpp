@@ -34,17 +34,17 @@ Boolean isRegExp(const Value& val) {
     return val.is<JsRegExp>();
 }
 
-Boolean extend(JsObject::Ptr extended, JsObject::CPtr original) {
-    if (!extended) return false;
+JsObject::Ptr extend(JsObject::Ptr target, JsObject::CPtr addition) {
+    if (!target) return target;
 
     typedef JsObject::Entry Entry;
-    TypedSet<Entry::CPtr>::CPtr entrys = original->entrySet();
+    TypedSet<Entry::CPtr>::CPtr entrys = addition->entrySet();
     TypedIterator<Entry::CPtr>::Ptr itr = entrys->iteratorTyped();
     while (itr->hasNext()) {
         Entry::CPtr entry = itr->nextTyped();
-        extended->put(entry->getKey(), entry->getValue());
+        target->put(entry->getKey(), entry->getValue());
     }
-    return true;
+    return target;
 }
 
 // -- hexEncode & hexDecode --
