@@ -269,8 +269,18 @@ String::CPtr extname(String::CPtr path) {
 }
 
 String::CPtr sep() {
-    static const String::CPtr sep = String::create(SEP);
-    return sep;
+    static const char s[] = { static_cast<char>(SEP), 0 };
+    LIBJ_STATIC_SYMBOL_DEF(symSep, s);
+    return symSep;
+}
+
+String::CPtr delimiter() {
+#ifdef LIBJ_PF_WINDOWS
+    LIBJ_STATIC_SYMBOL_DEF(symDelimiter, ";");
+#else
+    LIBJ_STATIC_SYMBOL_DEF(symDelimiter, ":");
+#endif
+    return symDelimiter;
 }
 
 }  // namespace path

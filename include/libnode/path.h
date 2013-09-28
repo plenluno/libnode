@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_PATH_H_
 #define LIBNODE_PATH_H_
@@ -25,6 +25,8 @@ String::CPtr basename(String::CPtr path);
 String::CPtr extname(String::CPtr path);
 
 String::CPtr sep();
+
+String::CPtr delimiter();
 
 }  // namespace path
 }  // namespace node
