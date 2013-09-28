@@ -3,7 +3,9 @@
 #ifndef LIBNODE_DETAIL_DGRAM_SOCKET_H_
 #define LIBNODE_DETAIL_DGRAM_SOCKET_H_
 
+#include <libnode/config.h>
 #include <libnode/dns.h>
+#include <libnode/process.h>
 #include <libnode/dgram/socket.h>
 #include <libnode/detail/uv/udp.h>
 #include <libnode/detail/events/event_emitter.h>
@@ -29,6 +31,7 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
             handle_->close();
             handle_ = NULL;
             emit(EVENT_CLOSE);
+            process::nextTick(JsFunction::Ptr(new AfterClose(this)));
         }
     }
 
@@ -227,6 +230,7 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
                 JsFunction::Ptr callback = ps->getPtr<JsFunction>(5);
                 self_->send(buf, offset, length, port, address, callback);
             }
+            self_->sendQueue_->clear();
             return Status::OK;
         }
 
@@ -331,6 +335,21 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
      private:
         Socket* self_;
         Int port_;
+    };
+
+    class AfterClose : LIBJ_JS_FUNCTION(AfterClose)
+     public:
+        AfterClose(Socket* self) : self_(self) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
+#ifdef LIBNODE_REMOVE_LISTENER
+            self_->removeAllListeners();
+#endif
+            return Status::OK;
+        }
+
+     private:
+        Socket* self_;
     };
 
  private:

@@ -3,7 +3,8 @@
 #ifndef LIBNODE_DGRAM_SOCKET_H_
 #define LIBNODE_DGRAM_SOCKET_H_
 
-#include <libnode/stream/duplex_stream.h>
+#include <libnode/buffer.h>
+#include <libnode/events/event_emitter.h>
 
 namespace libj {
 namespace node {
