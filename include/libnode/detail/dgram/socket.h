@@ -83,6 +83,12 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
 
     virtual Boolean bind(
         Int port,
+        JsFunction::Ptr callback) {
+        return bind(port, String::null(), callback);
+    }
+
+    virtual Boolean bind(
+        Int port,
         String::CPtr address = String::null(),
         JsFunction::Ptr callback = JsFunction::null()) {
         if (!handle_ || bindState_ != UNBOUND) return false;

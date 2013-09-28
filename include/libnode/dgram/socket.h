@@ -39,6 +39,10 @@ class Socket : LIBNODE_EVENT_EMITTER(Socket)
 
     virtual Boolean bind(
         Int port,
+        JsFunction::Ptr callback) = 0;
+
+    virtual Boolean bind(
+        Int port,
         String::CPtr address = String::null(),
         JsFunction::Ptr callback = JsFunction::null()) = 0;
 
@@ -47,6 +51,8 @@ class Socket : LIBNODE_EVENT_EMITTER(Socket)
     virtual Boolean setTTL(Int ttl) = 0;
 
     virtual Boolean setMulticastTTL(Int ttl) = 0;
+
+    virtual Boolean setMulticastLoopback(Boolean flag) = 0;
 
     virtual Boolean addMembership(
         String::CPtr multicastAddress,
