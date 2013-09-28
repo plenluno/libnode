@@ -6,10 +6,6 @@ project(jsonrpc)
 
 # build libraries --------------------------------------------------------------
 
-include_directories(
-    include
-)
-
 add_library(jsonrpc STATIC
     src/jsonrpc/error.cpp
     src/jsonrpc/method.cpp
