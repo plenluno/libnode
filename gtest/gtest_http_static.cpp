@@ -64,7 +64,7 @@ class OnRequest : LIBJ_JS_FUNCTION(OnRequest)
 
 TEST(GTestHttpStatic, TestStatic) {
     char dir[256];
-    ASSERT_TRUE(getcwd(dir, 256));
+    ASSERT_TRUE(!!getcwd(dir, 256));
     String::CPtr root = String::create(dir);
 
     OnRequest::Ptr requestHandler(new OnRequest(root));

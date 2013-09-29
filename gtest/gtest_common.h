@@ -17,6 +17,10 @@
 #include <libj/string_builder.h>
 #include <libj/symbol.h>
 
+#ifdef LIBJ_PF_WINDOWS
+# include <libj/platform/windows.h>
+#endif
+
 #include <assert.h>
 
 namespace libj {
