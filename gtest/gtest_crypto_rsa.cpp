@@ -33,7 +33,7 @@ TEST(GTestCryptoRsa, TestCreateDecipher) {
     ASSERT_TRUE(!Decipher::create(PrivateKey::null(), Cipher::NONE));
 }
 
-TEST(GTestCryptoHash, TestUpdateAndFinal) {
+TEST(GTestCryptoRsa, TestUpdateAndFinal) {
     const Size modulusSize = 1024;
     KeyPair::CPtr keyPair = KeyPair::create(modulusSize);
     PublicKey::CPtr pubKey = keyPair->getPublicKey();

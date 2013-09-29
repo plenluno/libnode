@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <gtest/gtest.h>
 #include <libnode/crypto.h>
@@ -27,7 +27,7 @@ TEST(GTestCryptoCipher, TestCreateDecipher) {
     ASSERT_TRUE(!!createDecipher(Cipher::AES_256_ECB, passwd));
 }
 
-TEST(GTestCryptoHash, TestCBC) {
+TEST(GTestCryptoCipher, TestCBC) {
     Buffer::Ptr passwd = Buffer::create("abc", 3);
     Buffer::Ptr data = Buffer::create("abcdefghijklmnopqrstuvwxyz", 26);
 
@@ -44,7 +44,7 @@ TEST(GTestCryptoHash, TestCBC) {
     ASSERT_TRUE(data->toString()->equals(Buffer::concat(bufs)->toString()));
 }
 
-TEST(GTestCryptoHash, TestECB) {
+TEST(GTestCryptoCipher, TestECB) {
     Buffer::Ptr passwd = Buffer::create("abc", 3);
     Buffer::Ptr data = Buffer::create("abcdefghijklmnopqrstuvwxyz", 26);
 
