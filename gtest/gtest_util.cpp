@@ -7,13 +7,17 @@ namespace libj {
 namespace node {
 
 TEST(GTestUtil, TestExtend) {
-    JsObject::Ptr super = JsObject::create();
-    super->put(str("a"), 3);
-    super->put(str("b"), str("c"));
-    JsObject::Ptr derived = JsObject::create();
-    ASSERT_TRUE(util::extend(derived, super));
-    ASSERT_TRUE(derived->get(str("a")).equals(3));
-    ASSERT_TRUE(derived->get(str("b")).equals(str("c")));
+    JsObject::Ptr addtion = JsObject::create();
+    addtion->put(str("a"), 3);
+    addtion->put(str("b"), str("c"));
+
+    JsObject::Ptr target = JsObject::create();
+    target->put(str("d"), 5);
+
+    ASSERT_EQ(target, util::extend(target, addtion));
+    ASSERT_TRUE(target->get(str("a")).equals(3));
+    ASSERT_TRUE(target->get(str("b")).equals(str("c")));
+    ASSERT_TRUE(target->get(str("d")).equals(5));
 }
 
 TEST(GTestUtil, TestHexEncode) {
