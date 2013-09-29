@@ -17,9 +17,9 @@ include_directories(
 )
 
 ## jsdp
-if(LIBNODE_USE_JSDP)
+if(LIBNODE_USE_JSDP AND LIBNODE_USE_CRYPTO)
     add_subdirectory(jsdp)
-endif(LIBNODE_USE_JSDP)
+endif(LIBNODE_USE_JSDP AND LIBNODE_USE_CRYPTO)
 
 ## jsonrpc
 if(LIBNODE_USE_JSONRPC AND LIBNODE_USE_THREAD)

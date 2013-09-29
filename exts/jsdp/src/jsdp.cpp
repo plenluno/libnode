@@ -12,10 +12,11 @@ namespace jsdp {
 Service::Ptr Service::create(
     String::CPtr name,
     Int port,
-    String::CPtr version) {
+    String::CPtr version,
+    String::CPtr passwd) {
     if (name && port > 0) {
         return Service::Ptr(
-            new jsdp::detail::Service<Service>(name, port, version));
+            new jsdp::detail::Service<Service>(name, port, version, passwd));
     } else {
         return Service::null();
     }

@@ -14,13 +14,16 @@ class Service : LIBJ_JS_OBJECT(Service)
     static Ptr create(
         String::CPtr name,
         Int port,
-        String::CPtr version = String::null());
+        String::CPtr version = String::null(),
+        String::CPtr passwd = String::null());
+
+    virtual Int port() const = 0;
 
     virtual String::CPtr name() const = 0;
 
     virtual String::CPtr version() const = 0;
 
-    virtual Int port() const = 0;
+    virtual String::CPtr password() const = 0;
 };
 
 }  // namespace jsdp

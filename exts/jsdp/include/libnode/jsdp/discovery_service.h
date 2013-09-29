@@ -26,6 +26,9 @@ class DiscoveryService : LIBNODE_JSDP_SERVICE(DiscoveryService)
     virtual void discover(JsFunction::Ptr cb) = 0;
 
     virtual void discover(String::CPtr name, JsFunction::Ptr cb) = 0;
+
+    virtual void discover(
+        String::CPtr name, String::CPtr passwd, JsFunction::Ptr cb) = 0;
 };
 
 }  // namespace jsdp

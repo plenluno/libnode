@@ -18,10 +18,12 @@ class Service : public libj::detail::JsObject<I> {
     Service(
         String::CPtr name,
         Int port,
-        String::CPtr version = String::null())
-        : name_(name)
+        String::CPtr version,
+        String::CPtr passwd = String::null())
+        : port_(port)
+        , name_(name)
         , version_(version)
-        , port_(port) {
+        , password_(passwd) {
         LIBJ_STATIC_SYMBOL_DEF(symName,    "name");
         LIBJ_STATIC_SYMBOL_DEF(symPort,    "port");
         LIBJ_STATIC_SYMBOL_DEF(symVersion, "version");
@@ -29,6 +31,10 @@ class Service : public libj::detail::JsObject<I> {
         this->put(symName, name);
         this->put(symPort, port);
         if (version) this->put(symVersion, version);
+    }
+
+    virtual Int port() const {
+        return port_;
     }
 
     virtual String::CPtr name() const {
@@ -39,14 +45,15 @@ class Service : public libj::detail::JsObject<I> {
         return version_;
     }
 
-    virtual Int port() const {
-        return port_;
+    virtual String::CPtr password() const {
+        return password_;
     }
 
  private:
+    Int port_;
     String::CPtr name_;
     String::CPtr version_;
-    Int port_;
+    String::CPtr password_;
 };
 
 }  // namespace detail
