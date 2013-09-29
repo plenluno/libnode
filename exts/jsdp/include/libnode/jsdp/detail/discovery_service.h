@@ -364,7 +364,7 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
             return hash &&
                 key->endsWith(hash) &&
                 key->length() > hash->length() + 1 &&
-                key->charAt(key->length() - hash->length() - 1) == ':'; 
+                key->charAt(key->length() - hash->length() - 1) == ':';
         }
     }
 
