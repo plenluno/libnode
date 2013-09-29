@@ -98,7 +98,7 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
 
         JsArray::Ptr params = JsArray::create();
         params->add(name);
-        params->add(getHash(passwd));
+        params->add(getHash(passwd, false));
 
         libj::JsObject::Ptr req = libj::JsObject::create();
         req->put(symMethod, symDiscover);
@@ -296,13 +296,13 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
     };
 
  private:
-    String::CPtr getHash(String::CPtr passwd) const {
+    String::CPtr getHash(String::CPtr passwd, Boolean save = true) const {
         if (!passwd) return String::null();
 
         crypto::Hash::Ptr hash = createHash(crypto::Hash::SHA1);
         hash->update(Buffer::create(passwd));
         String::CPtr res = hash->digest()->toString(Buffer::BASE64);
-        hash2passwd_->put(res, passwd);
+        if (save) hash2passwd_->put(res, passwd);
         return res;
     }
 
