@@ -11,6 +11,7 @@ add_library(jsdp STATIC
 )
 
 target_link_libraries(jsdp
+    node
     ${libnode-deps}
 )
 
