@@ -14,6 +14,7 @@ add_library(jsonrpc STATIC
 )
 
 target_link_libraries(jsonrpc
+    node
     ${libnode-deps}
 )
 
