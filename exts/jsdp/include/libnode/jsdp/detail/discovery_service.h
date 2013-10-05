@@ -278,7 +278,7 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
         virtual Value operator()(JsArray::Ptr args) {
             self_->callbacks_->remove(id_);
             self_->passwords_->remove(id_);
-            LIBNODE_DEBUG_PRINT("discovery timeout: %d", id_);
+            LIBNODE_DEBUG_PRINT("jsdp timeout: %d", id_);
             return UNDEFINED;
         }
 
@@ -290,7 +290,10 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
     class AfterSend : LIBJ_JS_FUNCTION(AfterSend)
      public:
         virtual Value operator()(JsArray::Ptr args) {
-            assert(!args->getCPtr<libj::Error>(0));
+            libj::Error::CPtr err = args->getCPtr<libj::Error>(0);
+            if (err) {
+                LIBNODE_DEBUG_PRINT("jsdp send error: %d", err->code());
+            }
             return UNDEFINED;
         }
     };
