@@ -5,6 +5,16 @@
 namespace libj {
 namespace node {
 
+TEST(GTestNetPipe, TestMemoryLeak) {
+#ifdef LIBJ_PF_WINDOWS
+    String::CPtr path = str("\\\\.\\pipe\\test.sock");
+#else
+    String::CPtr path = str("./test.sock");
+#endif
+    net::Socket::Ptr socket = net::createConnection(path);
+    ASSERT_TRUE(!!socket);
+}
+
 static const UInt NUM_CONNS = 7;
 
 TEST(GTestNetPipe, TestPipe) {

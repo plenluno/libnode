@@ -357,6 +357,12 @@ class Server : public events::EventEmitter<I> {
         , maxConnections_(0)
         , pipeName_(String::null())
         , connectionKey_(String::null()) {}
+
+ public:
+    virtual ~Server() {
+        this->removeAllListeners();
+        if (handle_) handle_->close();
+    }
 };
 
 }  // namespace net

@@ -26,13 +26,7 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
     }
 
     virtual void close() {
-        if (handle_) {
-            stopReceiving();
-            handle_->close();
-            handle_ = NULL;
-            emit(EVENT_CLOSE);
-            process::nextTick(JsFunction::Ptr(new AfterClose(this)));
-        }
+        close(JsFunction::Ptr(new AfterClose(this)));
     }
 
     virtual libj::JsObject::Ptr address() {
@@ -197,6 +191,16 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
         if (receiving_) {
             handle_->recvStop();
             receiving_ = false;
+        }
+    }
+
+    void close(JsFunction::Ptr cb) {
+        if (handle_) {
+            stopReceiving();
+            handle_->close();
+            handle_ = NULL;
+            emit(EVENT_CLOSE);
+            if (cb) process::nextTick(cb);
         }
     }
 
@@ -372,6 +376,12 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
         , receiving_(false)
         , bindState_(UNBOUND)
         , sendQueue_(JsArray::null()) {}
+
+ public:
+    virtual ~Socket() {
+        removeAllListeners();
+        close(JsFunction::null());
+    }
 };
 
 }  // namespace dgram

@@ -67,6 +67,13 @@ class GTestDgramAfterSend : LIBJ_JS_FUNCTION(GTestDgramAfterSend)
     dgram::Socket* client_;
 };
 
+TEST(GTestDgram, TestMemoryLeak) {
+    dgram::Socket::Ptr sock4 = dgram::createSocket(dgram::Socket::UDP4);
+    dgram::Socket::Ptr sock6 = dgram::createSocket(dgram::Socket::UDP6);
+    ASSERT_TRUE(!!sock4);
+    ASSERT_TRUE(!!sock6);
+}
+
 TEST(GTestDgram, TestDgramSend) {
     Int port = 41234;
     dgram::Socket::Ptr server = dgram::createSocket(dgram::Socket::UDP4);

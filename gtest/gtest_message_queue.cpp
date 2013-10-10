@@ -64,6 +64,11 @@ class GTestMsgQueuePostMessage : LIBJ_JS_FUNCTION(GTestMsgQueuePostMessage)
 static const UInt NUM_POSTS = 7;
 static const UInt NUM_THREADS = 5;
 
+TEST(GTestMessageQueue, TestMemoryLeak) {
+    MessageQueue::Ptr mq = MessageQueue::create();
+    ASSERT_TRUE(!!mq);
+}
+
 TEST(GTestMessageQueue, TestPostMessageSameThread) {
     MessageQueue::Ptr mq = MessageQueue::create();
     mq->open();

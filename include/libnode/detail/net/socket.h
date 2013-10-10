@@ -1000,6 +1000,12 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         , onClose_(JsFunction::null())
         , parser_(NULL)
         , httpMessage_(NULL) {}
+
+ public:
+    virtual ~Socket() {
+        removeAllListeners();
+        if (handle_) handle_->close();
+    }
 };
 
 }  // namespace net

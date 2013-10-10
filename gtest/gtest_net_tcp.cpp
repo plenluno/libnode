@@ -5,6 +5,11 @@
 namespace libj {
 namespace node {
 
+TEST(GTestNetTcp, TestMemoryLeak) {
+    net::Socket::Ptr socket = net::createConnection(8080);
+    ASSERT_TRUE(!!socket);
+}
+
 static const UInt NUM_CONNS = 7;
 
 TEST(GTestNetTcp, TestTcp) {
