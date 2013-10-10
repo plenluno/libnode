@@ -30,6 +30,7 @@ void discover() {
         22222,
         str("2.2.2"),
         str("password")));
+    ds->start();
 
     JsFunction::Ptr onResult(new OnResult());
     ds->discover(onResult);

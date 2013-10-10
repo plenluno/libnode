@@ -32,25 +32,60 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
             String::intern("1.0"))
         , id_(0)
         , timeout_(timeout)
-        , socket_(dgram::createSocket(dgram::Socket::UDP4))
+        , hostname_(String::null())
+        , socket_(dgram::Socket::null())
         , multicastAddr_(multicastAddr)
         , services_(libj::JsObject::create())
         , callbacks_(libj::JsObject::create())
         , passwords_(libj::JsObject::create())
-        , hash2passwd_(libj::JsObject::create()) {
-        socket_->on(
-            dgram::Socket::EVENT_MESSAGE,
-            JsFunction::Ptr(new OnMessage(this)));
-        socket_->on(
-            dgram::Socket::EVENT_CLOSE,
-            JsFunction::Ptr(new OnClose(this)));
-        socket_->bind(
-            port,
-            JsFunction::Ptr(new OnBind(this)));
+        , hash2passwd_(libj::JsObject::create()) {}
+
+    virtual Boolean start() {
+        if (socket_) {
+            return false;
+        } else {
+            socket_ = dgram::createSocket(dgram::Socket::UDP4);
+            socket_->on(
+                dgram::Socket::EVENT_MESSAGE,
+                JsFunction::Ptr(new OnMessage(this)));
+            socket_->on(
+                dgram::Socket::EVENT_CLOSE,
+                JsFunction::Ptr(new OnClose(this)));
+            socket_->on(
+                dgram::Socket::EVENT_ERROR,
+                JsFunction::Ptr(new OnError(this)));
+            Boolean r = socket_->bind(
+                port(),
+                JsFunction::Ptr(new OnBind(this)));
+            if (!r) stop();
+            return r;
+        }
     }
 
-    virtual void close() {
-        socket_->close();
+    virtual Boolean stop() {
+        if (socket_) {
+            socket_->close();
+            socket_ = dgram::Socket::null();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    virtual Boolean isRunning() const {
+        return !!socket_;
+    }
+
+    virtual String::CPtr hostname() const {
+        if (hostname_) {
+            return hostname_;
+        } else {
+            return os::hostname();
+        }
+    }
+
+    virtual void setHostname(String::CPtr name) {
+        hostname_ = name;
     }
 
     virtual Boolean join(jsdp::Service::CPtr service) {
@@ -77,15 +112,15 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
         return removeService(service);
     }
 
-    virtual void discover(JsFunction::Ptr cb) {
-        discover(String::null(), String::null(), cb);
+    virtual Boolean discover(JsFunction::Ptr cb) {
+        return discover(String::null(), String::null(), cb);
     }
 
-    virtual void discover(String::CPtr name, JsFunction::Ptr cb) {
-        discover(name, String::null(), cb);
+    virtual Boolean discover(String::CPtr name, JsFunction::Ptr cb) {
+        return discover(name, String::null(), cb);
     }
 
-    virtual void discover(
+    virtual Boolean discover(
         String::CPtr name,
         String::CPtr passwd,
         JsFunction::Ptr cb) {
@@ -94,7 +129,7 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
         LIBJ_STATIC_SYMBOL_DEF(symParams,   "params");
         LIBJ_STATIC_SYMBOL_DEF(symDiscover, "discover");
 
-        if (!cb) return;
+        if (!cb || !socket_) return false;
 
         JsArray::Ptr params = JsArray::create();
         params->add(name);
@@ -110,6 +145,7 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
         setTimeout(JsFunction::Ptr(new OnTimeout(this, id_)), timeout_);
 
         send(multicastAddr_, req);
+        return true;
     }
 
  private:
@@ -162,7 +198,7 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
             String::CPtr hash = params->getCPtr<String>(1);
 
             libj::JsObject::Ptr host = libj::JsObject::create();
-            host->put(symName, os::hostname());
+            host->put(symName, self_->hostname());
 
             libj::JsObject::Ptr result = libj::JsObject::create();
             result->put(symHost, host);
@@ -247,11 +283,25 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
         DiscoveryService* self_;
     };
 
+    class OnError : LIBJ_JS_FUNCTION(OnError)
+     public:
+        OnError(DiscoveryService* self) : self_(self) {}
+
+        virtual Value operator()(JsArray::Ptr args) {
+            self_->stop();
+            return UNDEFINED;
+        }
+
+     private:
+        DiscoveryService* self_;
+    };
+
     class OnBind : LIBJ_JS_FUNCTION(OnBind)
      public:
         OnBind(DiscoveryService* self) : self_(self) {}
 
         virtual Value operator()(JsArray::Ptr args) {
+            assert(self_ && self_->socket_);
 #ifdef LIBNODE_DEBUG
             self_->socket_->setMulticastLoopback(true);
 #else
@@ -386,6 +436,8 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
     }
 
     void send(String::CPtr addr, libj::JsObject::CPtr obj) {
+        if (!socket_) return;
+
         Buffer::Ptr buf = Buffer::create(json::stringify(obj));
         socket_->send(
             buf,
@@ -403,6 +455,7 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
  private:
     Long id_;
     UInt timeout_;
+    String::CPtr hostname_;
     dgram::Socket::Ptr socket_;
     String::CPtr multicastAddr_;
     libj::JsObject::Ptr services_;

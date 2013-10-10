@@ -17,17 +17,25 @@ class DiscoveryService : LIBNODE_JSDP_SERVICE(DiscoveryService)
         Int port,
         UInt timeout = 5000);
 
-    virtual void close() = 0;
+    virtual Boolean start() = 0;
+
+    virtual Boolean stop() = 0;
+
+    virtual Boolean isRunning() const = 0;
+
+    virtual String::CPtr hostname() const = 0;
+
+    virtual void setHostname(String::CPtr name) = 0;
 
     virtual Boolean join(Service::CPtr service) = 0;
 
     virtual Boolean leave(Service::CPtr service) = 0;
 
-    virtual void discover(JsFunction::Ptr cb) = 0;
+    virtual Boolean discover(JsFunction::Ptr cb) = 0;
 
-    virtual void discover(String::CPtr name, JsFunction::Ptr cb) = 0;
+    virtual Boolean discover(String::CPtr name, JsFunction::Ptr cb) = 0;
 
-    virtual void discover(
+    virtual Boolean discover(
         String::CPtr name, String::CPtr passwd, JsFunction::Ptr cb) = 0;
 };
 
