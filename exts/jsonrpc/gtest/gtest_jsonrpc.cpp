@@ -25,16 +25,15 @@ class Add : LIBJ_JS_FUNCTION(Add)
     }
 };
 
-class Close : LIBJ_JS_FUNCTION(Close)
+class Stop : LIBJ_JS_FUNCTION(Stop)
  public:
-    Close(Service::Ptr service)
+    Stop(Service::Ptr service)
         : done_(false)
         , service_(service) {}
 
     virtual Value operator()(JsArray::Ptr args) {
         Respond::Ptr r = args->getPtr<Respond>(0);
-        service_->close();
-        done_ = true;
+        done_ = service_->stop();
         return r->result(UNDEFINED);
     }
 
@@ -92,38 +91,45 @@ static Boolean isJsonRpc20(JsObject::CPtr res) {
     }
 }
 
+TEST(GTestJsonRpc, TestMemoryLeak) {
+    Service::Ptr service = Service::create();
+    ASSERT_TRUE(!!service);
+}
+
 TEST(GTestJsonRpc, TestJsonRpc10) {
     Service::Ptr service = Service::create();
+    ASSERT_TRUE(service->start());
+    ASSERT_TRUE(service->isRunning());
 
     OnResponse::Ptr onResponse(new OnResponse());
     service->on(Service::EVENT_RESPONSE, onResponse);
 
     Add::Ptr add(new Add());
-    Close::Ptr close(new Close(service));
+    Stop::Ptr stop(new Stop(service));
 
     Method::Ptr methodAdd = Method::create(
         String::create("add"),
         toPtr<JsArray>(json::parse(String::create("[\"x\",\"y\"]"))),
         add);
 
-    Method::Ptr methodClose = Method::create(
-        String::create("close"),
+    Method::Ptr methodStop = Method::create(
+        String::create("stop"),
         JsArray::create(),
-        close);
+        stop);
 
     service->addMethod(methodAdd);
-    service->addMethod(methodClose);
+    service->addMethod(methodStop);
 
     service->postRequest(String::create("{}"));
     service->postRequest(String::create("{\"id\":1}"));
     service->postRequest(String::create(
         "{\"method\":\"none\",\"params\":[],\"id\":2}"));
     service->postRequest(String::create(
-        "{\"method\":\"close\",\"params\":[0],\"id\":3}"));
+        "{\"method\":\"stop\",\"params\":[0],\"id\":3}"));
     service->postRequest(String::create(
         "{\"method\":\"add\",\"params\":[3,5],\"id\":4}"));
     service->postRequest(String::create(
-        "{\"method\":\"close\",\"params\":[],\"id\":null}"));
+        "{\"method\":\"stop\",\"params\":[],\"id\":null}"));
 
     node::run();
 
@@ -151,29 +157,32 @@ TEST(GTestJsonRpc, TestJsonRpc10) {
     ASSERT_TRUE(responses->getCPtr<JsObject>(4)
         ->get(RESULT).equals(static_cast<Long>(8)));
 
-    ASSERT_TRUE(close->done());
+    ASSERT_TRUE(stop->done());
+    ASSERT_FALSE(service->isRunning());
 }
 
 TEST(GTestJsonRpc, Test2JsonRpc10) {
     Service::Ptr service = Service::create();
+    ASSERT_TRUE(service->start());
+    ASSERT_TRUE(service->isRunning());
 
     OnResponse::Ptr onResponse(new OnResponse());
 
     Add::Ptr add(new Add());
-    Close::Ptr close(new Close(service));
+    Stop::Ptr stop(new Stop(service));
 
     Method::Ptr methodAdd = Method::create(
         String::create("add"),
         toPtr<JsArray>(json::parse(String::create("[\"x\",\"y\"]"))),
         add);
 
-    Method::Ptr methodClose = Method::create(
-        String::create("close"),
+    Method::Ptr methodStop = Method::create(
+        String::create("stop"),
         JsArray::create(),
-        close);
+        stop);
 
     service->addMethod(methodAdd);
-    service->addMethod(methodClose);
+    service->addMethod(methodStop);
 
     service->postRequest(String::create("{}"), onResponse);
     service->postRequest(String::create("{\"id\":1}"), onResponse);
@@ -181,13 +190,13 @@ TEST(GTestJsonRpc, Test2JsonRpc10) {
         String::create("{\"method\":\"none\",\"params\":[],\"id\":2}"),
         onResponse);
     service->postRequest(
-        String::create("{\"method\":\"close\",\"params\":[0],\"id\":3}"),
+        String::create("{\"method\":\"stop\",\"params\":[0],\"id\":3}"),
         onResponse);
     service->postRequest(
         String::create("{\"method\":\"add\",\"params\":[3,5],\"id\":4}"),
         onResponse);
     service->postRequest(
-        String::create("{\"method\":\"close\",\"params\":[],\"id\":null}"),
+        String::create("{\"method\":\"stop\",\"params\":[],\"id\":null}"),
         onResponse);
 
     node::run();
@@ -218,30 +227,33 @@ TEST(GTestJsonRpc, Test2JsonRpc10) {
 
     ASSERT_TRUE(!responses->getCPtr<JsObject>(5));
 
-    ASSERT_TRUE(close->done());
+    ASSERT_TRUE(stop->done());
+    ASSERT_FALSE(service->isRunning());
 }
 
 TEST(GTestJsonRpc, TestJsonRpc20) {
     Service::Ptr service = Service::create();
+    ASSERT_TRUE(service->start());
+    ASSERT_TRUE(service->isRunning());
 
     OnResponse::Ptr onResponse(new OnResponse());
     service->on(Service::EVENT_RESPONSE, onResponse);
 
     Add::Ptr add(new Add());
-    Close::Ptr close(new Close(service));
+    Stop::Ptr stop(new Stop(service));
 
     Method::Ptr methodAdd = Method::create(
         String::create("add"),
         toPtr<JsArray>(json::parse(String::create("[\"x\",\"y\"]"))),
         add);
 
-    Method::Ptr methodClose = Method::create(
-        String::create("close"),
+    Method::Ptr methodStop = Method::create(
+        String::create("stop"),
         JsArray::create(),
-        close);
+        stop);
 
     service->addMethod(methodAdd);
-    service->addMethod(methodClose);
+    service->addMethod(methodStop);
 
     service->postRequest(String::null());
     service->postRequest(String::create("abc"));
@@ -257,7 +269,7 @@ TEST(GTestJsonRpc, TestJsonRpc20) {
     service->postRequest(String::create(
         "{\"jsonrpc\":\"2.0\",\"method\":\"none\",\"params\":[],\"id\":4}"));
     service->postRequest(String::create(
-        "{\"jsonrpc\":\"2.0\",\"method\":\"close\",\"params\":[0],\"id\":5}"));
+        "{\"jsonrpc\":\"2.0\",\"method\":\"stop\",\"params\":[0],\"id\":5}"));
     service->postRequest(String::create(
         "{\"jsonrpc\":\"2.0\",\"method\":\"add\",\"params\":{},\"id\":6}"));
     service->postRequest(String::create(
@@ -269,7 +281,7 @@ TEST(GTestJsonRpc, TestJsonRpc20) {
         "{\"jsonrpc\":\"2.0\",\"method\":\"add\","
         "\"params\":{\"y\":6, \"z\":3},\"id\":9}"));
     service->postRequest(String::create(
-        "{\"jsonrpc\":\"2.0\",\"method\":\"close\"}"));
+        "{\"jsonrpc\":\"2.0\",\"method\":\"stop\"}"));
 
     node::run();
 
@@ -317,29 +329,32 @@ TEST(GTestJsonRpc, TestJsonRpc20) {
     ASSERT_TRUE(responses->getCPtr<JsObject>(12)
         ->get(RESULT).equals(static_cast<Long>(9)));
 
-    ASSERT_TRUE(close->done());
+    ASSERT_TRUE(stop->done());
+    ASSERT_FALSE(service->isRunning());
 }
 
 TEST(GTestJsonRpc, Test2JsonRpc20) {
     Service::Ptr service = Service::create();
+    ASSERT_TRUE(service->start());
+    ASSERT_TRUE(service->isRunning());
 
     OnResponse::Ptr onResponse(new OnResponse());
 
     Add::Ptr add(new Add());
-    Close::Ptr close(new Close(service));
+    Stop::Ptr stop(new Stop(service));
 
     Method::Ptr methodAdd = Method::create(
         String::create("add"),
         toPtr<JsArray>(json::parse(String::create("[\"x\",\"y\"]"))),
         add);
 
-    Method::Ptr methodClose = Method::create(
-        String::create("close"),
+    Method::Ptr methodStop = Method::create(
+        String::create("stop"),
         JsArray::create(),
-        close);
+        stop);
 
     service->addMethod(methodAdd);
-    service->addMethod(methodClose);
+    service->addMethod(methodStop);
 
     service->postRequest(String::null(), onResponse);
     service->postRequest(String::create("abc"), onResponse);
@@ -361,7 +376,7 @@ TEST(GTestJsonRpc, Test2JsonRpc20) {
         "{\"jsonrpc\":\"2.0\",\"method\":\"none\",\"params\":[],\"id\":4}"),
         onResponse);
     service->postRequest(String::create(
-        "{\"jsonrpc\":\"2.0\",\"method\":\"close\",\"params\":[0],\"id\":5}"),
+        "{\"jsonrpc\":\"2.0\",\"method\":\"stop\",\"params\":[0],\"id\":5}"),
         onResponse);
     service->postRequest(String::create(
         "{\"jsonrpc\":\"2.0\",\"method\":\"add\",\"params\":{},\"id\":6}"),
@@ -378,7 +393,7 @@ TEST(GTestJsonRpc, Test2JsonRpc20) {
         "\"params\":{\"y\":6, \"z\":3},\"id\":9}"),
         onResponse);
     service->postRequest(String::create(
-        "{\"jsonrpc\":\"2.0\",\"method\":\"close\"}"),
+        "{\"jsonrpc\":\"2.0\",\"method\":\"stop\"}"),
         onResponse);
 
     node::run();
@@ -429,7 +444,8 @@ TEST(GTestJsonRpc, Test2JsonRpc20) {
 
     ASSERT_TRUE(!responses->getCPtr<JsObject>(14));
 
-    ASSERT_TRUE(close->done());
+    ASSERT_TRUE(stop->done());
+    ASSERT_FALSE(service->isRunning());
 }
 
 }  // namespace jsonrpc

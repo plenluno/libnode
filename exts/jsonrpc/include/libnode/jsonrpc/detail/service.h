@@ -18,27 +18,44 @@ namespace detail {
 class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
  public:
     Service()
-        : open_(true)
+        : running_(false)
         , msgQueue_(MessageQueue::create())
-        , methods_(libj::JsObject::create()) {
-        msgQueue_->on(
-            MessageQueue::EVENT_MESSAGE,
-            JsFunction::Ptr(new OnMessage(this, methods_)));
-        msgQueue_->open();
-    }
+        , methods_(libj::JsObject::create()) {}
 
     virtual ~Service() {
-        close();
+        stop();
     }
 
-    virtual void close() {
-        methods_->clear();
-        msgQueue_->close();
-        open_ = false;
+    virtual Boolean start() {
+        if (running_) {
+            return false;
+        } else {
+            msgQueue_->on(
+                MessageQueue::EVENT_MESSAGE,
+                JsFunction::Ptr(new OnMessage(this, methods_)));
+            msgQueue_->open();
+            running_ = true;
+            return true;
+        }
+    }
+
+    virtual Boolean stop() {
+        if (running_) {
+            methods_->clear();
+            msgQueue_->close();
+            running_ = false;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    virtual Boolean isRunning() const {
+        return running_;
     }
 
     virtual Boolean addMethod(Method::CPtr method) {
-        if (method && open_) {
+        if (method && running_) {
             methods_->put(method->name(), method);
             return true;
         } else {
@@ -441,7 +458,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
     }
 
  private:
-    Boolean open_;
+    Boolean running_;
     MessageQueue::Ptr msgQueue_;
     libj::JsObject::Ptr methods_;
 };

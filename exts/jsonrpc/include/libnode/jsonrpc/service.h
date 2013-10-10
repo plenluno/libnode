@@ -16,7 +16,11 @@ class Service : LIBNODE_EVENT_EMITTER(Service)
 
     static Ptr create();
 
-    virtual void close() = 0;
+    virtual Boolean start() = 0;
+
+    virtual Boolean stop() = 0;
+
+    virtual Boolean isRunning() const = 0;
 
     virtual Boolean addMethod(Method::CPtr method) = 0;
 
