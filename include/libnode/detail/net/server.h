@@ -360,7 +360,6 @@ class Server : public events::EventEmitter<I> {
 
  public:
     virtual ~Server() {
-        this->removeAllListeners();
         if (handle_) handle_->close();
     }
 };

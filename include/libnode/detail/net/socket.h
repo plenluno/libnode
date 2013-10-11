@@ -1003,7 +1003,6 @@ class Socket : public events::EventEmitter<node::net::Socket> {
 
  public:
     virtual ~Socket() {
-        removeAllListeners();
         if (handle_) handle_->close();
     }
 };
