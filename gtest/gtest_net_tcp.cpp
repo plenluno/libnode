@@ -6,7 +6,7 @@ namespace libj {
 namespace node {
 
 TEST(GTestNetTcp, TestMemoryLeak) {
-    net::Socket::Ptr socket = net::createConnection(8080);
+    net::Socket::Ptr socket = net::createConnection(10000);
     ASSERT_TRUE(!!socket);
 }
 
