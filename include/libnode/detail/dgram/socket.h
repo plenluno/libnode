@@ -379,7 +379,7 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
 
  public:
     virtual ~Socket() {
-        close(JsFunction::null());
+        if (handle_) handle_->close();
     }
 };
 
