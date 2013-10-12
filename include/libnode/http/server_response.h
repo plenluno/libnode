@@ -1,15 +1,15 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_HTTP_SERVER_RESPONSE_H_
 #define LIBNODE_HTTP_SERVER_RESPONSE_H_
 
-#include <libnode/stream/writable_stream.h>
+#include <libnode/stream/writable.h>
 
 namespace libj {
 namespace node {
 namespace http {
 
-class ServerResponse : LIBNODE_WRITABLE_STREAM(ServerResponse)
+class ServerResponse : LIBNODE_STREAM_WRITABLE(ServerResponse)
  public:
     virtual void writeContinue() = 0;
 

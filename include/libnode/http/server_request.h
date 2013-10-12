@@ -1,16 +1,16 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_HTTP_SERVER_REQUEST_H_
 #define LIBNODE_HTTP_SERVER_REQUEST_H_
 
 #include <libnode/net/socket.h>
-#include <libnode/stream/readable_stream.h>
+#include <libnode/stream/readable.h>
 
 namespace libj {
 namespace node {
 namespace http {
 
-class ServerRequest : LIBNODE_READABLE_STREAM(ServerRequest)
+class ServerRequest : LIBNODE_STREAM_READABLE(ServerRequest)
  public:
     virtual String::CPtr method() const = 0;
 

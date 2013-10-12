@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_BRIDGE_STREAM_ABSTRACT_STREAM_H_
 #define LIBNODE_BRIDGE_STREAM_ABSTRACT_STREAM_H_
@@ -14,7 +14,7 @@ namespace stream {
 template<typename I>
 class AbstractStream : public events::AbstractEventEmitter<I> {
  public:
-    AbstractStream(Stream::Ptr stream)
+    AbstractStream(node::stream::Stream::Ptr stream)
         : events::AbstractEventEmitter<I>(stream)
         , stream_(stream) {}
 
@@ -23,7 +23,7 @@ class AbstractStream : public events::AbstractEventEmitter<I> {
     }
 
  private:
-    Stream::Ptr stream_;
+    node::stream::Stream::Ptr stream_;
 };
 
 }  // namespace stream

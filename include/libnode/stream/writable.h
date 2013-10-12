@@ -1,15 +1,16 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
-#ifndef LIBNODE_STREAM_WRITABLE_STREAM_H_
-#define LIBNODE_STREAM_WRITABLE_STREAM_H_
+#ifndef LIBNODE_STREAM_WRITABLE_H_
+#define LIBNODE_STREAM_WRITABLE_H_
 
 #include <libnode/buffer.h>
 #include <libnode/stream/stream.h>
 
 namespace libj {
 namespace node {
+namespace stream {
 
-class WritableStream : LIBNODE_STREAM(WritableStream)
+class Writable : LIBNODE_STREAM(Writable)
  public:
     static Symbol::CPtr EVENT_DRAIN;
     static Symbol::CPtr EVENT_PIPE;
@@ -27,10 +28,11 @@ class WritableStream : LIBNODE_STREAM(WritableStream)
     virtual Boolean destroySoon() = 0;
 };
 
+}  // namespace stream
 }  // namespace node
 }  // namespace libj
 
-#define LIBNODE_WRITABLE_STREAM(T) public libj::node::WritableStream { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::WritableStream)
+#define LIBNODE_STREAM_WRITABLE(T) public libj::node::stream::Writable { \
+    LIBJ_MUTABLE_DEFS(T, libj::node::stream::Writable)
 
-#endif  // LIBNODE_STREAM_WRITABLE_STREAM_H_
+#endif  // LIBNODE_STREAM_WRITABLE_H_

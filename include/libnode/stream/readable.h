@@ -1,15 +1,16 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
-#ifndef LIBNODE_STREAM_READABLE_STREAM_H_
-#define LIBNODE_STREAM_READABLE_STREAM_H_
+#ifndef LIBNODE_STREAM_READABLE_H_
+#define LIBNODE_STREAM_READABLE_H_
 
 #include <libnode/buffer.h>
 #include <libnode/stream/stream.h>
 
 namespace libj {
 namespace node {
+namespace stream {
 
-class ReadableStream : LIBNODE_STREAM(ReadableStream)
+class Readable : LIBNODE_STREAM(Readable)
  public:
     static Symbol::CPtr EVENT_DATA;
     static Symbol::CPtr EVENT_END;
@@ -23,10 +24,11 @@ class ReadableStream : LIBNODE_STREAM(ReadableStream)
     virtual Boolean setEncoding(Buffer::Encoding enc) = 0;
 };
 
+}  // namespace stream
 }  // namespace node
 }  // namespace libj
 
-#define LIBNODE_READABLE_STREAM(T) public libj::node::ReadableStream { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::ReadableStream)
+#define LIBNODE_STREAM_READABLE(T) public libj::node::stream::Readable { \
+    LIBJ_MUTABLE_DEFS(T, libj::node::stream::Readable)
 
-#endif  // LIBNODE_STREAM_READABLE_STREAM_H_
+#endif  // LIBNODE_STREAM_READABLE_H_

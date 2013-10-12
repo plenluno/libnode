@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_STREAM_STREAM_H_
 #define LIBNODE_STREAM_STREAM_H_
@@ -7,6 +7,7 @@
 
 namespace libj {
 namespace node {
+namespace stream {
 
 class Stream : LIBNODE_EVENT_EMITTER(Stream)
  public:
@@ -16,10 +17,11 @@ class Stream : LIBNODE_EVENT_EMITTER(Stream)
     virtual Boolean destroy() = 0;
 };
 
+}  // namespace stream
 }  // namespace node
 }  // namespace libj
 
-#define LIBNODE_STREAM(T) public libj::node::Stream { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::Stream)
+#define LIBNODE_STREAM(T) public libj::node::stream::Stream { \
+    LIBJ_MUTABLE_DEFS(T, libj::node::stream::Stream)
 
 #endif  // LIBNODE_STREAM_STREAM_H_

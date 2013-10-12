@@ -1,9 +1,9 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
-#ifndef LIBNODE_BRIDGE_STREAM_ABSTRACT_READABLE_STREAM_H_
-#define LIBNODE_BRIDGE_STREAM_ABSTRACT_READABLE_STREAM_H_
+#ifndef LIBNODE_BRIDGE_STREAM_ABSTRACT_READABLE_H_
+#define LIBNODE_BRIDGE_STREAM_ABSTRACT_READABLE_H_
 
-#include <libnode/stream/readable_stream.h>
+#include <libnode/stream/readable.h>
 #include <libnode/bridge/stream/abstract_stream.h>
 
 namespace libj {
@@ -12,9 +12,9 @@ namespace bridge {
 namespace stream {
 
 template<typename I>
-class AbstractReadableStream : public AbstractStream<I> {
+class AbstractReadable : public AbstractStream<I> {
  public:
-    AbstractReadableStream(ReadableStream::Ptr stream)
+    AbstractReadable(node::stream::Readable::Ptr stream)
         : AbstractStream<I>(stream)
         , stream_(stream) {}
 
@@ -35,7 +35,7 @@ class AbstractReadableStream : public AbstractStream<I> {
     }
 
  private:
-    ReadableStream::Ptr stream_;
+    node::stream::Readable::Ptr stream_;
 };
 
 }  // namespace stream
@@ -43,4 +43,4 @@ class AbstractReadableStream : public AbstractStream<I> {
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_BRIDGE_STREAM_ABSTRACT_READABLE_STREAM_H_
+#endif  // LIBNODE_BRIDGE_STREAM_ABSTRACT_READABLE_H_

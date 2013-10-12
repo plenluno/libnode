@@ -1,10 +1,10 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_BRIDGE_HTTP_ABSTRACT_SERVER_REQUEST_H_
 #define LIBNODE_BRIDGE_HTTP_ABSTRACT_SERVER_REQUEST_H_
 
 #include <libnode/http/server_request.h>
-#include <libnode/bridge/stream/abstract_readable_stream.h>
+#include <libnode/bridge/stream/abstract_readable.h>
 
 namespace libj {
 namespace node {
@@ -12,10 +12,10 @@ namespace bridge {
 namespace http {
 
 template<typename I, typename B>
-class AbstractServerRequest : public stream::AbstractReadableStream<I> {
+class AbstractServerRequest : public stream::AbstractReadable<I> {
  public:
     AbstractServerRequest(typename B::Ptr request)
-        : stream::AbstractReadableStream<I>(request)
+        : stream::AbstractReadable<I>(request)
         , request_(request) {}
 
     String::CPtr method() const {

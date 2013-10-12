@@ -1,9 +1,9 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
-#ifndef LIBNODE_BRIDGE_STREAM_ABSTRACT_DUPLEX_STREAM_H_
-#define LIBNODE_BRIDGE_STREAM_ABSTRACT_DUPLEX_STREAM_H_
+#ifndef LIBNODE_BRIDGE_STREAM_ABSTRACT_WRITABLE_H_
+#define LIBNODE_BRIDGE_STREAM_ABSTRACT_WRITABLE_H_
 
-#include <libnode/stream/duplex_stream.h>
+#include <libnode/stream/writable.h>
 #include <libnode/bridge/stream/abstract_stream.h>
 
 namespace libj {
@@ -12,30 +12,12 @@ namespace bridge {
 namespace stream {
 
 template<typename I>
-class AbstractDuplexStream : public AbstractStream<I> {
+class AbstractWritable : public AbstractStream<I> {
  public:
-    AbstractDuplexStream(DuplexStream::Ptr stream)
+    AbstractWritable(node::stream::Writable::Ptr stream)
         : AbstractStream<I>(stream)
         , stream_(stream) {}
 
-    // ReadableStream
-    virtual Boolean readable() const {
-        return stream_->readable();
-    }
-
-    virtual Boolean setEncoding(Buffer::Encoding enc) {
-        return stream_->setEncoding(enc);
-    }
-
-    virtual Boolean pause() {
-        return stream_->pause();
-    }
-
-    virtual Boolean resume() {
-        return stream_->resume();
-    }
-
-    // WritableStream
     virtual Boolean writable() const {
         return stream_->writable();
     }
@@ -57,7 +39,7 @@ class AbstractDuplexStream : public AbstractStream<I> {
     }
 
  private:
-    DuplexStream::Ptr stream_;
+    node::stream::Writable::Ptr stream_;
 };
 
 }  // namespace stream
@@ -65,4 +47,4 @@ class AbstractDuplexStream : public AbstractStream<I> {
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_BRIDGE_STREAM_ABSTRACT_DUPLEX_STREAM_H_
+#endif  // LIBNODE_BRIDGE_STREAM_ABSTRACT_WRITABLE_H_

@@ -1,15 +1,15 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_HTTP_CLIENT_REQUEST_H_
 #define LIBNODE_HTTP_CLIENT_REQUEST_H_
 
-#include <libnode/stream/writable_stream.h>
+#include <libnode/stream/writable.h>
 
 namespace libj {
 namespace node {
 namespace http {
 
-class ClientRequest : LIBNODE_WRITABLE_STREAM(ClientRequest)
+class ClientRequest : LIBNODE_STREAM_WRITABLE(ClientRequest)
  public:
     static Symbol::CPtr EVENT_RESPONSE;
     static Symbol::CPtr EVENT_SOCKET;

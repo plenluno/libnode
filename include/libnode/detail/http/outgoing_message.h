@@ -23,9 +23,9 @@ namespace node {
 namespace detail {
 namespace http {
 
-class OutgoingMessage : public events::EventEmitter<WritableStream> {
+class OutgoingMessage : public events::EventEmitter<stream::Writable> {
  public:
-    LIBJ_MUTABLE_DEFS(OutgoingMessage, WritableStream);
+    LIBJ_MUTABLE_DEFS(OutgoingMessage, stream::Writable);
 
     static Ptr createInServer(IncomingMessage::Ptr req);
 

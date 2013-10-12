@@ -1,10 +1,10 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_BRIDGE_HTTP_ABSTRACT_SERVER_RESPONSE_H_
 #define LIBNODE_BRIDGE_HTTP_ABSTRACT_SERVER_RESPONSE_H_
 
 #include <libnode/http/server_response.h>
-#include <libnode/bridge/stream/abstract_writable_stream.h>
+#include <libnode/bridge/stream/abstract_writable.h>
 
 namespace libj {
 namespace node {
@@ -12,10 +12,10 @@ namespace bridge {
 namespace http {
 
 template<typename I, typename B>
-class AbstractServerResponse : public stream::AbstractWritableStream<I> {
+class AbstractServerResponse : public stream::AbstractWritable<I> {
  public:
     AbstractServerResponse(typename B::Ptr response)
-        : stream::AbstractWritableStream<I>(response)
+        : stream::AbstractWritable<I>(response)
         , response_(response) {}
 
     virtual void writeContinue() {

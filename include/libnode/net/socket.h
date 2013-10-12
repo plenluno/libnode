@@ -1,15 +1,15 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_NET_SOCKET_H_
 #define LIBNODE_NET_SOCKET_H_
 
-#include <libnode/stream/duplex_stream.h>
+#include <libnode/stream/duplex.h>
 
 namespace libj {
 namespace node {
 namespace net {
 
-class Socket : LIBNODE_DUPLEX_STREAM(Socket)
+class Socket : LIBNODE_STREAM_DUPLEX(Socket)
  public:
     static Symbol::CPtr EVENT_CONNECT;
     static Symbol::CPtr EVENT_TIMEOUT;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #include <libnode/fs/stats.h>
 
@@ -20,6 +20,6 @@ LIBJ_SYMBOL_DEF(STAT_ATIME,   "atime");
 LIBJ_SYMBOL_DEF(STAT_MTIME,   "mtime");
 LIBJ_SYMBOL_DEF(STAT_CTIME,   "ctime");
 
-}  // namespace events
+}  // namespace fs
 }  // namespace node
 }  // namespace libj

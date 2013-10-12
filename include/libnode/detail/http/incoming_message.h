@@ -6,7 +6,7 @@
 #include <libnode/config.h>
 #include <libnode/http/header.h>
 #include <libnode/process.h>
-#include <libnode/stream/readable_stream.h>
+#include <libnode/stream/readable.h>
 #include <libnode/string_decoder.h>
 #include <libnode/detail/net/socket.h>
 #include <libnode/detail/events/event_emitter.h>
@@ -23,9 +23,9 @@ namespace http {
 
 class OutgoingMessage;
 
-class IncomingMessage : public events::EventEmitter<ReadableStream> {
+class IncomingMessage : public events::EventEmitter<stream::Readable> {
  public:
-    LIBJ_MUTABLE_DEFS(IncomingMessage, ReadableStream);
+    LIBJ_MUTABLE_DEFS(IncomingMessage, stream::Readable);
 
     static Ptr create(net::Socket::Ptr sock) {
         if (sock) {

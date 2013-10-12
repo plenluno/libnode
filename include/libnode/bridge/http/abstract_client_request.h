@@ -1,10 +1,10 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2013 Plenluno All rights reserved.
 
 #ifndef LIBNODE_BRIDGE_HTTP_ABSTRACT_CLIENT_REQUEST_H_
 #define LIBNODE_BRIDGE_HTTP_ABSTRACT_CLIENT_REQUEST_H_
 
 #include <libnode/http/client_request.h>
-#include <libnode/bridge/stream/abstract_writable_stream.h>
+#include <libnode/bridge/stream/abstract_writable.h>
 
 namespace libj {
 namespace node {
@@ -12,10 +12,10 @@ namespace bridge {
 namespace http {
 
 template<typename I, typename B>
-class AbstractClientRequest : public stream::AbstractWritableStream<I> {
+class AbstractClientRequest : public stream::AbstractWritable<I> {
  public:
     AbstractClientRequest(typename B::Ptr request)
-        : stream::AbstractWritableStream<I>(request)
+        : stream::AbstractWritable<I>(request)
         , request_(request) {}
 
     virtual void abort() {
