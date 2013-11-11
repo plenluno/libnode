@@ -5,17 +5,15 @@ compiler:
 
 install:
   - git submodule update --init --recursive
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
   - sudo apt-get update
   - sudo apt-get install cmake valgrind g++-4.8
 
-before_script:
+script:
   - gcc-4.8 --version
   - mkdir build
   - cd build
   - cmake -DLIBNODE_USE_CXX11=ON -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_TEST=ON ..
-
-script:
   - make
   - gtest/libnode-test
   - valgrind --leak-check=full gtest/libnode-test
