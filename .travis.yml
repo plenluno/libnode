@@ -1,20 +1,21 @@
 language: cpp
 
 compiler:
-  - gcc
+  - gcc-4.8
 
 install:
   - git submodule update --init --recursive
-  - sudo apt-get install cmake valgrind
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  - sudo apt-get update
+  - sudo apt-get install cmake valgrind g++-4.8
 
 before_script:
+  - gcc-4.8 --version
   - mkdir build
   - cd build
-  - cmake -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_TEST=ON ..
+  - cmake -DLIBNODE_USE_CXX11=ON -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_TEST=ON ..
 
 script:
   - make
-
-after_script:
   - gtest/libnode-test
   - valgrind --leak-check=full gtest/libnode-test
