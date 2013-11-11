@@ -1,16 +1,19 @@
 language: cpp
 
 compiler:
-  - gcc-4.8
+  - gcc
 
-install:
+before_install:
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get -qq update
+  - sudo apt-get install -qq cmake valgrind g++-4.8
+  - export CC=gcc-4.8 CXX=g++-4.8
+
+before_script:
+  - gcc-4.8 --version
   - git submodule update --init --recursive
-  - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update
-  - sudo apt-get install cmake valgrind g++-4.8
 
 script:
-  - gcc-4.8 --version
   - mkdir build
   - cd build
   - cmake -DLIBNODE_USE_CXX11=ON -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_TEST=ON ..
