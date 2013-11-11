@@ -16,7 +16,7 @@ before_script:
 script:
   - mkdir build
   - cd build
-  - cmake -DLIBNODE_USE_CXX11=ON -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_TEST=ON ..
+  - cmake -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_TEST=ON ..
   - make
   - gtest/libnode-test
   - valgrind --leak-check=full gtest/libnode-test
