@@ -3,7 +3,7 @@ libnode
 
 [![Build Status](https://travis-ci.org/plenluno/libnode.png?branch=master)](https://travis-ci.org/plenluno/libnode)
 
-libnode is a native implementation of Node.js.
+libnode is a C++ implementation of Node.js.
 
 ### Build
 
