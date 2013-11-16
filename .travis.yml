@@ -1,7 +1,7 @@
 language: cpp
 
 compiler:
-  - clang
+# - clang
   - gcc
 
 before_install:
@@ -18,7 +18,7 @@ before_script:
 script:
   - mkdir build
   - cd build
-  - cmake -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_TEST=ON -DLIBNODE_BUILD_EXT=ON -DLIBNODE_BUILD_EXAMPLE=ON ..
+  - cmake -DCMAKE_BUILD_TYPE=Release -DLIBNODE_USE_THREAD=ON -DLIBNODE_BUILD_TEST=ON -DLIBNODE_BUILD_EXT=ON -DLIBNODE_BUILD_EXAMPLE=ON ..
   - make
   - gtest/libnode-test
   - valgrind --leak-check=full gtest/libnode-test
