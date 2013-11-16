@@ -5,12 +5,12 @@ compiler:
   - gcc
 
 before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - if [ "$CC" = "clnag" ]; then export CC=clang-3.3 CXX=clang++-3.3 PKG=clang-3.3 PPA=h-rayflood/llvm; fi
+  - if [ "$CC" = "gcc" ]; then export CC=gcc-4.8 CXX=g++-4.8 PKG=g++-4.8 PPA=ubuntu-toolchain-r/test; fi
+  - sudo add-apt-repository -y ppa:$PPA
   - sudo apt-get -qq update
-  - sudo apt-get install -qq cmake valgrind g++-4.8
-  - if [ "$CXX" = "g++" ]; then export CC=gcc-4.8 CXX=g++-4.8; fi
-  - clang --version
-  - gcc-4.8 --version
+  - sudo apt-get install -qq cmake valgrind $PKG
+  - $CC --version
 
 before_script:
   - git submodule update --init --recursive
