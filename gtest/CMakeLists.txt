@@ -36,7 +36,6 @@ if(LIBNODE_USE_CRYPTO)
         ${libnode-test-src}
         gtest_crypto_cipher.cpp
         gtest_crypto_hash.cpp
-#       gtest_crypto_rsa.cpp
     )
 endif(LIBNODE_USE_CRYPTO)
 

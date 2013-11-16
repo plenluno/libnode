@@ -216,9 +216,6 @@ if(LIBNODE_USE_CRYPTO)
         src/crypto/cipher.cpp
         src/crypto/decipher.cpp
         src/crypto/hash.cpp
-        src/crypto/rsa/cipher.cpp
-        src/crypto/rsa/decipher.cpp
-        src/crypto/rsa/key_pair.cpp
     )
 endif(LIBNODE_USE_CRYPTO)
 
