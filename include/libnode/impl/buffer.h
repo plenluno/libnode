@@ -4,6 +4,7 @@
 #define LIBNODE_IMPL_BUFFER_H_
 
 #include <libnode/util.h>
+#include <libnode/config.h>
 
 #include <libj/exception.h>
 
@@ -57,5 +58,18 @@ inline Buffer::Ptr Buffer::concat(JsArray::CPtr list, Size total) {
 
 }  // namespace node
 }  // namespace libj
+
+#ifdef LIBNODE_USE_CXX11
+namespace std {
+#else
+namespace boost {
+#endif
+    template <>
+    struct hash<libj::node::Buffer::Encoding> {
+        size_t operator()(const libj::node::Buffer::Encoding& key) const {
+            return static_cast<size_t>(key);
+        }
+    };
+}
 
 #endif  // LIBNODE_IMPL_BUFFER_H_
