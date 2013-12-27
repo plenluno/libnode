@@ -117,14 +117,23 @@ TEST(GTestHttpEchoOld, TestHttpV10) {
 
     JsArray::CPtr msgs = GTestOnEnd::messages();
     ASSERT_EQ(1, msgs->length());
+
     Buffer::CPtr res = msgs->getCPtr<Buffer>(0);
-    ASSERT_TRUE(res && res->toString()->equals(str(
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Length: 3\r\n"
-        "Content-Type: text/plain\r\n"
-        "Connection: close\r\n"
-        "\r\n"
-        "1.0")));
+    String::CPtr resStr = res->toString();
+    String::CPtr status = str("HTTP/1.1 200 OK\r\n");
+    String::CPtr header1 = str("Connection: close\r\n");
+    String::CPtr header2 = str("Content-Length: 3\r\n");
+    String::CPtr header3 = str("Content-Type: text/plain\r\n");
+    String::CPtr body = str("\r\n1.0");
+    ASSERT_EQ(resStr->length(),
+        status->length() +
+        header1->length() + header2->length() + header3->length() +
+        body->length());
+    ASSERT_TRUE(resStr->startsWith(status));
+    ASSERT_TRUE(resStr->endsWith(body));
+    ASSERT_NE(NO_POS, resStr->indexOf(header1));
+    ASSERT_NE(NO_POS, resStr->indexOf(header2));
+    ASSERT_NE(NO_POS, resStr->indexOf(header3));
 
     clearGTestHttpCommon();
 }
@@ -154,13 +163,21 @@ TEST(GTestHttpEchoOld, TestHttpV10NoContentLength) {
 
     JsArray::CPtr msgs = GTestOnEnd::messages();
     ASSERT_EQ(1, msgs->length());
+
     Buffer::CPtr res = msgs->getCPtr<Buffer>(0);
-    ASSERT_TRUE(res && res->toString()->equals(str(
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "Connection: close\r\n"
-        "\r\n"
-        "1.0")));
+    String::CPtr resStr = res->toString();
+    String::CPtr status = str("HTTP/1.1 200 OK\r\n");
+    String::CPtr header1 = str("Connection: close\r\n");
+    String::CPtr header2 = str("Content-Type: text/plain\r\n");
+    String::CPtr body = str("\r\n1.0");
+    ASSERT_EQ(resStr->length(),
+        status->length() +
+        header1->length() + header2->length() +
+        body->length());
+    ASSERT_TRUE(resStr->startsWith(status));
+    ASSERT_TRUE(resStr->endsWith(body));
+    ASSERT_NE(NO_POS, resStr->indexOf(header1));
+    ASSERT_NE(NO_POS, resStr->indexOf(header2));
 
     clearGTestHttpCommon();
 }

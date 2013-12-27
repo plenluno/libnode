@@ -28,8 +28,10 @@ TEST(GTestQueryString, TestParse) {
 
     query = str("=x&y&");
     obj = querystring::parse(query);
-    ASSERT_TRUE(json::stringify(obj)->equals(
-        str("{\"\":[\"x\",\"\"],\"y\":\"\"}")));
+    String::CPtr s1 = json::stringify(obj);
+    String::CPtr s2 = str("{\"\":[\"x\",\"\"],\"y\":\"\"}");
+    String::CPtr s3 = str("{\"y\":\"\",\"\":[\"x\",\"\"]}");
+    ASSERT_TRUE(s1->equals(s2) || s1->equals(s3));
 
     query = str("%20=%20");
     obj = querystring::parse(query);
@@ -50,7 +52,9 @@ TEST(GTestQueryString, TestStringify) {
     obj->put(str("a"), str("b"));
     obj->put(str("x"), 1);
     query = querystring::stringify(obj);
-    ASSERT_TRUE(query->equals(str("a=b&x=1")));
+    ASSERT_TRUE(
+        query->equals(str("a=b&x=1")) ||
+        query->equals(str("x=1&a=b")));
 
     obj = JsObject::create();
     obj->put(str("a"), JsObject::create());
