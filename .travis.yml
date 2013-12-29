@@ -1,11 +1,11 @@
 language: cpp
 
 compiler:
-  - clang
+# - clang
   - gcc
 
 before_install:
-  - if [ "$CC" = "clang" ]; then export PKG=libc++-dev; fi
+  - if [ "$CC" = "clang" ]; then export PKG="libc++-dev libc++abi-dev"; fi
   - if [ "$CC" = "gcc" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
   - if [ "$CC" = "gcc" ]; then sudo apt-get -qq update; fi
   - if [ "$CC" = "gcc" ]; then export CC=gcc-4.8 CXX=g++-4.8 PKG=g++-4.8; fi
