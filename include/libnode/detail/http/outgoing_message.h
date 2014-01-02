@@ -616,7 +616,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
         while (itr->hasNext()) {
             Entry::CPtr entry = itr->nextTyped();
             headers->put(
-                headerNames_->get(entry->getKey()),
+                headerNames_->getCPtr<String>(toCPtr<String>(entry->getKey())),
                 entry->getValue());
         }
         return headers;
