@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 #define LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
@@ -158,7 +158,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
     }
 
     String::CPtr getHeader(String::CPtr name) const {
-        if (name && headers_) {
+        if (name) {
             return headers_->getCPtr<String>(
                 scanHeaderField<Char>(name->data(), name->length()));
         } else {
@@ -170,12 +170,6 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
         if (header_) return false;
         if (!name || !value) return false;
 
-        if (!headers_) {
-            assert(!headerNames_);
-            headers_ = libj::JsObject::create();
-            headerNames_ = libj::JsObject::create();
-        }
-
         String::CPtr key = scanHeaderField<Char>(name->data(), name->length());
         headers_->put(key, value);
         headerNames_->put(key, name);
@@ -184,7 +178,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
 
     Boolean removeHeader(String::CPtr name) {
         if (header_) return false;
-        if (!name || !headers_) return false;
+        if (!name) return false;
 
         String::CPtr key = scanHeaderField<Char>(name->data(), name->length());
         headers_->remove(key);
@@ -229,7 +223,8 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
             node::http::Status::create(statusCode, reasonPhrase);
 
         libj::JsObject::CPtr headers;
-        if (obj && headers_) {
+        Boolean empty = headers_->isEmpty();
+        if (obj && !empty) {
             libj::JsObject::Ptr hs = renderHeaders();
             typedef libj::JsObject::Entry Entry;
             TypedSet<Entry::CPtr>::CPtr entrys = obj->entrySet();
@@ -239,7 +234,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
                 hs->put(entry->getKey(), entry->getValue());
             }
             headers = hs;
-        } else if (headers_) {
+        } else if (!empty) {
             headers = renderHeaders();
         } else {
             headers = obj;
@@ -607,7 +602,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
 
     libj::JsObject::Ptr renderHeaders() {
         if (header_) return libj::JsObject::null();
-        if (!headers_) return libj::JsObject::create();
+        if (headers_->isEmpty()) return libj::JsObject::create();
 
         libj::JsObject::Ptr headers = libj::JsObject::create();
         typedef libj::JsObject::Entry Entry;
@@ -679,8 +674,8 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
         path_ = String::null();
         header_ = String::null();
         trailer_ = String::create();
-        headers_ = libj::JsObject::null();
-        headerNames_ = libj::JsObject::null();
+        headers_->clear();
+        headerNames_->clear();
         output_->clear();
         outputEncodings_->clear();
         parser_ = NULL;
@@ -1244,8 +1239,8 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
         , path_(String::null())
         , header_(String::null())
         , trailer_(String::create())
-        , headers_(libj::JsObject::null())
-        , headerNames_(libj::JsObject::null())
+        , headers_(libj::JsObject::create())
+        , headerNames_(libj::JsObject::create())
         , output_(LinkedList::create())
         , outputEncodings_(EncodingList::create())
         , parser_(NULL)
