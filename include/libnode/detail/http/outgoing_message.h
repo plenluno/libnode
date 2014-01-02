@@ -239,7 +239,9 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
             headers = obj;
         }
 
-        StringBuilder::Ptr statusLine = StringBuilder::create();
+        assert(!resBuf_ || !resBuf_->length());
+        StringBuilder::Ptr statusLine =
+            resBuf_ ? resBuf_ : StringBuilder::create();
         statusLine->appendStr(LIBJ_U("HTTP/1.1 "));
         statusLine->append(status->code());
         statusLine->appendChar(' ');
