@@ -108,8 +108,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
         if (hot) {
             if (hasFlag(CHUNKED_ENCODING)) {
                 Size len = Buffer::byteLength(str, enc);
-                StringBuilder::Ptr chunk = StringBuilder::create();
-                chunk->appendStr(header_);
+                StringBuilder::Ptr chunk = resBuf_;
                 appendHex(chunk, len);
                 chunk->appendStr(LIBJ_U("\r\n"));
                 chunk->appendStr(str);
@@ -594,6 +593,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
         }
 
         messageHeader->appendStr(LIBJ_U("\r\n"));
+        resBuf_ = messageHeader;
         header_ = messageHeader->toString();
         unsetFlag(HEADER_SENT);
 
@@ -674,6 +674,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
         path_ = String::null();
         header_ = String::null();
         trailer_ = String::create();
+        if (resBuf_) resBuf_->clear();
         headers_->clear();
         headerNames_->clear();
         output_->clear();
@@ -1220,6 +1221,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
     String::CPtr path_;
     String::CPtr header_;
     String::CPtr trailer_;
+    StringBuilder::Ptr resBuf_;
     libj::JsObject::Ptr headers_;
     libj::JsObject::Ptr headerNames_;
     LinkedList::Ptr output_;
@@ -1239,6 +1241,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
         , path_(String::null())
         , header_(String::null())
         , trailer_(String::create())
+        , resBuf_(StringBuilder::null())
         , headers_(libj::JsObject::create())
         , headerNames_(libj::JsObject::create())
         , output_(LinkedList::create())
