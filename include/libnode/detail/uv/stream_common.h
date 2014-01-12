@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_STREAM_COMMON_H_
 #define LIBNODE_DETAIL_UV_STREAM_COMMON_H_
@@ -25,7 +25,7 @@ inline void Stream::onReadCommon(
         }
         setLastError();
 
-        if (onRead) onRead->call(Buffer::null(), 0);
+        if (onRead) invoke(onRead, Buffer::null(), 0);
         return;
     }
 
@@ -43,7 +43,7 @@ inline void Stream::onReadCommon(
     } else {
         assert(pending == UV_UNKNOWN_HANDLE);
     }
-    if (onRead) onRead->call(stream->buffer_, pendingObj);
+    if (onRead) invoke(onRead, stream->buffer_, pendingObj);
 }
 
 }  // namespace uv

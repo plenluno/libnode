@@ -1,10 +1,11 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_DNS_H_
 #define LIBNODE_DETAIL_DNS_H_
 
 #include <libnode/dns.h>
 #include <libnode/net.h>
+#include <libnode/invoke.h>
 #include <libnode/process.h>
 #include <libnode/uv/error.h>
 #include <libnode/detail/uv/req.h>
@@ -144,18 +145,20 @@ class OnAnswer : LIBJ_JS_FUNCTION(OnAnswer)
             String::CPtr addr = addrs->getCPtr<String>(0);
             assert(addr);
             if (family_) {
-                return callback_->call(
+                return invoke(
+                    callback_,
                     Error::null(),
                     addr,
                     family_);
             } else {
-                return callback_->call(
+                return invoke(
+                    callback_,
                     Error::null(),
                     addr,
                     addr->charAt(0) == ':' ? 6 : 4);
             }
         } else {
-            return callback_->call(node::uv::Error::last());
+            return invoke(callback_, node::uv::Error::last());
         }
     }
 

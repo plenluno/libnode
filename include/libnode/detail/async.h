@@ -1,8 +1,9 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_ASYNC_H_
 #define LIBNODE_DETAIL_ASYNC_H_
 
+#include <libnode/invoke.h>
 #include <libnode/message_queue.h>
 
 #include <libj/exception.h>
@@ -104,7 +105,7 @@ class Async : public libj::detail::JsObject<I> {
             JsFunction::Ptr callback =
                 toPtr<JsFunction>(callbacks_->remove(msg->get(0)));
             if (callback) {
-                callback->call(msg->get(1));
+                invoke(callback, msg->get(1));
             }
             return Status::OK;
         }

@@ -1,8 +1,9 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_TIMER_H_
 #define LIBNODE_DETAIL_UV_TIMER_H_
 
+#include <libnode/invoke.h>
 #include <libnode/detail/uv/handle.h>
 #include <libnode/detail/uv/write.h>
 
@@ -63,7 +64,7 @@ class Timer : public Handle {
  private:
     static void onTimeout(uv_timer_t* handle, int status) {
         Timer* self = static_cast<Timer*>(handle->data);
-        if (self->onTimeout_) self->onTimeout_->call(status);
+        if (self->onTimeout_) invoke(self->onTimeout_, status);
     }
 
  private:

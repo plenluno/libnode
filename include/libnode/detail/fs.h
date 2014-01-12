@@ -1,9 +1,10 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_FS_H_
 #define LIBNODE_DETAIL_FS_H_
 
 #include <libnode/fs.h>
+#include <libnode/invoke.h>
 #include <libnode/path.h>
 #include <libnode/process.h>
 #include <libnode/uv/error.h>
@@ -79,7 +80,7 @@ static void onError(uv_fs_t* req) {
     assert(req);
     uv::FsReq* fsReq = static_cast<uv::FsReq*>(req->data);
     if (fsReq && fsReq->onComplete) {
-        fsReq->onComplete->call(node::uv::Error::valueOf(req->errorno));
+        invoke(fsReq->onComplete, node::uv::Error::valueOf(req->errorno));
     }
     delete fsReq;
 }
@@ -935,7 +936,7 @@ class UseCacheInRealpath : LIBJ_JS_FUNCTION(UseCacheInRealpath)
         , callback_(cb) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        if (callback_) callback_->call(Error::null(), cached_);
+        if (callback_) invoke(callback_, Error::null(), cached_);
         return Status::OK;
     }
 
@@ -1130,7 +1131,7 @@ class LoopInRealpath : LIBJ_JS_FUNCTION(LoopInRealpath)
         if (context_->pos >= p->length()) {
             JsFunction::Ptr callback = context_->callback;
             if (cache) cache->put(context_->original, p);
-            if (callback) callback->call(Error::null(), p);
+            if (callback) invoke(callback, Error::null(), p);
             return Status::OK;
         }
 
@@ -1161,7 +1162,7 @@ class LoopInRealpath : LIBJ_JS_FUNCTION(LoopInRealpath)
         if (cached) {
             JsFunction::Ptr gotResolvedLink(
                 new GotResolvedLinkInRealpath(context_));
-            gotResolvedLink->call(cached);
+            invoke(gotResolvedLink, cached);
             return Status::OK;
         }
 

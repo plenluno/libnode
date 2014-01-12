@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_TCP_H_
 #define LIBNODE_DETAIL_UV_TCP_H_
@@ -126,12 +126,12 @@ class Tcp : public Stream {
 
         if (status) {
             setLastError();
-            self->onConnection_->call();
+            invoke(self->onConnection_);
             return;
         } else {
             Tcp* tcp = new Tcp();
             if (uv_accept(handle, tcp->stream_)) return;
-            self->onConnection_->call(tcp);
+            invoke(self->onConnection_, tcp);
         }
     }
 

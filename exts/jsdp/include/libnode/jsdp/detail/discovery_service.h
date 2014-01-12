@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_JSDP_DETAIL_DISCOVERY_SERVICE_H_
 #define LIBNODE_JSDP_DETAIL_DISCOVERY_SERVICE_H_
@@ -8,6 +8,7 @@
 #include <libnode/dgram.h>
 #include <libnode/timer.h>
 #include <libnode/crypto.h>
+#include <libnode/invoke.h>
 #include <libnode/debug_print.h>
 #include <libnode/jsdp/discovery_service.h>
 #include <libnode/jsdp/detail/service.h>
@@ -263,7 +264,7 @@ class DiscoveryService : public Service<jsdp::DiscoveryService> {
             }
 
             JsFunction::Ptr cb = self_->callbacks_->getPtr<JsFunction>(id);
-            if (cb) cb->call(res);
+            if (cb) invoke(cb, res);
         }
 
      private:

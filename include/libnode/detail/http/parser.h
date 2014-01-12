@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_PARSER_H_
 #define LIBNODE_DETAIL_HTTP_PARSER_H_
@@ -285,7 +285,10 @@ class Parser : public Flags {
 
         Boolean skipBody = false;
         if (!hasFlag(UPGRADE)) {
-            Value r = onIncoming_->call(incoming_, hasFlag(SHOULD_KEEP_ALIVE));
+            Value r = invoke(
+                onIncoming_,
+                incoming_,
+                hasFlag(SHOULD_KEEP_ALIVE));
             skipBody = to<Boolean>(r);
         }
         return skipBody;

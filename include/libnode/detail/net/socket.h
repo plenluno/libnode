@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_NET_SOCKET_H_
 #define LIBNODE_DETAIL_NET_SOCKET_H_
@@ -542,7 +542,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
     }
 
     void fireErrorCallbacks(Error::CPtr err, JsFunction::Ptr cb) {
-        if (cb) cb->call(err);
+        if (cb) invoke(cb, err);
         if (err && !hasFlag(ERROR_EMITTED)) {
             EmitError::Ptr emitErr(new EmitError(this, err));
             process::nextTick(emitErr);

@@ -1,8 +1,9 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_UDP_H_
 #define LIBNODE_DETAIL_UV_UDP_H_
 
+#include <libnode/invoke.h>
 #include <libnode/detail/uv/handle.h>
 #include <libnode/detail/uv/udp_send.h>
 
@@ -207,7 +208,7 @@ class Udp : public Handle {
     static void onSend(uv_udp_send_t* req, int status) {
         UdpSend* udpSend = reinterpret_cast<UdpSend*>(req->data);
         if (status) setLastError();
-        udpSend->onComplete->call(status, udpSend);
+        invoke(udpSend->onComplete, status, udpSend);
         delete udpSend;
     }
 
@@ -242,7 +243,7 @@ class Udp : public Handle {
             rinfo = addressToJs(addr);
             rinfo->put(symSize, static_cast<Size>(nread));
         }
-        if (onMessage) onMessage->call(udp->buffer_, rinfo);
+        if (onMessage) invoke(onMessage, udp->buffer_, rinfo);
     }
 
  private:

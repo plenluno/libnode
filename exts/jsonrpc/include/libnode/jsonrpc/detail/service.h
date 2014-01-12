@@ -1,8 +1,9 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_JSONRPC_DETAIL_SERVICE_H_
 #define LIBNODE_JSONRPC_DETAIL_SERVICE_H_
 
+#include <libnode/invoke.h>
 #include <libnode/jsonrpc.h>
 #include <libnode/message_queue.h>
 #include <libnode/detail/events/event_emitter.h>
@@ -252,7 +253,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
                     params->length() == method->parameters()->length()) {
                     params->add(notRespond);
                     (*method->function())(params);
-                    if (cb) cb->call(Object::null());
+                    if (cb) invoke(cb, Object::null());
                 }
                 return Status::OK;
             } else {
@@ -349,7 +350,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
 
                 args->add(notRespond);
                 (*method->function())(args);
-                if (cb) cb->call(Object::null());
+                if (cb) invoke(cb, Object::null());
                 return Status::OK;
             } else {
                 Method::CPtr method = methods_->getCPtr<Method>(name);
@@ -392,7 +393,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         res->put(RESULT, r);
         res->put(ERROR, Object::null());
         emit(EVENT_RESPONSE, res);
-        if (cb) cb->call(res);
+        if (cb) invoke(cb, res);
         return Status::OK;
     }
 
@@ -412,7 +413,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         res->put(ERROR, toJsObject(err));
         res->put(RESULT, Object::null());
         emit(EVENT_RESPONSE, res);
-        if (cb) cb->call(res);
+        if (cb) invoke(cb, res);
         return err->code();
     }
 
@@ -427,7 +428,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         res->put(RESULT, r);
         res->put(JSONRPC, sym20);
         emit(EVENT_RESPONSE, res);
-        if (cb) cb->call(res);
+        if (cb) invoke(cb, res);
         return Status::OK;
     }
 
@@ -453,7 +454,7 @@ class Service : public node::detail::events::EventEmitter<jsonrpc::Service> {
         res->put(ERROR, toJsObject(err));
         res->put(JSONRPC, sym20);
         emit(EVENT_RESPONSE, res);
-        if (cb) cb->call(res);
+        if (cb) invoke(cb, res);
         return err->code();
     }
 

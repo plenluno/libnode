@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Plenluno All rights reserved.
+# Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -19,6 +19,7 @@ set(libnode-test-src
     gtest_http_header_scanner.cpp
     gtest_http_static.cpp
     gtest_http_status.cpp
+    gtest_invoke.cpp
     gtest_net_pipe.cpp
     gtest_net_tcp.cpp
     gtest_os.cpp

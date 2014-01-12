@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_DGRAM_SOCKET_H_
 #define LIBNODE_DETAIL_DGRAM_SOCKET_H_
@@ -248,7 +248,8 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
             assert(!to<Int>(args->get(0), -1));
             uv::UdpSend* udpSend = to<uv::UdpSend*>(args->get(1));
             if (udpSend && udpSend->cb) {
-                udpSend->cb->call(
+                invoke(
+                    udpSend->cb,
                     libj::Error::null(),
                     udpSend->buffer->length());
             }
@@ -275,7 +276,7 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
         virtual Value operator()(JsArray::Ptr args) {
             libj::Error::CPtr err = args->getCPtr<libj::Error>(0);
             if (err) {
-                if (callback_) callback_->call(err);
+                if (callback_) invoke(callback_, err);
                 self_->emit(EVENT_ERROR, err);
                 return err;
             }
@@ -294,7 +295,7 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
                 udpSend->cb = callback_;
             } else {
                 libj::Error::CPtr err = node::uv::Error::last();
-                callback_->call(err, 0);
+                invoke(callback_, err, 0);
             }
             return Status::OK;
         }

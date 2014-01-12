@@ -1,8 +1,9 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_STREAM_H_
 #define LIBNODE_DETAIL_UV_STREAM_H_
 
+#include <libnode/invoke.h>
 #include <libnode/detail/uv/handle.h>
 #include <libnode/detail/uv/write.h>
 
@@ -196,7 +197,7 @@ class Stream : public Handle {
         Write* wreq = static_cast<Write*>(req->data);
         Stream* stream = static_cast<Stream*>(req->handle->data);
         if (status) setLastError();
-        wreq->onComplete->call(status, stream, wreq);
+        invoke(wreq->onComplete, status, stream, wreq);
         delete wreq;
     }
 
@@ -204,7 +205,7 @@ class Stream : public Handle {
         Shutdown* sreq = static_cast<Shutdown*>(req->data);
         Stream* stream = static_cast<Stream*>(req->handle->data);
         if (status) setLastError();
-        sreq->onComplete->call(status, stream, sreq);
+        invoke(sreq->onComplete, status, stream, sreq);
         delete sreq;
     }
 
@@ -223,8 +224,7 @@ class Stream : public Handle {
             writable = uv_is_writable(req->handle) != 0;
         }
 
-        creq->onComplete->call(
-            status, stream, creq, readable, writable);
+        invoke(creq->onComplete, status, stream, creq, readable, writable);
         delete creq;
     }
 

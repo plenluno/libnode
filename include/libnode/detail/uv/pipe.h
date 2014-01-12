@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_PIPE_H_
 #define LIBNODE_DETAIL_UV_PIPE_H_
@@ -57,12 +57,12 @@ class Pipe : public Stream {
 
         if (status) {
             setLastError();
-            self->onConnection_->call();
+            invoke(self->onConnection_);
             return;
         } else {
             Pipe* pipe = new Pipe(false);
             if (uv_accept(handle, pipe->stream_)) return;
-            self->onConnection_->call(pipe);
+            invoke(self->onConnection_, pipe);
         }
     }
 
