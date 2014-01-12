@@ -1,10 +1,11 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_EVENTS_EVENT_EMITTER_H_
 #define LIBNODE_DETAIL_EVENTS_EVENT_EMITTER_H_
 
 #include <libnode/debug_print.h>
 #include <libnode/detail/flags.h>
+#include <libnode/detail/arguments_list.h>
 
 #include <libj/js_object.h>
 #include <libj/js_function.h>
@@ -207,67 +208,85 @@ class EventEmitter
     virtual Boolean emit(
         String::CPtr event,
         const Value& v1) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_ALLOC(args);
         args->add(v1);
-        return emit(event, args);
+
+        Boolean r = emit(event, args);
+        LIBNODE_ARGUMENTS_FREE(args);
+        return r;
     }
 
     virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_ALLOC(args);
         args->add(v1);
         args->add(v2);
-        return emit(event, args);
+
+        Boolean r = emit(event, args);
+        LIBNODE_ARGUMENTS_FREE(args);
+        return r;
     }
 
     virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_ALLOC(args);
         args->add(v1);
         args->add(v2);
         args->add(v3);
-        return emit(event, args);
+
+        Boolean r = emit(event, args);
+        LIBNODE_ARGUMENTS_FREE(args);
+        return r;
     }
 
     virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_ALLOC(args);
         args->add(v1);
         args->add(v2);
         args->add(v3);
         args->add(v4);
-        return emit(event, args);
+
+        Boolean r = emit(event, args);
+        LIBNODE_ARGUMENTS_FREE(args);
+        return r;
     }
 
     virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_ALLOC(args);
         args->add(v1);
         args->add(v2);
         args->add(v3);
         args->add(v4);
         args->add(v5);
-        return emit(event, args);
+
+        Boolean r = emit(event, args);
+        LIBNODE_ARGUMENTS_FREE(args);
+        return r;
     }
 
     virtual Boolean emit(
         String::CPtr event,
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_ALLOC(args);
         args->add(v1);
         args->add(v2);
         args->add(v3);
         args->add(v4);
         args->add(v5);
         args->add(v6);
-        return emit(event, args);
+
+        Boolean r = emit(event, args);
+        LIBNODE_ARGUMENTS_FREE(args);
+        return r;
     }
 
     virtual Boolean emit(
@@ -275,7 +294,7 @@ class EventEmitter
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
         const Value& v7) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_ALLOC(args);
         args->add(v1);
         args->add(v2);
         args->add(v3);
@@ -283,7 +302,10 @@ class EventEmitter
         args->add(v5);
         args->add(v6);
         args->add(v7);
-        return emit(event, args);
+
+        Boolean r = emit(event, args);
+        LIBNODE_ARGUMENTS_FREE(args);
+        return r;
     }
 
     virtual Boolean emit(
@@ -291,7 +313,7 @@ class EventEmitter
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
         const Value& v7, const Value& v8) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_ALLOC(args);
         args->add(v1);
         args->add(v2);
         args->add(v3);
@@ -300,7 +322,10 @@ class EventEmitter
         args->add(v6);
         args->add(v7);
         args->add(v8);
-        return emit(event, args);
+
+        Boolean r = emit(event, args);
+        LIBNODE_ARGUMENTS_FREE(args);
+        return r;
     }
 
     virtual Boolean emit(
@@ -308,7 +333,7 @@ class EventEmitter
         const Value& v1, const Value& v2, const Value& v3,
         const Value& v4, const Value& v5, const Value& v6,
         const Value& v7, const Value& v8, const Value& v9) {
-        JsArray::Ptr args = JsArray::create();
+        LIBNODE_ARGUMENTS_ALLOC(args);
         args->add(v1);
         args->add(v2);
         args->add(v3);
@@ -318,7 +343,10 @@ class EventEmitter
         args->add(v7);
         args->add(v8);
         args->add(v9);
-        return emit(event, args);
+
+        Boolean r = emit(event, args);
+        LIBNODE_ARGUMENTS_FREE(args);
+        return r;
     }
 
  private:
