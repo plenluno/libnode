@@ -658,7 +658,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
                 }
 
                 self_->bytesRead_ += buffer->length();
-                if (self_->onData_) self_->onData_->call(buffer);
+                if (self_->onData_) (*self_->onData_)(args);
             } else {
                 node::uv::Error::CPtr err = node::uv::Error::last();
                 if (err->code() == node::uv::Error::_EOF) {
