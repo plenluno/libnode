@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #include <libnode/http/status.h>
 
@@ -56,27 +56,29 @@ namespace http {
     GEN(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported") \
     GEN(INSUFFICIENT_STORAGE, "Insufficient Storage")
 
-#define LIBNODE_HTTP_STATUS_MSG_DEF_GEN(NAME, MESSAGE) \
+#define LIBNODE_HTTP_STATUS_MSG_GEN(NAME, MESSAGE) \
     LIBJ_STATIC_CONST_STRING_DEF(MSG_##NAME, MESSAGE)
 
-#define LIBNODE_HTTP_STATUS_MSG_CASE_GEN(NAME, MESSAGE) \
+#define LIBNODE_HTTP_STATUS_CASE_GEN(NAME, MESSAGE) \
     case NAME: \
-        msg = MSG_##NAME; \
-        break;
+        static CPtr STATUS_##NAME( \
+            new libj::detail::Status<Status>(code, MSG_##NAME)); \
+        return STATUS_##NAME;
 
-LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_DEF_GEN);
+LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_GEN);
 
 Status::CPtr Status::create(Int code, String::CPtr msg) {
     LIBJ_STATIC_SYMBOL_DEF(symUnknown, "Unknown");
 
-    if (!msg) {
+    if (msg) {
+        return CPtr(new libj::detail::Status<Status>(code, msg));
+    } else {
         switch (code) {
-            LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_CASE_GEN);
+            LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_CASE_GEN);
         default:
-            msg = symUnknown;
+            return CPtr(new libj::detail::Status<Status>(code, symUnknown));
         }
     }
-    return CPtr(new libj::detail::Status<Status>(code, msg));
 }
 
 }  // namespace http
