@@ -253,11 +253,16 @@ class Parser : public Flags {
         incoming_->setHttpVersionMajor(majorVer_);
         incoming_->setHttpVersionMinor(minorVer_);
 
-        StringBuilder::Ptr httpVer = StringBuilder::create();
-        httpVer->append(majorVer_);
-        httpVer->appendChar('.');
-        httpVer->append(minorVer_);
-        incoming_->setHttpVersion(httpVer->toString());
+        if (majorVer_ == 1 && minorVer_ == 1) {
+            LIBJ_STATIC_SYMBOL_DEF(symV1_1, "1.1");
+            incoming_->setHttpVersion(symV1_1);
+        } else {
+            StringBuilder::Ptr httpVer = StringBuilder::create();
+            httpVer->append(majorVer_);
+            httpVer->appendChar('.');
+            httpVer->append(minorVer_);
+            incoming_->setHttpVersion(httpVer->toString());
+        }
 
         Size n = values_->length();
         assert(fields_->length() == n || fields_->length() == n + 1);
