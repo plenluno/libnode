@@ -276,8 +276,8 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         Buffer::Encoding enc,
         JsFunction::Ptr cb) {
         Buffer::CPtr buf;
-        String::CPtr str = toCPtr<String>(data);
-        if (str) {
+        if (data.is<String>()) {
+            String::CPtr str = toCPtr<String>(data);
             if (enc == Buffer::NONE) enc = Buffer::UTF8;
             buf = Buffer::create(str, enc);
         } else {
