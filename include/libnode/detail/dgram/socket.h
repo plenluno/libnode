@@ -17,7 +17,7 @@ namespace dgram {
 
 class Socket : public events::EventEmitter<node::dgram::Socket> {
  public:
-    LIBJ_MUTABLE_DEFS(Socket, node::dgram::Socket);
+    LIBJ_MUTABLE_DEFS(Socket, LIBNODE_DGRAM_SOCKET);
 
     static Ptr create(Type type, JsFunction::Ptr callback) {
         Socket* sock = new Socket(type);

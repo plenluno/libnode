@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_FS_STATS_H_
 #define LIBNODE_FS_STATS_H_
@@ -44,5 +44,7 @@ class Stats : LIBJ_JS_OBJECT(Stats)
 }  // namespace fs
 }  // namespace node
 }  // namespace libj
+
+#include <libnode/impl/fs/stats.h>
 
 #endif  // LIBNODE_FS_STATS_H_

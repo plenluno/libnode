@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_CRYPTO_RSA_PUBLIC_KEY_H_
 #define LIBNODE_DETAIL_CRYPTO_RSA_PUBLIC_KEY_H_
@@ -17,7 +17,7 @@ namespace rsa {
 class PublicKey
     : public libj::detail::JsObject<node::crypto::rsa::PublicKey> {
  public:
-    LIBJ_MUTABLE_DEFS(PublicKey, node::crypto::rsa::PublicKey);
+    LIBJ_MUTABLE_DEFS(PublicKey, LIBNODE_CRYPTO_RSA_PUBLIC_KEY);
 
     PublicKey(KeyHolder::Ptr holder) : holder_(holder) {}
 

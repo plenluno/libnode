@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_STREAM_STREAM_H_
 #define LIBNODE_STREAM_STREAM_H_
@@ -21,7 +21,9 @@ class Stream : LIBNODE_EVENT_EMITTER(Stream)
 }  // namespace node
 }  // namespace libj
 
+#include <libnode/impl/stream/stream.h>
+
 #define LIBNODE_STREAM(T) public libj::node::stream::Stream { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::stream::Stream)
+    LIBJ_MUTABLE_DEFS(T, LIBNODE_STREAM)
 
 #endif  // LIBNODE_STREAM_STREAM_H_

@@ -38,7 +38,7 @@ namespace net {
 
 class Socket : public events::EventEmitter<node::net::Socket> {
  public:
-    LIBJ_MUTABLE_DEFS(Socket, node::net::Socket);
+    LIBJ_MUTABLE_DEFS(Socket, LIBNODE_NET_SOCKET);
 
     static Ptr create(libj::JsObject::CPtr options = libj::JsObject::null()) {
         LIBJ_STATIC_SYMBOL_DEF(OPTION_HANDLE, "handle");

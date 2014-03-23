@@ -25,7 +25,7 @@ namespace http {
 
 class OutgoingMessage : public events::EventEmitter<stream::Writable> {
  public:
-    LIBJ_MUTABLE_DEFS(OutgoingMessage, stream::Writable);
+    LIBJ_MUTABLE_DEFS(OutgoingMessage, LIBNODE_STREAM_WRITABLE);
 
     static Ptr createInServer(IncomingMessage::Ptr req);
 

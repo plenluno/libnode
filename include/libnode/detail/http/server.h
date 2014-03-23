@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_SERVER_H_
 #define LIBNODE_DETAIL_HTTP_SERVER_H_
@@ -23,7 +23,7 @@ namespace http {
 
 class Server : public net::Server<node::http::Server> {
  public:
-    LIBJ_MUTABLE_DEFS(Server, node::http::Server);
+    LIBJ_MUTABLE_DEFS(Server, LIBNODE_HTTP_SERVER);
 
     static Ptr create(JsFunction::Ptr requestListener) {
         LIBJ_STATIC_SYMBOL_DEF(EVENT_DESTROY, "destroy");

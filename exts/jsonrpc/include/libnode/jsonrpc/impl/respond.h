@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_JSONRPC_IMPL_RESPOND_H_
 #define LIBNODE_JSONRPC_IMPL_RESPOND_H_
@@ -20,8 +20,12 @@ inline Value Respond::operator()(JsArray::Ptr args) {
 }  // namespace node
 }  // namespace libj
 
+#define LIBNODE_JSONRPC_RESPOND_INSTANCEOF(ID) \
+    (ID == libj::Type<libj::node::jsonrpc::Respond>::id() \
+        || LIBJ_JS_FUNCTION_INSTANCEOF(ID))
+
 #define LIBNODE_JSONRPC_RESPOND_DEFS(T) \
-    LIBJ_MUTABLE_DEFS(T, libj::node::jsonrpc::Respond) \
+    LIBJ_MUTABLE_DEFS(T, LIBNODE_JSONRPC_RESPOND) \
     LIBJ_JS_FUNCTION_TO_STRING(T)
 
 #endif  // LIBNODE_JSONRPC_IMPL_RESPOND_H_

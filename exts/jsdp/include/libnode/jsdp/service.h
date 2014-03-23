@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_JSDP_SERVICE_H_
 #define LIBNODE_JSDP_SERVICE_H_
@@ -30,8 +30,10 @@ class Service : LIBJ_JS_OBJECT(Service)
 }  // namespace node
 }  // namespace libj
 
+#include <libnode/jsdp/impl/service.h>
+
 #define LIBNODE_JSDP_SERVICE(T) \
     public libj::node::jsdp::Service { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::jsdp::Service)
+    LIBJ_MUTABLE_DEFS(T, LIBNODE_JSDP_SERVICE)
 
 #endif  // LIBNODE_JSDP_SERVICE_H_

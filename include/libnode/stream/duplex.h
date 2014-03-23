@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_STREAM_DUPLEX_H_
 #define LIBNODE_STREAM_DUPLEX_H_
@@ -44,7 +44,9 @@ class Duplex : LIBNODE_STREAM(Duplex)
 }  // namespace node
 }  // namespace libj
 
+#include <libnode/impl/stream/duplex.h>
+
 #define LIBNODE_STREAM_DUPLEX(T) public libj::node::stream::Duplex { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::stream::Duplex)
+    LIBJ_MUTABLE_DEFS(T, LIBNODE_STREAM_DUPLEX)
 
 #endif  // LIBNODE_STREAM_DUPLEX_H_

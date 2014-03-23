@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_STREAM_WRITABLE_H_
 #define LIBNODE_STREAM_WRITABLE_H_
@@ -32,7 +32,9 @@ class Writable : LIBNODE_STREAM(Writable)
 }  // namespace node
 }  // namespace libj
 
+#include <libnode/impl/stream/writable.h>
+
 #define LIBNODE_STREAM_WRITABLE(T) public libj::node::stream::Writable { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::stream::Writable)
+    LIBJ_MUTABLE_DEFS(T, LIBNODE_STREAM_WRITABLE)
 
 #endif  // LIBNODE_STREAM_WRITABLE_H_

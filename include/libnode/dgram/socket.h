@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DGRAM_SOCKET_H_
 #define LIBNODE_DGRAM_SOCKET_H_
@@ -67,5 +67,7 @@ class Socket : LIBNODE_EVENT_EMITTER(Socket)
 }  // namespace dgram
 }  // namespace node
 }  // namespace libj
+
+#include <libnode/impl/dgram/socket.h>
 
 #endif  // LIBNODE_DGRAM_SOCKET_H_

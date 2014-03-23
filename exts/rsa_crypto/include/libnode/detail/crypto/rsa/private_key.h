@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_CRYPTO_RSA_PRIVATE_KEY_H_
 #define LIBNODE_DETAIL_CRYPTO_RSA_PRIVATE_KEY_H_
@@ -17,7 +17,7 @@ namespace rsa {
 class PrivateKey
     : public libj::detail::JsObject<node::crypto::rsa::PrivateKey> {
  public:
-    LIBJ_MUTABLE_DEFS(PrivateKey, node::crypto::rsa::PrivateKey);
+    LIBJ_MUTABLE_DEFS(PrivateKey, LIBNODE_CRYPTO_RSA_PRIVATE_KEY);
 
     PrivateKey(KeyHolder::Ptr holder) : holder_(holder) {}
 

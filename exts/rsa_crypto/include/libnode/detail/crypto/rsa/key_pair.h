@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_CRYPTO_RSA_KEY_PAIR_H_
 #define LIBNODE_DETAIL_CRYPTO_RSA_KEY_PAIR_H_
@@ -18,7 +18,7 @@ namespace rsa {
 class KeyPair
     : public libj::detail::JsObject<node::crypto::rsa::KeyPair> {
  public:
-    LIBJ_MUTABLE_DEFS(KeyPair, node::crypto::rsa::KeyPair);
+    LIBJ_MUTABLE_DEFS(KeyPair, LIBNODE_CRYPTO_RSA_KEY_PAIR);
 
     KeyPair(Size modulusSize) : holder_(new KeyHolder()) {
         assert(modulusSize);

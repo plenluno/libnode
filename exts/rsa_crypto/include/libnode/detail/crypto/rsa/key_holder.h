@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_CRYPTO_RSA_KEY_HOLDER_H_
 #define LIBNODE_DETAIL_CRYPTO_RSA_KEY_HOLDER_H_
@@ -15,7 +15,7 @@ namespace rsa {
 
 class KeyHolder : public libj::Mutable {
  public:
-    LIBJ_MUTABLE_DEFS(KeyHolder, libj::Mutable);
+    LIBJ_MUTABLE_DEFS(KeyHolder, LIBJ_MUTABLE);
 
     KeyHolder() : rsa_(NULL) {}
 

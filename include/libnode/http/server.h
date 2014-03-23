@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_HTTP_SERVER_H_
 #define LIBNODE_HTTP_SERVER_H_
@@ -33,5 +33,7 @@ class Server : LIBNODE_NET_SERVER(Server)
 }  // namespace http
 }  // namespace node
 }  // namespace libj
+
+#include <libnode/impl/http/server.h>
 
 #endif  // LIBNODE_HTTP_SERVER_H_

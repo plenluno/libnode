@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_INCOMING_MESSAGE_H_
 #define LIBNODE_DETAIL_HTTP_INCOMING_MESSAGE_H_
@@ -25,7 +25,7 @@ class OutgoingMessage;
 
 class IncomingMessage : public events::EventEmitter<stream::Readable> {
  public:
-    LIBJ_MUTABLE_DEFS(IncomingMessage, stream::Readable);
+    LIBJ_MUTABLE_DEFS(IncomingMessage, LIBNODE_STREAM_READABLE);
 
     static Ptr create(net::Socket::Ptr sock) {
         if (sock) {

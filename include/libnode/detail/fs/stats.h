@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_FS_STATS_H_
 #define LIBNODE_DETAIL_FS_STATS_H_
@@ -17,7 +17,7 @@ namespace fs {
 
 class Stats : public libj::detail::JsObject<node::fs::Stats> {
  public:
-    LIBJ_MUTABLE_DEFS(Stats, node::fs::Stats);
+    LIBJ_MUTABLE_DEFS(Stats, LIBNODE_FS_STATS);
 
     Stats(const uv_statbuf_t* s)
         : mode_(static_cast<Int>(s->st_mode)) {

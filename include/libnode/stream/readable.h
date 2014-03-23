@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_STREAM_READABLE_H_
 #define LIBNODE_STREAM_READABLE_H_
@@ -28,7 +28,9 @@ class Readable : LIBNODE_STREAM(Readable)
 }  // namespace node
 }  // namespace libj
 
+#include <libnode/impl/stream/readable.h>
+
 #define LIBNODE_STREAM_READABLE(T) public libj::node::stream::Readable { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::stream::Readable)
+    LIBJ_MUTABLE_DEFS(T, LIBNODE_STREAM_READABLE)
 
 #endif  // LIBNODE_STREAM_READABLE_H_

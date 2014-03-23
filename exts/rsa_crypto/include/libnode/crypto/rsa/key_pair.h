@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_CRYPTO_RSA_KEY_PAIR_H_
 #define LIBNODE_CRYPTO_RSA_KEY_PAIR_H_
@@ -24,5 +24,7 @@ class KeyPair : LIBJ_JS_OBJECT(KeyPair)
 }  // namespace crypto
 }  // namespace node
 }  // namespace libj
+
+#include <libnode/impl/crypto/rsa/key_pair.h>
 
 #endif  // LIBNODE_CRYPTO_RSA_KEY_PAIR_H_

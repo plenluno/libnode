@@ -45,7 +45,9 @@ class Server : LIBNODE_EVENT_EMITTER(Server)
 }  // namespace node
 }  // namespace libj
 
+#include <libnode/impl/net/server.h>
+
 #define LIBNODE_NET_SERVER(T) public libj::node::net::Server { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::net::Server)
+    LIBJ_MUTABLE_DEFS(T, LIBNODE_NET_SERVER)
 
 #endif  // LIBNODE_NET_SERVER_H_

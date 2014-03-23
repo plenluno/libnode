@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_AGENT_H_
 #define LIBNODE_DETAIL_HTTP_AGENT_H_
@@ -19,7 +19,7 @@ namespace http {
 
 class Agent : public events::EventEmitter<node::http::Agent> {
  public:
-    LIBJ_MUTABLE_DEFS(Agent, node::http::Agent);
+    LIBJ_MUTABLE_DEFS(Agent, LIBNODE_HTTP_AGENT);
 
     static Ptr create(libj::JsObject::CPtr options) {
         LIBJ_STATIC_SYMBOL_DEF(EVENT_FREE,         "free");

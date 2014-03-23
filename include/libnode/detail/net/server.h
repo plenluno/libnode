@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_NET_SERVER_H_
 #define LIBNODE_DETAIL_NET_SERVER_H_
@@ -16,7 +16,7 @@ namespace net {
 template<typename I>
 class Server : public events::EventEmitter<I> {
  public:
-    LIBJ_MUTABLE_TEMPLATE_DEFS(Server, I);
+    LIBJ_MUTABLE_TEMPLATE_DEFS(Server, LIBNODE_NET_SERVER);
 
     static Ptr create(
         libj::JsObject::CPtr options = libj::JsObject::null(),

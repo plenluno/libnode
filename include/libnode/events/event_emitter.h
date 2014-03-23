@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_EVENTS_EVENT_EMITTER_H_
 #define LIBNODE_EVENTS_EVENT_EMITTER_H_
@@ -97,8 +97,10 @@ class EventEmitter : LIBJ_JS_OBJECT(EventEmitter)
 }  // namespace node
 }  // namespace libj
 
+#include <libnode/impl/events/event_emitter.h>
+
 #define LIBNODE_EVENT_EMITTER(T) \
     public libj::node::events::EventEmitter { \
-    LIBJ_MUTABLE_DEFS(T, libj::node::events::EventEmitter)
+    LIBJ_MUTABLE_DEFS(T, LIBNODE_EVENT_EMITTER)
 
 #endif  // LIBNODE_EVENTS_EVENT_EMITTER_H_

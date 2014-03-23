@@ -53,4 +53,6 @@ class Socket : LIBNODE_STREAM_DUPLEX(Socket)
 }  // namespace node
 }  // namespace libj
 
+#include <libnode/impl/net/socket.h>
+
 #endif  // LIBNODE_NET_SOCKET_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_HTTP_AGENT_H_
 #define LIBNODE_HTTP_AGENT_H_
@@ -21,5 +21,7 @@ class Agent : LIBNODE_EVENT_EMITTER(Agent)
 }  // namespace http
 }  // namespace node
 }  // namespace libj
+
+#include <libnode/impl/http/agent.h>
 
 #endif  // LIBNODE_HTTP_AGENT_H_
