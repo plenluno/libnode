@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2014 Plenluno All rights reserved.
 
-#ifndef LIBNODE_DETAIL_CRYPTO_RSA_KEY_HOLDER_H_
-#define LIBNODE_DETAIL_CRYPTO_RSA_KEY_HOLDER_H_
+#ifndef LIBNODE_CRYPTO_RSA_DETAIL_KEY_HOLDER_H_
+#define LIBNODE_CRYPTO_RSA_DETAIL_KEY_HOLDER_H_
 
 #include <libj/mutable.h>
 
@@ -47,4 +47,4 @@ class KeyHolder : public libj::Mutable {
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_DETAIL_CRYPTO_RSA_KEY_HOLDER_H_
+#endif  // LIBNODE_CRYPTO_RSA_DETAIL_KEY_HOLDER_H_

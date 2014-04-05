@@ -1,9 +1,9 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
-#ifndef LIBNODE_DETAIL_CRYPTO_RSA_DECIPHER_H_
-#define LIBNODE_DETAIL_CRYPTO_RSA_DECIPHER_H_
+#ifndef LIBNODE_CRYPTO_RSA_DETAIL_DECIPHER_H_
+#define LIBNODE_CRYPTO_RSA_DETAIL_DECIPHER_H_
 
-#include <libnode/detail/crypto/rsa/cipher_base.h>
+#include <libnode/crypto/rsa/detail/cipher_base.h>
 
 #include <libj/cast.h>
 
@@ -54,4 +54,4 @@ class Decipher : public CipherBase<I> {
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_DETAIL_CRYPTO_RSA_DECIPHER_H_
+#endif  // LIBNODE_CRYPTO_RSA_DETAIL_DECIPHER_H_

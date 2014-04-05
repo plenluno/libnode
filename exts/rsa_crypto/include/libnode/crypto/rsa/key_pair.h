@@ -25,6 +25,6 @@ class KeyPair : LIBJ_JS_OBJECT(KeyPair)
 }  // namespace node
 }  // namespace libj
 
-#include <libnode/impl/crypto/rsa/key_pair.h>
+#include <libnode/crypto/rsa/impl/key_pair.h>
 
 #endif  // LIBNODE_CRYPTO_RSA_KEY_PAIR_H_

@@ -1,7 +1,7 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #include <libnode/crypto/rsa/key_pair.h>
-#include <libnode/detail/crypto/rsa/key_pair.h>
+#include <libnode/crypto/rsa/detail/key_pair.h>
 
 namespace libj {
 namespace node {

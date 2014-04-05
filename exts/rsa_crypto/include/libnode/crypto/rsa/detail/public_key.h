@@ -1,10 +1,10 @@
 // Copyright (c) 2013-2014 Plenluno All rights reserved.
 
-#ifndef LIBNODE_DETAIL_CRYPTO_RSA_PUBLIC_KEY_H_
-#define LIBNODE_DETAIL_CRYPTO_RSA_PUBLIC_KEY_H_
+#ifndef LIBNODE_CRYPTO_RSA_DETAIL_PUBLIC_KEY_H_
+#define LIBNODE_CRYPTO_RSA_DETAIL_PUBLIC_KEY_H_
 
 #include <libnode/crypto/rsa/public_key.h>
-#include <libnode/detail/crypto/rsa/key_holder.h>
+#include <libnode/crypto/rsa/detail/key_holder.h>
 
 #include <libj/detail/js_object.h>
 
@@ -35,4 +35,4 @@ class PublicKey
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_DETAIL_CRYPTO_RSA_PUBLIC_KEY_H_
+#endif  // LIBNODE_CRYPTO_RSA_DETAIL_PUBLIC_KEY_H_

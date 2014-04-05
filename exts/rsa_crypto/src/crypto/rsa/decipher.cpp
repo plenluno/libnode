@@ -1,7 +1,7 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
 #include <libnode/crypto/rsa/decipher.h>
-#include <libnode/detail/crypto/rsa/decipher.h>
+#include <libnode/crypto/rsa/detail/decipher.h>
 
 namespace libj {
 namespace node {

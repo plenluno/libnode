@@ -18,6 +18,6 @@ class PublicKey : LIBJ_JS_OBJECT(PublicKey)
 }  // namespace node
 }  // namespace libj
 
-#include <libnode/impl/crypto/rsa/public_key.h>
+#include <libnode/crypto/rsa/impl/public_key.h>
 
 #endif  // LIBNODE_CRYPTO_RSA_PUBLIC_KEY_H_

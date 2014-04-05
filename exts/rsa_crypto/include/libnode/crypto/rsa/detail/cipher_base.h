@@ -1,10 +1,10 @@
-// Copyright (c) 2013 Plenluno All rights reserved.
+// Copyright (c) 2013-2014 Plenluno All rights reserved.
 
-#ifndef LIBNODE_DETAIL_CRYPTO_RSA_CIPHER_BASE_H_
-#define LIBNODE_DETAIL_CRYPTO_RSA_CIPHER_BASE_H_
+#ifndef LIBNODE_CRYPTO_RSA_DETAIL_CIPHER_BASE_H_
+#define LIBNODE_CRYPTO_RSA_DETAIL_CIPHER_BASE_H_
 
 #include <libj/js_array.h>
-#include <libnode/detail/crypto/rsa/key_pair.h>
+#include <libnode/crypto/rsa/detail/key_pair.h>
 
 namespace libj {
 namespace node {
@@ -65,4 +65,4 @@ class CipherBase : public libj::detail::JsObject<I> {
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_DETAIL_CRYPTO_RSA_CIPHER_BASE_H_
+#endif  // LIBNODE_CRYPTO_RSA_DETAIL_CIPHER_BASE_H_

@@ -1,11 +1,11 @@
 // Copyright (c) 2013-2014 Plenluno All rights reserved.
 
-#ifndef LIBNODE_DETAIL_CRYPTO_RSA_KEY_PAIR_H_
-#define LIBNODE_DETAIL_CRYPTO_RSA_KEY_PAIR_H_
+#ifndef LIBNODE_CRYPTO_RSA_DETAIL_KEY_PAIR_H_
+#define LIBNODE_CRYPTO_RSA_DETAIL_KEY_PAIR_H_
 
 #include <libnode/crypto/rsa/key_pair.h>
-#include <libnode/detail/crypto/rsa/public_key.h>
-#include <libnode/detail/crypto/rsa/private_key.h>
+#include <libnode/crypto/rsa/detail/public_key.h>
+#include <libnode/crypto/rsa/detail/private_key.h>
 
 #include <assert.h>
 
@@ -58,4 +58,4 @@ class KeyPair
 }  // namespace node
 }  // namespace libj
 
-#endif  // LIBNODE_DETAIL_CRYPTO_RSA_KEY_PAIR_H_
+#endif  // LIBNODE_CRYPTO_RSA_DETAIL_KEY_PAIR_H_

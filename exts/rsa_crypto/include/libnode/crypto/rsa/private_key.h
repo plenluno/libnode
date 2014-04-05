@@ -18,6 +18,6 @@ class PrivateKey : LIBJ_JS_OBJECT(PrivateKey)
 }  // namespace node
 }  // namespace libj
 
-#include <libnode/impl/crypto/rsa/private_key.h>
+#include <libnode/crypto/rsa/impl/private_key.h>
 
 #endif  // LIBNODE_CRYPTO_RSA_PRIVATE_KEY_H_
