@@ -92,15 +92,16 @@ static Boolean decodeHex(Char c, UByte* decoded) {
     }
 }
 
-Buffer::Ptr hexDecode(String::CPtr str) {
-    if (!str) return Buffer::null();
-    if (str->length() & 1) return Buffer::null();
+template<typename T>
+static Buffer::Ptr hexDecode(T t) {
+    if (!t) return Buffer::null();
+    if (t->length() & 1) return Buffer::null();
 
-    Size len = str->length() >> 1;
+    Size len = t->length() >> 1;
     Buffer::Ptr decoded = Buffer::create(len);
     for (Size i = 0; i < len; i++) {
-        Char c1 = str->charAt(i * 2);
-        Char c2 = str->charAt(i * 2 + 1);
+        Char c1 = t->charAt(i * 2);
+        Char c2 = t->charAt(i * 2 + 1);
         UByte msb, lsb;
         if (decodeHex(c1, &msb) && decodeHex(c2, &lsb)) {
             decoded->writeUInt8((msb << 4) + lsb, i);
@@ -111,6 +112,13 @@ Buffer::Ptr hexDecode(String::CPtr str) {
     return decoded;
 }
 
+Buffer::Ptr hexDecode(String::CPtr str) {
+    return hexDecode<String::CPtr>(str);
+}
+
+Buffer::Ptr hexDecode(StringBuilder::CPtr sb) {
+    return hexDecode<StringBuilder::CPtr>(sb);
+}
 
 // -- base64Encode & base64Decode --
 
@@ -148,13 +156,14 @@ String::CPtr base64Encode(const void* data, Size len) {
     return encoded;
 }
 
-Buffer::Ptr base64Decode(String::CPtr str) {
-    if (!str) return Buffer::null();
-    if (!str->length()) return Buffer::create();
+template<typename T>
+static Buffer::Ptr base64Decode(T t) {
+    if (!t) return Buffer::null();
+    if (!t->length()) return Buffer::create();
 
-    std::string src = str->toStdString();
+    std::string src = t->toStdString();
     Size len = src.length();
-    if (len != str->length()) return Buffer::null();
+    if (len != t->length()) return Buffer::null();
 
     BIO* bio = BIO_new(BIO_f_base64());
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
@@ -188,11 +197,12 @@ String::CPtr base64Encode(const void* data, Size len) {
     return encoded;
 }
 
-Buffer::Ptr base64Decode(String::CPtr str) {
-    if (!str) return Buffer::null();
-    if (!str->length()) return Buffer::create();
+template<typename T>
+static Buffer::Ptr base64Decode(T t) {
+    if (!t) return Buffer::null();
+    if (!t->length()) return Buffer::create();
 
-    std::string src = str->toStdString();
+    std::string src = t->toStdString();
     Size len = src.length();
     b64::B64_RC rc;
     const char* bad = NULL;
@@ -212,6 +222,14 @@ Buffer::Ptr base64Decode(String::CPtr str) {
 }
 
 #endif  // LIBNODE_USE_CRYPTO
+
+Buffer::Ptr base64Decode(String::CPtr str) {
+    return base64Decode<String::CPtr>(str);
+}
+
+Buffer::Ptr base64Decode(StringBuilder::CPtr sb) {
+    return base64Decode<StringBuilder::CPtr>(sb);
+}
 
 // -- percentEncode & percentDecode --
 

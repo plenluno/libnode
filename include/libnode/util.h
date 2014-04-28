@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_UTIL_H_
 #define LIBNODE_UTIL_H_
@@ -25,11 +25,15 @@ String::CPtr hexEncode(const void* data, Size length);
 
 Buffer::Ptr hexDecode(String::CPtr str);
 
+Buffer::Ptr hexDecode(StringBuilder::CPtr sb);
+
 String::CPtr base64Encode(Buffer::CPtr buf);
 
 String::CPtr base64Encode(const void* data, Size length);
 
 Buffer::Ptr base64Decode(String::CPtr str);
+
+Buffer::Ptr base64Decode(StringBuilder::CPtr sb);
 
 String::CPtr percentEncode(
     String::CPtr str, String::Encoding enc = String::UTF8);

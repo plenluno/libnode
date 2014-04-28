@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #include <libnode/buffer.h>
 #include <libnode/detail/buffer.h>
@@ -31,43 +31,52 @@ Buffer::Ptr Buffer::create(TypedJsArray<UByte>::CPtr array) {
     return Ptr(buf);
 }
 
-Buffer::Ptr Buffer::create(String::CPtr str, Buffer::Encoding enc) {
-    if (!str) return null();
+template<typename T>
+static Buffer::Ptr createBuffer(T t, Buffer::Encoding enc) {
+    if (!t) return Buffer::null();
 
     std::string s;
     switch (enc) {
-    case UTF8:
-        s = str->toStdString();
-        return create(
+    case Buffer::UTF8:
+        s = t->toStdString();
+        return Buffer::create(
             reinterpret_cast<const UByte*>(s.c_str()),
             s.length());
-    case UTF16BE:
-        s = str->toStdString(String::UTF16BE);
-        return create(
+    case Buffer::UTF16BE:
+        s = t->toStdString(String::UTF16BE);
+        return Buffer::create(
             reinterpret_cast<const UByte*>(s.c_str()),
             s.length() - 2);  // delete the last null character
-    case UTF16LE:
-        s = str->toStdString(String::UTF16LE);
-        return create(
+    case Buffer::UTF16LE:
+        s = t->toStdString(String::UTF16LE);
+        return Buffer::create(
             reinterpret_cast<const UByte*>(s.c_str()),
             s.length() - 2);  // delete the last null character
-    case UTF32BE:
-        s = str->toStdString(String::UTF32BE);
-        return create(
+    case Buffer::UTF32BE:
+        s = t->toStdString(String::UTF32BE);
+        return Buffer::create(
             reinterpret_cast<const UByte*>(s.c_str()),
             s.length() - 4);  // delete the last null character
-    case UTF32LE:
-        s = str->toStdString(String::UTF32LE);
-        return create(
+    case Buffer::UTF32LE:
+        s = t->toStdString(String::UTF32LE);
+        return Buffer::create(
             reinterpret_cast<const UByte*>(s.c_str()),
             s.length() - 4);  // delete the last null character
-    case BASE64:
-        return util::base64Decode(str);
-    case HEX:
-        return util::hexDecode(str);
+    case Buffer::BASE64:
+        return util::base64Decode(t);
+    case Buffer::HEX:
+        return util::hexDecode(t);
     default:
-        return null();
+        return Buffer::null();
     }
+}
+
+Buffer::Ptr Buffer::create(String::CPtr str, Buffer::Encoding enc) {
+    return createBuffer<String::CPtr>(str, enc);
+}
+
+Buffer::Ptr Buffer::create(StringBuilder::CPtr sb, Buffer::Encoding enc) {
+    return createBuffer<StringBuilder::CPtr>(sb, enc);
 }
 
 }  // namespace node

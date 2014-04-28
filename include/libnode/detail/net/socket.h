@@ -280,6 +280,10 @@ class Socket : public events::EventEmitter<node::net::Socket> {
             String::CPtr str = toCPtr<String>(data);
             if (enc == Buffer::NONE) enc = Buffer::UTF8;
             buf = Buffer::create(str, enc);
+        } else if (data.is<StringBuilder>()) {
+            StringBuilder::CPtr sb = toCPtr<StringBuilder>(data);
+            if (enc == Buffer::NONE) enc = Buffer::UTF8;
+            buf = Buffer::create(sb, enc);
         } else {
             buf = toCPtr<Buffer>(data);
         }

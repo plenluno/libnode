@@ -115,7 +115,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
                 chunk->appendStr(LIBJ_U("\r\n0\r\n"));
                 chunk->appendStr(trailer_);
                 chunk->appendStr(LIBJ_U("\r\n"));
-                ret = socket_->write(chunk->toString(), enc);
+                ret = socket_->write(chunk, enc);
             } else {
                 ret = socket_->write(header_->concat(str), enc);
             }

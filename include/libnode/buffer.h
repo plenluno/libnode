@@ -1,8 +1,9 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #ifndef LIBNODE_BUFFER_H_
 #define LIBNODE_BUFFER_H_
 
+#include <libj/string_builder.h>
 #include <libj/typed_js_array.h>
 
 namespace libj {
@@ -28,6 +29,8 @@ class Buffer : LIBJ_MUTABLE(Buffer)
     static Ptr create(TypedJsArray<UByte>::CPtr array);
 
     static Ptr create(String::CPtr str, Encoding enc = UTF8);
+
+    static Ptr create(StringBuilder::CPtr sb, Encoding enc = UTF8);
 
     static Boolean isBuffer(const Value& val);
 
