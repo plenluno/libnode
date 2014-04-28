@@ -181,7 +181,7 @@ class EventEmitter
         Size i = 0;
         while (i < a->size()) {
             Value v = a->get(i);
-            if (v.is<Once>()) i++;
+            if (!v.is<Once>()) i++;
             JsFunction::Ptr f = toPtr<JsFunction>(v);
             (*f)(args);
         }
