@@ -60,10 +60,11 @@ namespace http {
     LIBJ_STATIC_CONST_STRING_DEF(MSG_##NAME, MESSAGE)
 
 #define LIBNODE_HTTP_STATUS_CASE_GEN(NAME, MESSAGE) \
-    case NAME: \
+    case NAME: { \
         static CPtr STATUS_##NAME( \
             new libj::detail::Status<Status>(code, MSG_##NAME)); \
-        return STATUS_##NAME;
+        return STATUS_##NAME; \
+    }
 
 LIBNODE_HTTP_STATUS_MSG_MAP(LIBNODE_HTTP_STATUS_MSG_GEN);
 
