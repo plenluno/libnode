@@ -108,17 +108,16 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
         if (hot) {
             if (hasFlag(CHUNKED_ENCODING)) {
                 Size len = Buffer::byteLength(str, enc);
-                StringBuilder::Ptr chunk = resBuf_;
-                appendHex(chunk, len);
-                chunk->appendStr(LIBJ_U("\r\n"));
-                chunk->appendStr(str);
-                chunk->appendStr(LIBJ_U("\r\n0\r\n"));
-                chunk->appendStr(trailer_);
-                chunk->appendStr(LIBJ_U("\r\n"));
-                ret = socket_->write(chunk, enc);
+                appendHex(resBuf_, len);
+                resBuf_->appendStr(LIBJ_U("\r\n"));
+                resBuf_->appendStr(str);
+                resBuf_->appendStr(LIBJ_U("\r\n0\r\n"));
+                resBuf_->appendStr(trailer_);
+                resBuf_->appendStr(LIBJ_U("\r\n"));
             } else {
-                ret = socket_->write(header_->concat(str), enc);
+                resBuf_->appendStr(str);
             }
+            ret = socket_->write(resBuf_, enc);
             setFlag(HEADER_SENT);
         } else if (!d.isUndefined()) {
             ret = write(d, enc);
