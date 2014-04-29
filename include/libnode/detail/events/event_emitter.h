@@ -57,7 +57,7 @@ class EventEmitter
         Size len = ls->length();
         for (Size i = 0; i < len; i++) {
             JsFunction::Ptr f = ls->getTyped(i);
-            if (f->type() == Type<Once>::id()) {
+            if (f->type() == libj::Type<Once>::id()) {
                 typename Once::Ptr once = LIBJ_STATIC_PTR_CAST(Once)(f);
                 if (once->listener()->equals(listener)) {
                     ls->removeTyped(i);
@@ -105,7 +105,7 @@ class EventEmitter
         Size len = ls->length();
         while (i < len) {
             JsFunction::Ptr f = ls->getTyped(i);
-            if (f->type() == Type<Once>::id()) {
+            if (f->type() == libj::Type<Once>::id()) {
                 len--;
             } else {
                 i++;
