@@ -13,15 +13,15 @@ namespace net {
 Int isIP(String::CPtr ip) {
     std::string s = ip->toStdString();
     char address_buffer[sizeof(struct in6_addr)];
-    if (uv_inet_pton(
+    if (!uv_inet_pton(
             AF_INET,
             s.c_str(),
-            &address_buffer).code == UV_OK) {
+            &address_buffer)) {
         return 4;
-    } else if (uv_inet_pton(
+    } else if (!uv_inet_pton(
             AF_INET6,
             s.c_str(),
-            &address_buffer).code == UV_OK) {
+            &address_buffer)) {
         return 6;
     } else {
         return 0;
