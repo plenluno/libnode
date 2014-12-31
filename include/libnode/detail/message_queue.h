@@ -61,7 +61,7 @@ class MessageQueue : public events::EventEmitter<I> {
     }
 
  private:
-    static void receive(uv_async_t* handle, int status) {
+    static void receive(uv_async_t* handle) {
         MessageQueue* mq = static_cast<MessageQueue*>(handle->data);
         emitMessage(mq);
     }
