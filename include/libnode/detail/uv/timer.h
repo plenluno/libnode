@@ -29,21 +29,15 @@ class Timer : public Handle {
     }
 
     Int start(Long timeout, Long repeat) {
-        Int r = uv_timer_start(&timer_, onTimeout, timeout, repeat);
-        if (r) setLastError();
-        return r;
+        return uv_timer_start(&timer_, onTimeout, timeout, repeat);
     }
 
     Int stop() {
-        Int r = uv_timer_stop(&timer_);
-        if (r) setLastError();
-        return r;
+        return uv_timer_stop(&timer_);
     }
 
     Int again() {
-        Int r = uv_timer_again(&timer_);
-        if (r) setLastError();
-        return r;
+        return uv_timer_again(&timer_);
     }
 
     Int setRepeat(Long repeat) {
@@ -52,9 +46,7 @@ class Timer : public Handle {
     }
 
     Long getRepeat() {
-        Long repeat = uv_timer_get_repeat(&timer_);
-        if (repeat < 0) setLastError();
-        return repeat;
+        return uv_timer_get_repeat(&timer_);
     }
 
     void setOnTimeout(JsFunction::Ptr callback) {
@@ -62,9 +54,9 @@ class Timer : public Handle {
     }
 
  private:
-    static void onTimeout(uv_timer_t* handle, int status) {
+    static void onTimeout(uv_timer_t* handle) {
         Timer* self = static_cast<Timer*>(handle->data);
-        if (self->onTimeout_) invoke(self->onTimeout_, status);
+        if (self->onTimeout_) invoke(self->onTimeout_);
     }
 
  private:
