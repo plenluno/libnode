@@ -58,10 +58,6 @@ class Handle {
     }
 
  protected:
-    static void setLastError() {
-        node::uv::Error::setLast(uv_last_error(uv_default_loop()).code);
-    }
-
     static JsObject::Ptr addressToJs(const sockaddr* addr) {
         LIBJ_STATIC_SYMBOL_DEF(symIpV4,    "IPv4");
         LIBJ_STATIC_SYMBOL_DEF(symIpV6,    "IPv6");
