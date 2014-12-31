@@ -18,7 +18,6 @@ class FsReq : public Req<uv_fs_t> {
         , file(-1)
         , buffer(Buffer::null()) {
         req.data = this;
-        req.errorno = UV_UNKNOWN;
     }
 
     virtual ~FsReq() {
