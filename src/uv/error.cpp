@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2013 Plenluno All rights reserved.
+// Copyright (c) 2012-2014 Plenluno All rights reserved.
 
 #include <libnode/uv/error.h>
 
@@ -9,20 +9,18 @@ namespace libj {
 namespace node {
 namespace uv {
 
-#define LIBNODE_UV_ERR_MSG_DEF_GEN(VAL, NAME, S) \
+#define LIBNODE_UV_ERR_MSG_DEF_GEN(NAME, S) \
     LIBJ_STATIC_CONST_STRING_DEF(MSG_UV_##NAME, S);
 
-#define LIBNODE_UV_ERR_CASE_GEN(VAL, NAME, S) \
+#define LIBNODE_UV_ERR_CASE_GEN(NAME, S) \
     case _##NAME:
 
-#define LIBNODE_UV_ERR_MSG_CASE_GEN(VAL, NAME, S) \
+#define LIBNODE_UV_ERR_MSG_CASE_GEN(NAME, S) \
     case _##NAME: \
         msg = MSG_UV_##NAME; \
         break;
 
 UV_ERRNO_MAP(LIBNODE_UV_ERR_MSG_DEF_GEN);
-
-static Error::CPtr lastErr = Error::null();
 
 Error::CPtr Error::create(Error::Code code) {
     String::CPtr msg;
@@ -46,19 +44,8 @@ Error::CPtr Error::create(Error::Code code, String::CPtr msg) {
     return CPtr(new libj::detail::Status<Error>(code, msg));
 }
 
-Error::CPtr Error::valueOf(uv_err_code code) {
-    return create(static_cast<Code>(_OK + code));
-}
-
-Error::CPtr Error::last() {
-    return lastErr;
-}
-
-void Error::setLast(uv_err_code code) {
-    lastErr = valueOf(code);
-    LIBJ_DEBUG_PRINT(
-        "static: uv::Error::last %p",
-        LIBJ_DEBUG_OBJECT_PTR(lastErr));
+Error::CPtr Error::valueOf(uv_errno_t code) {
+    return create(static_cast<Code>(code));
 }
 
 }  // namespace uv
