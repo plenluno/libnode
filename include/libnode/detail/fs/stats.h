@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Plenluno All rights reserved.
+// Copyright (c) 2013-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_FS_STATS_H_
 #define LIBNODE_DETAIL_FS_STATS_H_
@@ -15,11 +15,16 @@ namespace node {
 namespace detail {
 namespace fs {
 
+#define LIBNODE_UV_STAT_TIME_TO_JS_DATE(T) \
+    JsDate::create( \
+        static_cast<Double>(T.tv_sec * 1000) + \
+        static_cast<Double>(T.tv_nsec / 1000000))
+
 class Stats : public libj::detail::JsObject<node::fs::Stats> {
  public:
     LIBJ_MUTABLE_DEFS(Stats, LIBNODE_FS_STATS);
 
-    Stats(const uv_statbuf_t* s)
+    Stats(const uv_stat_t* s)
         : mode_(static_cast<Int>(s->st_mode)) {
         put(node::fs::STAT_DEV,     static_cast<Int>(s->st_dev));
         put(node::fs::STAT_INO,     static_cast<Long>(s->st_ino));
@@ -34,11 +39,11 @@ class Stats : public libj::detail::JsObject<node::fs::Stats> {
         put(node::fs::STAT_BLOCKS,  static_cast<Long>(s->st_blocks));
 #endif
         put(node::fs::STAT_ATIME,
-            JsDate::create(static_cast<Double>(s->st_atime) * 1000));
+            LIBNODE_UV_STAT_TIME_TO_JS_DATE(s->st_atim));
         put(node::fs::STAT_MTIME,
-            JsDate::create(static_cast<Double>(s->st_mtime) * 1000));
+            LIBNODE_UV_STAT_TIME_TO_JS_DATE(s->st_mtim));
         put(node::fs::STAT_CTIME,
-            JsDate::create(static_cast<Double>(s->st_ctime) * 1000));
+            LIBNODE_UV_STAT_TIME_TO_JS_DATE(s->st_ctim));
     }
 
     virtual Boolean isFile() const {
