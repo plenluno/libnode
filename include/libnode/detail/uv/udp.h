@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Plenluno All rights reserved.
+// Copyright (c) 2013-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_UDP_H_
 #define LIBNODE_DETAIL_UV_UDP_H_
@@ -30,20 +30,31 @@ class Udp : public Handle {
         assert(address);
         std::string addr = address->toStdString();
 
-        Int r;
+        int err;
+        char saddr[sizeof(sockaddr_in6)];
         switch (family) {
         case AF_INET:
-            r = uv_udp_bind(&udp_, uv_ip4_addr(addr.c_str(), port), flags);
+            err = uv_ip4_addr(
+                addr.c_str(),
+                port,
+                reinterpret_cast<sockaddr_in*>(&saddr));
             break;
         case AF_INET6:
-            r = uv_udp_bind6(&udp_, uv_ip6_addr(addr.c_str(), port), flags);
+            err = uv_ip6_addr(
+                addr.c_str(),
+                port,
+                reinterpret_cast<sockaddr_in6*>(&saddr));
             break;
         default:
             assert(false);
-            r = -1;
+            err = -1;
         }
-        if (r) setLastError();
-        return r;
+        if (err) return err;
+
+        return uv_udp_bind(
+            &udp_,
+            reinterpret_cast<const sockaddr*>(&saddr),
+            flags);
     }
 
     Int bind4(String::CPtr address, Int port, Int flags) {
@@ -55,27 +66,19 @@ class Udp : public Handle {
     }
 
     Int setTTL(Int flag) {
-        int r = uv_udp_set_ttl(&udp_, flag);
-        if (r) setLastError();
-        return r;
+        return uv_udp_set_ttl(&udp_, flag);
     }
 
     Int setBroadcast(Int flag) {
-        int r = uv_udp_set_broadcast(&udp_, flag);
-        if (r) setLastError();
-        return r;
+        return uv_udp_set_broadcast(&udp_, flag);
     }
 
     Int setMulticastTTL(Int flag) {
-        int r = uv_udp_set_multicast_ttl(&udp_, flag);
-        if (r) setLastError();
-        return r;
+        return uv_udp_set_multicast_ttl(&udp_, flag);
     }
 
     Int setMulticastLoopback(Int flag) {
-        int r = uv_udp_set_multicast_loop(&udp_, flag);
-        if (r) setLastError();
-        return r;
+        return uv_udp_set_multicast_loop(&udp_, flag);
     }
 
     Int setMembership(
@@ -85,13 +88,11 @@ class Udp : public Handle {
         assert(address);
         std::string addr = address->toStdString();
         std::string ifc = iface ? iface->toStdString() : std::string();
-        int r = uv_udp_set_membership(
+        return uv_udp_set_membership(
             &udp_,
             addr.c_str(),
             iface ? ifc.c_str() : NULL,
             membership);
-        if (r) setLastError();
-        return r;
     }
 
     Int addMembership(String::CPtr address, String::CPtr iface) {
@@ -102,86 +103,93 @@ class Udp : public Handle {
         return setMembership(address, iface, UV_LEAVE_GROUP);
     }
 
-    UdpSend* send(
+    Int send(
         Buffer::CPtr buffer,
         Size offset,
         Size length,
         Int port,
         String::CPtr address,
-        Int family) {
+        Int family,
+        JsFunction::Ptr onComplete,
+        JsFunction::Ptr cb) {
         assert(buffer && address);
         assert(offset <  buffer->length());
         assert(length <= buffer->length() - offset);
-
         std::string addr = address->toStdString();
 
-        UdpSend* udpSend = new UdpSend();
-        udpSend->buffer = buffer;
-        uv_buf_t buf = uv_buf_init(
-            static_cast<char*>(const_cast<void*>(buffer->data())) + offset,
-            length);
-
-        Int r;
+        int err;
+        char saddr[sizeof(sockaddr_in6)];
         switch (family) {
         case AF_INET:
-            r = uv_udp_send(
-                &udpSend->req,
-                &udp_,
-                &buf,
-                1,
-                uv_ip4_addr(addr.c_str(), port),
-                onSend);
+            err = uv_ip4_addr(
+                addr.c_str(),
+                port,
+                reinterpret_cast<sockaddr_in*>(&saddr));
             break;
         case AF_INET6:
-            r = uv_udp_send6(
-                &udpSend->req,
-                &udp_,
-                &buf,
-                1,
-                uv_ip6_addr(addr.c_str(), port),
-                onSend);
+            err = uv_ip6_addr(
+                addr.c_str(),
+                port,
+                reinterpret_cast<sockaddr_in6*>(&saddr));
             break;
         default:
             assert(false);
-            r = -1;
+            err = -1;
         }
+        if (err) return err;
 
+        uv::UdpSend* udpSend = new uv::UdpSend();
+        udpSend->buffer = buffer;
+        udpSend->onComplete = onComplete;
+        udpSend->cb = cb;
         udpSend->dispatched();
 
-        if (r) {
-            setLastError();
+        uv_buf_t buf = uv_buf_init(
+            static_cast<char*>(const_cast<void*>(buffer->data())) + offset,
+            length);
+        err = uv_udp_send(
+            &udpSend->req,
+            &udp_,
+            &buf,
+            1,
+            reinterpret_cast<const sockaddr*>(&saddr),
+            onSend);
+        if (err) {
             delete udpSend;
-            return NULL;
-        } else {
-            return udpSend;
         }
+        return err;
     }
 
-    UdpSend* send4(
+    Int send4(
         Buffer::CPtr buf,
         Size offset,
         Size length,
         Int port,
-        String::CPtr address) {
-        return send(buf, offset, length, port, address, AF_INET);
+        String::CPtr address,
+        JsFunction::Ptr onComplete,
+        JsFunction::Ptr cb) {
+        return send(
+            buf, offset, length, port, address, AF_INET, onComplete, cb);
     }
 
-    UdpSend* send6(
+    Int send6(
         Buffer::CPtr buf,
         Size offset,
         Size length,
         Int port,
-        String::CPtr address) {
-        return send(buf, offset, length, port, address, AF_INET6);
+        String::CPtr address,
+        JsFunction::Ptr onComplete,
+        JsFunction::Ptr cb) {
+        return send(
+            buf, offset, length, port, address, AF_INET6, onComplete, cb);
     }
 
-    Boolean recvStart() {
-        int r = uv_udp_recv_start(&udp_, onAlloc, onRecv);
-        if (r && uv_last_error(uv_default_loop()).code != UV_EALREADY) {
-            setLastError();
-            return false;
+    Int recvStart() {
+        int err = uv_udp_recv_start(&udp_, onAlloc, onRecv);
+        if (err == UV_EALREADY) {
+            return 0;
         } else {
-            return true;
+            return err;
         }
     }
 
@@ -197,7 +205,6 @@ class Udp : public Handle {
             reinterpret_cast<sockaddr*>(&addr),
             &len);
         if (r) {
-            setLastError();
             return JsObject::null();
         } else {
             return addressToJs(reinterpret_cast<const sockaddr*>(&addr));
@@ -207,24 +214,25 @@ class Udp : public Handle {
  private:
     static void onSend(uv_udp_send_t* req, int status) {
         UdpSend* udpSend = reinterpret_cast<UdpSend*>(req->data);
-        if (status) setLastError();
         invoke(udpSend->onComplete, status, udpSend);
         delete udpSend;
     }
 
-    static uv_buf_t onAlloc(uv_handle_t* handle, size_t suggestedSize) {
+    static void onAlloc(
+        uv_handle_t* handle,
+        size_t suggestedSize,
+        uv_buf_t* buf) {
         Udp* udp = static_cast<Udp*>(handle->data);
         udp->buffer_ = Buffer::create(suggestedSize);
-        return uv_buf_init(
-            static_cast<char*>(const_cast<void*>(udp->buffer_->data())),
-            suggestedSize);
+        buf->base = static_cast<char*>(const_cast<void*>(udp->buffer_->data()));
+        buf->len = suggestedSize;
     }
 
     static void onRecv(
         uv_udp_t* handle,
         ssize_t nread,
-        uv_buf_t buf,
-        struct sockaddr* addr,
+        const uv_buf_t* buf,
+        const struct sockaddr* addr,
         unsigned flags) {
         LIBJ_STATIC_SYMBOL_DEF(symSize, "size");
 
@@ -235,7 +243,6 @@ class Udp : public Handle {
 
         JsObject::Ptr rinfo;
         if (nread < 0)  {
-            setLastError();
             udp->buffer_ = Buffer::null();
             rinfo = JsObject::null();
         } else if (nread > 0) {
