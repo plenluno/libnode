@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Plenluno All rights reserved.
+// Copyright (c) 2013-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_DGRAM_SOCKET_H_
 #define LIBNODE_DETAIL_DGRAM_SOCKET_H_
@@ -154,17 +154,21 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
         }
     }
 
-    uv::UdpSend* uvSend(
+    Int uvSend(
         Buffer::CPtr buf,
         Size offset,
         Size length,
         Int port,
-        String::CPtr ip) {
+        String::CPtr ip,
+        JsFunction::Ptr onComplete,
+        JsFunction::Ptr cb) {
         if (type_ == UDP4) {
-            return handle_->send4(buf, offset, length, port, ip);
+            return handle_->send4(
+                buf, offset, length, port, ip, onComplete, cb);
         } else {
             assert(type_ == UDP6);
-            return handle_->send6(buf, offset, length, port, ip);
+            return handle_->send6(
+                buf, offset, length, port, ip, onComplete, cb);
         }
     }
 
@@ -283,20 +287,21 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
 
             if (!self_->handle_) return Status::OK;
 
-            uv::UdpSend* udpSend = self_->uvSend(
+            JsFunction::Ptr afterSend(new AfterSend());
+            int uvErr = self_->uvSend(
                 buf_,
                 offset_,
                 length_,
                 port_,
-                args->getCPtr<String>(1));
-            if (udpSend) {
-                JsFunction::Ptr afterSend(new AfterSend());
-                udpSend->onComplete = afterSend;
-                udpSend->cb = callback_;
-            } else {
-                libj::Error::CPtr err = node::uv::Error::last();
+                args->getCPtr<String>(1),
+                afterSend,
+                callback_);
+            if (uvErr) {
+                err = LIBNODE_UV_ERROR(uvErr);
                 invoke(callback_, err, 0);
+                return uvErr;
             }
+
             return Status::OK;
         }
 
@@ -326,11 +331,11 @@ class Socket : public events::EventEmitter<node::dgram::Socket> {
             if (!self_->handle_) return Status::OK;
 
             String::CPtr ip = args->getCPtr<String>(1);
-            if (self_->uvBind(ip, port_, 0)) {
-                err = node::uv::Error::last();
+            int uvErr = self_->uvBind(ip, port_, 0);
+            if (uvErr) {
                 self_->bindState_ = UNBOUND;
-                self_->emit(EVENT_ERROR, err);
-                return err;
+                self_->emit(EVENT_ERROR, LIBNODE_UV_ERROR(uvErr));
+                return uvErr;
             }
 
             self_->startListening();
