@@ -28,32 +28,14 @@ class Udp : public Handle {
 
     Int bind(String::CPtr address, Int port, Int flags, Int family) {
         assert(address);
-        std::string addr = address->toStdString();
 
-        int err;
         char saddr[sizeof(sockaddr_in6)];
-        switch (family) {
-        case AF_INET:
-            err = uv_ip4_addr(
-                addr.c_str(),
-                port,
-                reinterpret_cast<sockaddr_in*>(&saddr));
-            break;
-        case AF_INET6:
-            err = uv_ip6_addr(
-                addr.c_str(),
-                port,
-                reinterpret_cast<sockaddr_in6*>(&saddr));
-            break;
-        default:
-            assert(false);
-            err = -1;
-        }
+        int err = uvAddr(address, port, family, saddr);
         if (err) return err;
 
         return uv_udp_bind(
             &udp_,
-            reinterpret_cast<const sockaddr*>(&saddr),
+            reinterpret_cast<const sockaddr*>(saddr),
             flags);
     }
 
@@ -115,27 +97,9 @@ class Udp : public Handle {
         assert(buffer && address);
         assert(offset <  buffer->length());
         assert(length <= buffer->length() - offset);
-        std::string addr = address->toStdString();
 
-        int err;
         char saddr[sizeof(sockaddr_in6)];
-        switch (family) {
-        case AF_INET:
-            err = uv_ip4_addr(
-                addr.c_str(),
-                port,
-                reinterpret_cast<sockaddr_in*>(&saddr));
-            break;
-        case AF_INET6:
-            err = uv_ip6_addr(
-                addr.c_str(),
-                port,
-                reinterpret_cast<sockaddr_in6*>(&saddr));
-            break;
-        default:
-            assert(false);
-            err = -1;
-        }
+        int err = uvAddr(address, port, family, saddr);
         if (err) return err;
 
         uv::UdpSend* udpSend = new uv::UdpSend();
@@ -152,7 +116,7 @@ class Udp : public Handle {
             &udp_,
             &buf,
             1,
-            reinterpret_cast<const sockaddr*>(&saddr),
+            reinterpret_cast<const sockaddr*>(saddr),
             onSend);
         if (err) {
             delete udpSend;
@@ -251,6 +215,25 @@ class Udp : public Handle {
             rinfo->put(symSize, static_cast<Size>(nread));
         }
         if (onMessage) invoke(onMessage, udp->buffer_, rinfo);
+    }
+
+    int uvAddr(String::CPtr address, Int port, Int family, char* saddr) {
+        std::string addr = address->toStdString();
+        switch (family) {
+        case AF_INET:
+            return uv_ip4_addr(
+                addr.c_str(),
+                port,
+                reinterpret_cast<sockaddr_in*>(saddr));
+        case AF_INET6:
+            return uv_ip6_addr(
+                addr.c_str(),
+                port,
+                reinterpret_cast<sockaddr_in6*>(saddr));
+        default:
+            assert(false);
+            return -1;
+        }
     }
 
  private:
