@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2014 Plenluno All rights reserved.
+// Copyright (c) 2012-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_PIPE_H_
 #define LIBNODE_DETAIL_UV_PIPE_H_
@@ -20,12 +20,10 @@ class Pipe : public Stream {
     }
 
     virtual Int listen(Int backlog) {
-        Int r = uv_listen(
+        return uv_listen(
             reinterpret_cast<uv_stream_t*>(&pipe_),
             backlog,
             onConnection);
-        if (r) setLastError();
-        return r;
     }
 
     void open(int fd) {
@@ -33,21 +31,20 @@ class Pipe : public Stream {
     }
 
     Int bind(String::CPtr name) {
-        Int r = uv_pipe_bind(&pipe_, name->toStdString().c_str());
-        if (r) setLastError();
-        return r;
+        return uv_pipe_bind(&pipe_, name->toStdString().c_str());
     }
 
-    Connect* connect(String::CPtr name) {
+    void connect(String::CPtr name, JsFunction::Ptr onComplete) {
         assert(name);
         Connect* creq = new Connect();
+        creq->onComplete = onComplete;
+        creq->dispatched();
+
         uv_pipe_connect(
             &creq->req,
             &pipe_,
             name->toStdString().c_str(),
             afterConnect);
-        creq->dispatched();
-        return creq;
     }
 
  private:
@@ -56,7 +53,6 @@ class Pipe : public Stream {
         assert(self && self->stream_ == handle);
 
         if (status) {
-            setLastError();
             invoke(self->onConnection_);
             return;
         } else {
