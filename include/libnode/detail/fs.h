@@ -80,14 +80,14 @@ static void onError(uv_fs_t* req) {
     assert(req);
     uv::FsReq* fsReq = static_cast<uv::FsReq*>(req->data);
     if (fsReq && fsReq->onComplete) {
-        invoke(fsReq->onComplete, node::uv::Error::valueOf(req->errorno));
+        invoke(fsReq->onComplete, LIBNODE_UV_ERROR(req->result));
     }
     delete fsReq;
 }
 
 static node::fs::Stats::Ptr getStats(uv_fs_t* req) {
     return node::fs::Stats::Ptr(
-        new Stats(static_cast<const uv_statbuf_t*>(req->ptr)));
+        new Stats(static_cast<const uv_stat_t*>(req->ptr)));
 }
 
 static Buffer::Ptr getBuffer(uv_fs_t* req) {
@@ -96,7 +96,7 @@ static Buffer::Ptr getBuffer(uv_fs_t* req) {
 }
 
 static void after(uv_fs_t* req) {
-    if (req->result == -1) {
+    if (req->result < 0) {
         onError(req);
         return;
     }
@@ -114,16 +114,20 @@ static void after(uv_fs_t* req) {
         case UV_FS_READLINK:
             args->add(String::create(req->ptr));
             break;
-        case UV_FS_READDIR:
+        case UV_FS_SCANDIR:
             {
-                char* buf = static_cast<char*>(req->ptr);
-                Size num = req->result;
-
                 JsArray::Ptr names = JsArray::create();
-                for (Size i = 0; i < num; i++) {
-                    String::CPtr name = String::create(buf);
-                    names->add(name);
-                    buf += strlen(buf) + 1;
+                while (true) {
+                    uv_dirent_t ent;
+                    int err = uv_fs_scandir_next(req, &ent);
+                    if (err == UV_EOF) {
+                        break;
+                    } else if (err) {
+                        args->set(0, LIBNODE_UV_ERROR(err));
+                        break;
+                    }
+
+                    names->add(String::create(ent.name));
                 }
                 args->add(names);
             }
@@ -374,7 +378,7 @@ void readdir(
         fsReq->path = path->toStdString();
     }
 
-    int r = uv_fs_readdir(
+    int r = uv_fs_scandir(
         uv_default_loop(),
         &(fsReq->req),
         fsReq->path.c_str(),
@@ -536,8 +540,12 @@ void read(
     Size length,
     Size position,
     JsFunction::Ptr callback) {
-    Size bufLen = buffer ? buffer->length() : 0;
+    uv::FsReq* fsReq = new uv::FsReq(callback);
+    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->buffer = buffer;
+
     Size len;
+    Size bufLen = buffer ? buffer->length() : 0;
     if (bufLen > offset) {
         len = bufLen - offset;
         len = len < length ? len : length;
@@ -545,17 +553,15 @@ void read(
         len = 0;
     }
 
-    uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
-    fsReq->buffer = buffer;
-
     void* buf = buffer ? const_cast<void*>(buffer->data()) : NULL;
+    uv_buf_t uvbuf = uv_buf_init(static_cast<char*>(buf), len);
+
     int r = uv_fs_read(
         uv_default_loop(),
         &(fsReq->req),
         fsReq->file,
-        buf,
-        len,
+        &uvbuf,
+        1,
         position,
         after);
     assert(!r);
@@ -656,8 +662,12 @@ void write(
     Size length,
     Size position,
     JsFunction::Ptr callback) {
-    Size bufLen = buffer ? buffer->length() : 0;
+    uv::FsReq* fsReq = new uv::FsReq(callback);
+    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->buffer = buffer;
+
     Size len;
+    Size bufLen = buffer ? buffer->length() : 0;
     if (bufLen > offset) {
         len = bufLen - offset;
         len = len < length ? len : length;
@@ -665,17 +675,15 @@ void write(
         len = 0;
     }
 
-    uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
-    fsReq->buffer = buffer;
-
     void* buf = buffer ? const_cast<void*>(buffer->data()) : NULL;
+    uv_buf_t uvbuf = uv_buf_init(static_cast<char*>(buf), len);
+
     int r = uv_fs_write(
         uv_default_loop(),
         &(fsReq->req),
         fsReq->file,
-        buf,
-        len,
+        &uvbuf,
+        1,
         position,
         after);
     assert(!r);
