@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Plenluno All rights reserved.
+// Copyright (c) 2013-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_FS_H_
 #define LIBNODE_DETAIL_FS_H_
@@ -27,6 +27,7 @@ namespace node {
 namespace detail {
 namespace fs {
 
+static const Int INVALID_FD  = -1;
 static const Int INVALID_UID = -1;
 static const Int INVALID_GID = -1;
 
@@ -166,7 +167,7 @@ void stat(String::CPtr path, JsFunction::Ptr callback) {
 
 void fstat(const Value& fd, JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->file = to<uv_file>(fd, INVALID_FD);
 
     int r = uv_fs_fstat(
         uv_default_loop(),
@@ -219,7 +220,7 @@ void fchown(
     const Value& gid,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->file = to<uv_file>(fd, INVALID_FD);
 
     Int _uid = to<Int>(uid, INVALID_UID);
     Int _gid = to<Int>(gid, INVALID_GID);
@@ -257,7 +258,7 @@ void fchmod(
     UInt mode,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->file = to<uv_file>(fd, INVALID_FD);
 
     int r = uv_fs_fchmod(
         uv_default_loop(),
@@ -273,7 +274,7 @@ void ftruncate(
     Size len,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->file = to<uv_file>(fd, INVALID_FD);
 
     int r = uv_fs_ftruncate(
         uv_default_loop(),
@@ -310,7 +311,7 @@ void futimes(
     Double mtime,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->file = to<uv_file>(fd, INVALID_FD);
 
     int r = uv_fs_futime(
         uv_default_loop(),
@@ -326,7 +327,7 @@ void fsync(
     const Value& fd,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->file = to<uv_file>(fd, INVALID_FD);
 
     int r = uv_fs_fsync(
         uv_default_loop(),
@@ -523,7 +524,7 @@ void close(
     const Value& fd,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->file = to<uv_file>(fd, INVALID_FD);
 
     int r = uv_fs_close(
         uv_default_loop(),
@@ -541,7 +542,7 @@ void read(
     Size position,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->file = to<uv_file>(fd, INVALID_FD);
     fsReq->buffer = buffer;
 
     Size len;
@@ -663,7 +664,7 @@ void write(
     Size position,
     JsFunction::Ptr callback) {
     uv::FsReq* fsReq = new uv::FsReq(callback);
-    fsReq->file = to<uv_file>(fd, fsReq->file);
+    fsReq->file = to<uv_file>(fd, INVALID_FD);
     fsReq->buffer = buffer;
 
     Size len;
