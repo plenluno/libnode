@@ -24,7 +24,7 @@ inline void Stream::onReadCommon(
             stream->buffer_ = Buffer::null();
         }
 
-        if (onRead) invoke(onRead, nread, Buffer::null(), NULL);
+        if (onRead) invoke(onRead, nread, Buffer::null());
         return;
     }
 
@@ -48,7 +48,7 @@ inline void Stream::onReadCommon(
     // } else {
     //     assert(pending == UV_UNKNOWN_HANDLE);
     // }
-    if (onRead) invoke(onRead, nread, stream->buffer_, NULL);
+    if (onRead) invoke(onRead, nread, stream->buffer_);
 }
 
 }  // namespace uv
