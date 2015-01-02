@@ -26,11 +26,12 @@ class Pipe : public Stream {
             onConnection);
     }
 
-    void open(int fd) {
+    void open(Int fd) {
         uv_pipe_open(&pipe_, fd);
     }
 
     Int bind(String::CPtr name) {
+        assert(name);
         return uv_pipe_bind(&pipe_, name->toStdString().c_str());
     }
 

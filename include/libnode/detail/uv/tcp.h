@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2014 Plenluno All rights reserved.
+// Copyright (c) 2012-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_TCP_H_
 #define LIBNODE_DETAIL_UV_TCP_H_
@@ -61,6 +61,7 @@ class Tcp : public Stream {
     }
 
     Int bind(String::CPtr ip, Int port = 0) {
+        assert(ip);
         struct sockaddr_in addr;
         int err = uv_ip4_addr(ip->toStdString().c_str(), port, &addr);
         if (err) return err;
@@ -72,6 +73,7 @@ class Tcp : public Stream {
     }
 
     Int bind6(String::CPtr ip6, Int port = 0) {
+        assert(ip6);
         struct sockaddr_in6 addr;
         int err = uv_ip6_addr(ip6->toStdString().c_str(), port, &addr);
         if (err) return err;
