@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Plenluno All rights reserved.
+// Copyright (c) 2013-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_DNS_H_
 #define LIBNODE_DETAIL_DNS_H_
@@ -20,19 +20,12 @@ namespace dns {
 
 typedef class uv::Req<uv_getaddrinfo_t> GetAddrInfoReq;
 
-static inline void setLastError() {
-    node::uv::Error::setLast(uv_last_error(uv_default_loop()).code);
-}
-
 static void afterGetAddrInfo(
     uv_getaddrinfo_t* req, int status, struct addrinfo* res) {
-    GetAddrInfoReq* get = static_cast<GetAddrInfoReq*>(req->data);
-    assert(get);
-
     JsArray::Ptr args = JsArray::create();
+    args->add(status);
 
     if (status) {
-        setLastError();
         args->add(JsArray::null());
     } else {
         char ip[INET6_ADDRSTRLEN];
@@ -46,12 +39,12 @@ static void afterGetAddrInfo(
                 struct sockaddr_in* in =
                     reinterpret_cast<struct sockaddr_in*>(address->ai_addr);
                 const char* addr = reinterpret_cast<char*>(&(in->sin_addr));
-                uv_err_t err = uv_inet_ntop(
+                int err = uv_inet_ntop(
                     address->ai_family,
                     addr,
                     ip,
                     INET6_ADDRSTRLEN);
-                if (err.code == UV_OK) {
+                if (!err) {
                     results->add(String::create(ip));
                 }
             }
@@ -66,12 +59,12 @@ static void afterGetAddrInfo(
                 struct sockaddr_in6* in =
                     reinterpret_cast<struct sockaddr_in6*>(address->ai_addr);
                 const char* addr = reinterpret_cast<char*>(&(in->sin6_addr));
-                uv_err_t err = uv_inet_ntop(
+                int err = uv_inet_ntop(
                     address->ai_family,
                     addr,
                     ip,
                     INET6_ADDRSTRLEN);
-                if (err.code == UV_OK) {
+                if (!err) {
                     results->add(String::create(ip));
                 }
             }
@@ -81,37 +74,38 @@ static void afterGetAddrInfo(
         args->add(results);
     }
 
-    uv_freeaddrinfo(res);
+    GetAddrInfoReq* get = static_cast<GetAddrInfoReq*>(req->data);
+    assert(get);
     (*(get->onComplete))(args);
+
+    uv_freeaddrinfo(res);
     delete get;
 }
 
-static GetAddrInfoReq* getAddrInfo(String::CPtr domain, int family) {
+static int getAddrInfo(
+    String::CPtr domain, int family, JsFunction::Ptr onAnswer) {
     assert(domain);
 
     GetAddrInfoReq* get = new GetAddrInfoReq();
+    get->onComplete = onAnswer;
+    get->dispatched();
 
     struct addrinfo info;
     memset(&info, 0, sizeof(struct addrinfo));
     info.ai_family = family;
     info.ai_socktype = SOCK_STREAM;
 
-    int r = uv_getaddrinfo(
+    int err = uv_getaddrinfo(
         uv_default_loop(),
         &get->req,
         afterGetAddrInfo,
         domain->toStdString().c_str(),
         NULL,
         &info);
-    get->dispatched();
-
-    if (r) {
-        setLastError();
+    if (err) {
         delete get;
-        return NULL;
-    } else {
-        return get;
     }
+    return err;
 }
 
 class Apply : LIBJ_JS_FUNCTION(Apply)
@@ -140,26 +134,30 @@ class OnAnswer : LIBJ_JS_FUNCTION(OnAnswer)
         , family_(family) {}
 
     virtual Value operator()(JsArray::Ptr args) {
-        JsArray::CPtr addrs = args->getCPtr<JsArray>(0);
-        if (addrs) {
-            String::CPtr addr = addrs->getCPtr<String>(0);
-            assert(addr);
-            if (family_) {
-                return invoke(
-                    callback_,
-                    Error::null(),
-                    addr,
-                    family_);
-            } else {
-                return invoke(
-                    callback_,
-                    Error::null(),
-                    addr,
-                    addr->charAt(0) == ':' ? 6 : 4);
-            }
-        } else {
-            return invoke(callback_, node::uv::Error::last());
+        int status = to<int>(args->get(0), UV_EINVAL);
+        if (status) {
+            invoke(callback_, LIBNODE_UV_ERROR(status));
+            return status;
         }
+
+        JsArray::CPtr addrs = args->getCPtr<JsArray>(1);
+        assert(addrs);
+        String::CPtr addr = addrs->getCPtr<String>(0);
+        assert(addr);
+        if (family_) {
+            invoke(
+                callback_,
+                Error::null(),
+                addr,
+                family_);
+        } else {
+            invoke(
+                callback_,
+                Error::null(),
+                addr,
+                addr->charAt(0) == ':' ? 6 : 4);
+        }
+        return Status::OK;
     }
 
  private:
@@ -204,12 +202,8 @@ Boolean lookup(String::CPtr domain, Int family, JsFunction::Ptr callback) {
         return true;
     }
 
-    GetAddrInfoReq* req = getAddrInfo(domain, fam);
-    if (!req) return false;
-
     JsFunction::Ptr onAnswer(new OnAnswer(callback, family));
-    req->onComplete = onAnswer;
-    return true;
+    return !getAddrInfo(domain, fam, onAnswer);
 }
 
 Boolean lookup(String::CPtr domain, JsFunction::Ptr callback) {
