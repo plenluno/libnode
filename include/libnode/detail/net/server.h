@@ -90,7 +90,7 @@ class Server : public events::EventEmitter<I> {
 
         if (callback) this->once(node::net::Server::EVENT_LISTENING, callback);
 
-        return listen(path, -1, -1);
+        return listen(path, INVALID_PORT, PATH_TYPE);
     }
 
     virtual Boolean close(
@@ -120,11 +120,12 @@ class Server : public events::EventEmitter<I> {
     }
 
  private:
+    static const Int PATH_TYPE = -1;
+    static const Int INVALID_FD = -1;
+    static const Int INVALID_PORT = -1;
+
     static uv::Stream* createServerHandle(
-        String::CPtr address,
-        Int port = -1,
-        Int addressType = -1,
-        int fd = -1) {
+        String::CPtr address, Int port, Int addressType, Int fd) {
         uv::Stream* handle;
         if (fd >= 0) {
             uv_handle_type type = uv::Handle::guessHandleType(fd);
@@ -137,27 +138,29 @@ class Server : public events::EventEmitter<I> {
             } else {
                 return NULL;
             }
-        } else if (port == -1 && addressType == -1) {
+        } else if (addressType == PATH_TYPE) {
+            assert(port == INVALID_PORT);
             handle = new uv::Pipe();
         } else {
             handle = new uv::Tcp();
         }
 
-        Int r = 0;
-        if (address || port) {
+        int err = 0;
+        if (address) {
             if (addressType == 6) {
                 uv::Tcp* tcp = static_cast<uv::Tcp*>(handle);
-                r = tcp->bind6(address, port);
+                err = tcp->bind6(address, port);
             } else if (addressType == 4) {
                 uv::Tcp* tcp = static_cast<uv::Tcp*>(handle);
-                r = tcp->bind(address, port);
+                err = tcp->bind(address, port);
             } else {
+                assert(addressType == PATH_TYPE);
                 uv::Pipe* pipe = static_cast<uv::Pipe*>(handle);
-                r = pipe->bind(address);
+                err = pipe->bind(address);
             }
         }
 
-        if (r) {
+        if (err) {
             handle->close();
             return NULL;
         } else {
@@ -169,8 +172,8 @@ class Server : public events::EventEmitter<I> {
         String::CPtr address,
         Int port,
         Int addressType,
-        Int backlog = 0,
-        int fd = -1) {
+        Int backlog = 511,
+        Int fd = INVALID_FD) {
         if (!handle_) {
             handle_ = createServerHandle(address, port, addressType, fd);
             if (!handle_) {
@@ -185,11 +188,11 @@ class Server : public events::EventEmitter<I> {
         handle_->setOnConnection(onConnection);
         handle_->setOwner(this);
 
-        Int r = handle_->listen(backlog ? backlog : 511);
-        if (r) {
+        int err = handle_->listen(backlog);
+        if (err) {
             handle_->close();
             handle_ = NULL;
-            typename EmitError::Ptr emitError(new EmitError(this, r));
+            typename EmitError::Ptr emitError(new EmitError(this, err));
             process::nextTick(emitError);
             return false;
         } else {
