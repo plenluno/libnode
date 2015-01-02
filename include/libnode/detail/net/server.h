@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2014 Plenluno All rights reserved.
+// Copyright (c) 2012-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_NET_SERVER_H_
 #define LIBNODE_DETAIL_NET_SERVER_H_
@@ -174,7 +174,8 @@ class Server : public events::EventEmitter<I> {
         if (!handle_) {
             handle_ = createServerHandle(address, port, addressType, fd);
             if (!handle_) {
-                typename EmitError::Ptr emitError(new EmitError(this));
+                typename EmitError::Ptr emitError(
+                    new EmitError(this, UV_EINVAL));
                 process::nextTick(emitError);
                 return false;
             }
@@ -188,7 +189,7 @@ class Server : public events::EventEmitter<I> {
         if (r) {
             handle_->close();
             handle_ = NULL;
-            typename EmitError::Ptr emitError(new EmitError(this));
+            typename EmitError::Ptr emitError(new EmitError(this, r));
             process::nextTick(emitError);
             return false;
         } else {
@@ -228,10 +229,11 @@ class Server : public events::EventEmitter<I> {
                 clientHandle = tcp;
             }
             if (!clientHandle) {
+                Error::Code err = Error::ILLEGAL_STATE;
                 self_->emit(
                     node::net::Server::EVENT_ERROR,
-                    node::uv::Error::last());
-                return Error::ILLEGAL_STATE;
+                    Error::create(err));
+                return err;
             }
 
             if (self_->maxConnections_ &&
@@ -293,17 +295,18 @@ class Server : public events::EventEmitter<I> {
 
     class EmitError : LIBJ_JS_FUNCTION_TEMPLATE(EmitError)
      public:
-        EmitError(Server* srv) : self_(srv) {}
+        EmitError(Server* srv, int err) : self_(srv), err_(err) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             self_->emit(
                 node::net::Server::EVENT_ERROR,
-                node::uv::Error::last());
+                LIBNODE_UV_ERROR(err_));
             return Status::OK;
         }
 
      private:
         Server* self_;
+        int err_;
     };
 
     class EmitListening : LIBJ_JS_FUNCTION_TEMPLATE(EmitListening)
