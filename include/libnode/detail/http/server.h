@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2014 Plenluno All rights reserved.
+// Copyright (c) 2012-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_SERVER_H_
 #define LIBNODE_DETAIL_HTTP_SERVER_H_
@@ -198,7 +198,7 @@ class Server : public net::Server<node::http::Server> {
             , onClose_(onClose) {}
 
         virtual Value operator()(JsArray::Ptr args) {
-            Buffer::CPtr buf = args->getCPtr<Buffer>(0);
+            Buffer::CPtr buf = args->getCPtr<Buffer>(1);
             Int bytesParsed = parser_->execute(buf);
             IncomingMessage::Ptr req = parser_->incoming();
             if (bytesParsed < 0) {

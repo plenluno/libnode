@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2014 Plenluno All rights reserved.
+// Copyright (c) 2012-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
 #define LIBNODE_DETAIL_HTTP_OUTGOING_MESSAGE_H_
@@ -869,7 +869,7 @@ class OutgoingMessage : public events::EventEmitter<stream::Writable> {
             Parser* parser = socket_->parser();
             OutgoingMessage* req = socket_->httpMessage();
             IncomingMessage::Ptr res = parser->incoming();
-            Buffer::CPtr buf = args->getCPtr<Buffer>(0);
+            Buffer::CPtr buf = args->getCPtr<Buffer>(1);
             Int bytesParsed = parser->execute(buf);
             if (bytesParsed < 0) {
                 freeParser(parser, req);
