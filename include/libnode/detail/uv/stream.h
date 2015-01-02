@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2014 Plenluno All rights reserved.
+// Copyright (c) 2012-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_UV_STREAM_H_
 #define LIBNODE_DETAIL_UV_STREAM_H_
@@ -50,51 +50,39 @@ class Stream : public Handle {
     }
 
     Int readStart() {
-        Boolean ipcPipe =
-            stream_->type == UV_NAMED_PIPE &&
-            reinterpret_cast<uv_pipe_t*>(stream_)->ipc;
-
-        Int r;
-        if (ipcPipe) {
-            r = uv_read2_start(stream_, onAlloc, onRead2);
-        } else {
-            r = uv_read_start(stream_, onAlloc, onRead);
-        }
-        if (r) setLastError();
-        return r;
+        return uv_read_start(stream_, onAlloc, onRead);
     }
 
     Int readStop() {
-        Int r = uv_read_stop(stream_);
-        if (r) setLastError();
-        return r;
+        return uv_read_stop(stream_);
     }
 
-    Write* writeBuffer(Buffer::CPtr buf) {
+    Int writeBuffer(
+        Buffer::CPtr buf,
+        JsFunction::Ptr onComplete,
+        JsFunction::Ptr cb) {
+        Size length = buf->length();
+
         Write* req = new Write();
         req->buffer = buf;
+        req->bytes = length;
+        req->onComplete = onComplete;
+        req->cb = cb;
+        req->dispatched();
 
         uv_buf_t uvBuf;
-        Size length = buf->length();
         uvBuf.base = static_cast<char*>(const_cast<void*>(buf->data()));
         uvBuf.len = length;
-        Int r = uv_write(
+        int err = uv_write(
                     &req->req,
                     stream_,
                     &uvBuf,
                     1,
                     afterWrite);
-
-        req->dispatched();
-        req->bytes = length;
-
-        if (r) {
-            setLastError();
+        if (err) {
             delete req;
-            return NULL;
-        } else {
-            return req;
         }
+        return err;
     }
 
     Write* writeString(
@@ -136,7 +124,6 @@ class Stream : public Handle {
         req->bytes = length;
 
         if (r) {
-            setLastError();
             delete req;
             return NULL;
         } else {
@@ -144,59 +131,53 @@ class Stream : public Handle {
         }
     }
 
-    Shutdown* shutdown() {
+    Int shutdown(JsFunction::Ptr onComplete) {
         Shutdown* req = new Shutdown();
-        Int r = uv_shutdown(&req->req, stream_, afterShutdown);
+        req->onComplete = onComplete;
         req->dispatched();
 
-        if (r) {
-            setLastError();
+        int err = uv_shutdown(&req->req, stream_, afterShutdown);
+        if (err) {
             delete req;
-            return NULL;
-        } else {
-            return req;
         }
+        return err;
     }
 
  private:
-    static uv_buf_t onAlloc(uv_handle_t* handle, size_t suggestedSize) {
+    static void onAlloc(
+        uv_handle_t* handle, size_t suggestedSize, uv_buf_t* buf) {
         Stream* stream = static_cast<Stream*>(handle->data);
         assert(stream->stream_ == reinterpret_cast<uv_stream_t*>(handle));
-
         stream->buffer_ = Buffer::create(suggestedSize);
-        uv_buf_t uvBuf;
-        uvBuf.base = static_cast<char*>(
+
+        buf->base = static_cast<char*>(
             const_cast<void*>(stream->buffer_->data()));
-        uvBuf.len = suggestedSize;
-        return uvBuf;
+        buf->len = suggestedSize;
     }
 
     static void onReadCommon(
         uv_stream_t* handle,
         ssize_t nread,
-        uv_buf_t buf,
+        const uv_buf_t* buf,
         uv_handle_type pending);
 
     static void onRead(
         uv_stream_t* handle,
         ssize_t nread,
-        uv_buf_t buf) {
-        onReadCommon(handle, nread, buf, UV_UNKNOWN_HANDLE);
-    }
-
-    static void onRead2(
-        uv_pipe_t* handle,
-        ssize_t nread,
-        uv_buf_t buf,
-        uv_handle_type pending) {
-        onReadCommon(
-            reinterpret_cast<uv_stream_t*>(handle), nread, buf, pending);
+        const uv_buf_t* buf) {
+        uv_handle_type type = UV_UNKNOWN_HANDLE;
+        uv_pipe_t* pipe = reinterpret_cast<uv_pipe_t*>(handle);
+        if (handle->type == UV_NAMED_PIPE &&
+            pipe->ipc &&
+            uv_pipe_pending_count(pipe) > 0) {
+            type = uv_pipe_pending_type(pipe);
+        }
+        onReadCommon(handle, nread, buf, type);
     }
 
     static void afterWrite(uv_write_t* req, int status) {
         Write* wreq = static_cast<Write*>(req->data);
         Stream* stream = static_cast<Stream*>(req->handle->data);
-        if (status) setLastError();
         invoke(wreq->onComplete, status, stream, wreq);
         delete wreq;
     }
@@ -204,7 +185,6 @@ class Stream : public Handle {
     static void afterShutdown(uv_shutdown_t* req, int status) {
         Shutdown* sreq = static_cast<Shutdown*>(req->data);
         Stream* stream = static_cast<Stream*>(req->handle->data);
-        if (status) setLastError();
         invoke(sreq->onComplete, status, stream, sreq);
         delete sreq;
     }
@@ -217,7 +197,6 @@ class Stream : public Handle {
 
         Boolean readable, writable;
         if (status) {
-            setLastError();
             readable = writable = false;
         } else {
             readable = uv_is_readable(req->handle) != 0;
