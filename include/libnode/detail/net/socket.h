@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2014 Plenluno All rights reserved.
+// Copyright (c) 2012-2015 Plenluno All rights reserved.
 
 #ifndef LIBNODE_DETAIL_NET_SOCKET_H_
 #define LIBNODE_DETAIL_NET_SOCKET_H_
@@ -128,15 +128,13 @@ class Socket : public events::EventEmitter<node::net::Socket> {
             return destroySoon();
         } else {
             setFlag(SHUTDOWN);
-            uv::Shutdown* req = handle_->shutdown();
-            if (req) {
-                AfterShutdown::Ptr afterShutdown(new AfterShutdown(this));
-                req->onComplete = afterShutdown;
-                return true;
-            } else {
-                destroy(node::uv::Error::last());
+            AfterShutdown::Ptr afterShutdown(new AfterShutdown(this));
+            int err = handle_->shutdown(afterShutdown);
+            if (err) {
+                destroy(LIBNODE_UV_ERROR(err));
                 return false;
             }
+            return true;
         }
     }
 
@@ -450,15 +448,8 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         uv::Pipe* handle,
         String::CPtr path) {
         assert(self->hasFlag(CONNECTING));
-
-        uv::Connect* req = handle->connect(path);
-
-        if (req) {
-            AfterConnect::Ptr afterConnect(new AfterConnect(self));
-            req->onComplete = afterConnect;
-        } else {
-            self->destroy(node::uv::Error::last());
-        }
+        AfterConnect::Ptr afterConnect(new AfterConnect(self));
+        handle->connect(path, afterConnect);
     }
 
     static void connect(
@@ -471,31 +462,27 @@ class Socket : public events::EventEmitter<node::net::Socket> {
         assert(self->hasFlag(CONNECTING));
 
         if (localAddress) {
-            Int r;
+            int err;
             if (addressType == 6) {
-                r = handle->bind6(localAddress);
+                err = handle->bind6(localAddress);
             } else {
-                r = handle->bind(localAddress);
+                err = handle->bind(localAddress);
             }
-
-            if (r) {
-                self->destroy(node::uv::Error::last());
+            if (err) {
+                self->destroy(LIBNODE_UV_ERROR(err));
                 return;
             }
         }
 
-        uv::Connect* req;
+        int err;
+        AfterConnect::Ptr afterConnect(new AfterConnect(self));
         if (addressType == 6) {
-            req = handle->connect6(address, port);
+            err = handle->connect6(address, port, afterConnect);
         } else {  // addressType == 4
-            req = handle->connect(address, port);
+            err = handle->connect(address, port, afterConnect);
         }
-
-        if (req) {
-            AfterConnect::Ptr afterConnect(new AfterConnect(self));
-            req->onComplete = afterConnect;
-        } else {
-            self->destroy(node::uv::Error::last());
+        if (err) {
+            self->destroy(LIBNODE_UV_ERROR(err));
         }
     }
 
@@ -603,19 +590,15 @@ class Socket : public events::EventEmitter<node::net::Socket> {
             return false;
         }
 
-        uv::Write* req = handle_->writeBuffer(buf);
-
-        if (!req) {
-            destroy(node::uv::Error::last(), cb);
+        AfterWrite::Ptr afterWrite(new AfterWrite(this, cb));
+        int err = handle_->writeBuffer(buf, afterWrite, cb);
+        if (err) {
+            destroy(LIBNODE_UV_ERROR(err), cb);
             return false;
         }
 
-        AfterWrite::Ptr afterWrite(new AfterWrite(this, req));
-        req->onComplete = afterWrite;
-        req->cb = cb;
-
         pendingWriteReqs_++;
-        bytesDispatched_ += req->bytes;
+        bytesDispatched_ += buf->length();
         return true;
     }
 
@@ -650,22 +633,11 @@ class Socket : public events::EventEmitter<node::net::Socket> {
 
             self_->active();
 
-            Buffer::CPtr buffer = args->getCPtr<Buffer>(0);
-            if (buffer) {
-                if (self_->decoder_) {
-                    String::CPtr str = self_->decoder_->write(buffer);
-                    if (str && str->length()) {
-                        self_->emit(EVENT_DATA, str);
-                    }
-                } else {
-                    self_->emit(EVENT_DATA, buffer);
-                }
+            ssize_t nread = to<ssize_t>(args->get(0));
+            if (!nread) return Status::OK;
 
-                self_->bytesRead_ += buffer->length();
-                if (self_->onData_) (*self_->onData_)(args);
-            } else {
-                node::uv::Error::CPtr err = node::uv::Error::last();
-                if (err->code() == node::uv::Error::_EOF) {
+            if (nread < 0) {
+                if (nread == node::uv::Error::_EOF) {
                     self_->unsetFlag(READABLE);
                     assert(!self_->hasFlag(GOT_EOF));
                     self_->setFlag(GOT_EOF);
@@ -680,12 +652,27 @@ class Socket : public events::EventEmitter<node::net::Socket> {
 
                     self_->emit(EVENT_END);
                     if (self_->onEnd_) (*self_->onEnd_)();
-                } else if (err->code() == node::uv::Error::_ECONNRESET) {
-                    self_->destroy();
                 } else {
-                    self_->destroy(err);
+                    self_->destroy(LIBNODE_UV_ERROR(nread));
                 }
+                return nread;
             }
+
+            Buffer::CPtr buffer = args->getCPtr<Buffer>(1);
+            assert(nread > 0);
+            assert(buffer);
+
+            if (self_->decoder_) {
+                String::CPtr str = self_->decoder_->write(buffer);
+                if (str && str->length()) {
+                    self_->emit(EVENT_DATA, str);
+                }
+            } else {
+                self_->emit(EVENT_DATA, buffer);
+            }
+
+            self_->bytesRead_ += buffer->length();
+            if (self_->onData_) (*self_->onData_)(args);
             return Status::OK;
         }
 
@@ -718,9 +705,9 @@ class Socket : public events::EventEmitter<node::net::Socket> {
      public:
         AfterWrite(
             Socket* sock,
-            uv::Write* req)
+            JsFunction::Ptr cb)
             : self_(sock)
-            , req_(req) {}
+            , cb_(cb) {}
 
         virtual Value operator()(JsArray::Ptr args) {
             if (self_->hasFlag(DESTROYED)) {
@@ -730,9 +717,8 @@ class Socket : public events::EventEmitter<node::net::Socket> {
             assert(args->get(0).is<int>());
             int status = to<int>(args->get(0));
             if (status) {
-                node::uv::Error::CPtr err = node::uv::Error::last();
-                self_->destroy(err, req_->cb);
-                return err->code();
+                self_->destroy(LIBNODE_UV_ERROR(status), cb_);
+                return status;
             }
 
             self_->active();
@@ -741,7 +727,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
                 self_->emit(EVENT_DRAIN);
             }
 
-            if (req_->cb) (*req_->cb)();
+            if (cb_) (*cb_)();
 
             if (self_->pendingWriteReqs_ == 0 &&
                 self_->hasFlag(DESTROY_SOON)) {
@@ -752,7 +738,7 @@ class Socket : public events::EventEmitter<node::net::Socket> {
 
      private:
         Socket* self_;
-        uv::Write* req_;
+        JsFunction::Ptr cb_;
     };
 
     class AfterConnect : LIBJ_JS_FUNCTION(AfterConnect)
@@ -772,45 +758,46 @@ class Socket : public events::EventEmitter<node::net::Socket> {
             Boolean readable = to<Boolean>(args->get(3));
             Boolean writable = to<Boolean>(args->get(4));
 
-            if (!status) {
-                if (readable) {
-                    self_->setFlag(READABLE);
-                } else {
-                    self_->unsetFlag(READABLE);
-                }
-                if (writable) {
-                    self_->setFlag(WRITABLE);
-                } else {
-                    self_->unsetFlag(WRITABLE);
-                }
-                self_->active();
-
-                if (readable && !self_->hasFlag(PAUSED)) {
-                    self_->handle_->readStart();
-                }
-
-                if (self_->connectQueueSize_) {
-                    JsArray::Ptr connectBufQueue = self_->connectBufQueue_;
-                    JsArray::Ptr connectCbQueue = self_->connectCbQueue_;
-                    Size len = connectBufQueue->length();
-                    assert(connectCbQueue->length() == len);
-                    for (Size i = 0; i < len; i++) {
-                        JsFunction::Ptr cb =
-                            connectCbQueue->getPtr<JsFunction>(i);
-                        self_->write(connectBufQueue->get(i), cb);
-                    }
-                    self_->connectQueueCleanUp();
-                }
-
-                self_->emit(EVENT_CONNECT);
-
-                if (self_->hasFlag(SHUTDOWN_QUEUED)) {
-                    self_->unsetFlag(SHUTDOWN_QUEUED);
-                    self_->end();
-                }
-            } else {
+            if (status) {
                 self_->connectQueueCleanUp();
-                self_->destroy(node::uv::Error::last());
+                self_->destroy(LIBNODE_UV_ERROR(status));
+                return status;
+            }
+
+            if (readable) {
+                self_->setFlag(READABLE);
+            } else {
+                self_->unsetFlag(READABLE);
+            }
+            if (writable) {
+                self_->setFlag(WRITABLE);
+            } else {
+                self_->unsetFlag(WRITABLE);
+            }
+            self_->active();
+
+            if (readable && !self_->hasFlag(PAUSED)) {
+                self_->handle_->readStart();
+            }
+
+            if (self_->connectQueueSize_) {
+                JsArray::Ptr connectBufQueue = self_->connectBufQueue_;
+                JsArray::Ptr connectCbQueue = self_->connectCbQueue_;
+                Size len = connectBufQueue->length();
+                assert(connectCbQueue->length() == len);
+                for (Size i = 0; i < len; i++) {
+                    JsFunction::Ptr cb =
+                        connectCbQueue->getPtr<JsFunction>(i);
+                    self_->write(connectBufQueue->get(i), cb);
+                }
+                self_->connectQueueCleanUp();
+            }
+
+            self_->emit(EVENT_CONNECT);
+
+            if (self_->hasFlag(SHUTDOWN_QUEUED)) {
+                self_->unsetFlag(SHUTDOWN_QUEUED);
+                self_->end();
             }
             return Status::OK;
         }
