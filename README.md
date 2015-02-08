@@ -5,9 +5,21 @@ libnode
 
 libnode is a C++ implementation of Node.js.
 
-### Build
+Just like Node.js, libnode provides non-blocking I/O,
+which enables you to develop scalable Web applications in C++.
+libnode is faster and smaller than Node.js,
+so it is especially suitable for embedded devices.
+
+### Source Code
+
+You need to clone all the dependant submodules to build libnode.
 
     git clone --recursive https://github.com/plenluno/libnode.git
+
+### Build
+
+##### Linux/Mac
+
     mkdir libnode/build
     cd libnode/build
     cmake ..
@@ -17,6 +29,23 @@ The memory management of libnode is automatic, based on either shared_ptr or bdw
 libnode uses shared_ptr by default. In order to use bdw-gc,  
 
     cmake -DLIBNODE_USE_BDWGC=ON ..
+
+If you'd like to post messages to libnode from other threads in your application,
+
+    cmake -DLIBNODE_USE_THREAD=ON ..
+
+##### Windows
+
+    tools/windows-cmake.ps1 [cmake-option ...]
+
+##### Android
+
+    export ANDROID_NDK=/path/to/android-ndk
+    tools/android-cmake.sh [cmake-option ...]
+
+##### iOS
+
+    tools/ios-cmake.sh [cmake-option ...]
 
 ### Example
 
