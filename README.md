@@ -20,10 +20,12 @@ You need to clone all the dependant submodules to build libnode.
 
 ##### Linux/Mac
 
-    mkdir libnode/build
-    cd libnode/build
-    cmake ..
-    make
+```sh
+mkdir libnode/build
+cd libnode/build
+cmake ..
+make
+```
 
 The memory management of libnode is automatic, based on either shared_ptr or bdw-gc.  
 libnode uses shared_ptr by default. In order to use bdw-gc,  
@@ -51,14 +53,16 @@ If you'd like to post messages to libnode from other threads in your application
 
 The following HTTP server responds with "Hello World" for every request.
 
-    auto srv = http::Server::create(
-        JsClosure::create([] (JsArray::Ptr args) {
-            auto res = args->getPtr<http::ServerResponse>(1);
-            res->setHeader(http::HEADER_CONTENT_TYPE, str("text/plain"));
-            res->end(str("Hello World\n"));
-            return UNDEFINED;
-        }));
-    srv->listen(1337, str("127.0.0.1"));
-    node::run();
+```cpp
+auto srv = http::Server::create(
+    JsClosure::create([] (JsArray::Ptr args) {
+        auto res = args->getPtr<http::ServerResponse>(1);
+        res->setHeader(http::HEADER_CONTENT_TYPE, str("text/plain"));
+        res->end(str("Hello World\n"));
+        return UNDEFINED;
+    }));
+srv->listen(1337, str("127.0.0.1"));
+node::run();
+```
 
 For more information about the usage, please refer to libnode/gtest.
